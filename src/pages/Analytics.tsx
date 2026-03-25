@@ -26,7 +26,7 @@ export default function Analytics() {
       name: d.name.split(' ').slice(-1)[0],
       score: domainAssessments.length > 0
         ? Math.round(domainAssessments.reduce((s, a) => s + a.percentage, 0) / domainAssessments.length)
-        : Math.round(globalAvg * (0.85 + Math.random() * 0.3)),
+        : Math.round(globalAvg),
     };
   });
 

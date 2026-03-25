@@ -19,7 +19,7 @@ export default function DomainRadar({ assessments }: DomainRadarProps) {
       : 75;
     return {
       domain: domain.name.split(' ').slice(0, 2).join(' '),
-      score: domainAssessments.length > 0 ? Math.round(avg) : Math.round(globalAvg * (0.85 + Math.random() * 0.3)),
+      score: domainAssessments.length > 0 ? Math.round(avg) : Math.round(globalAvg),
     };
   });
 

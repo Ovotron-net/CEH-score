@@ -1,73 +1,90 @@
-# React + TypeScript + Vite
+# CEH Score Tracker Pro 🛡️
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A professional, full-featured **Certified Ethical Hacker (CEH)** exam score tracking application with a dark cybersecurity aesthetic. Track your practice scores, monitor progress across all 20 CEH domains, and analyze trends to maximize your exam performance.
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **📊 Dashboard** — Readiness gauge, score trend chart, domain radar, and recent assessments at a glance
+- **📝 Assessments** — Log practice tests, mock exams, and official results with full details
+- **📈 Analytics** — 6 chart types: score trend, pass/fail ratio, distribution histogram, domain performance, improvement trends, and domain radar
+- **🏆 Leaderboard** — Ranked comparison with mock community data and your own best scores
+- **📚 CEH Topics** — Browse all 20 CEH v13 domains with full topic lists and searchable content
+- **⚙️ Settings** — Customize name, target score, exam date, and manage local data
+- **💾 Persistent Storage** — All data saved to localStorage with pre-seeded sample progress data
+- **🎨 Cybersecurity Theme** — Dark theme with cyber-green accents, glassmorphism cards, custom scrollbars
 
-## React Compiler
+## 🚀 Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+# Install dependencies
+npm install
 
-## Expanding the ESLint configuration
+# Start development server
+npm run dev
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+# Build for production
+npm run build
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Preview production build
+npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🛠️ Tech Stack
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Category | Technology |
+|----------|-----------|
+| Frontend | React 18 + TypeScript |
+| Build Tool | Vite |
+| Styling | Tailwind CSS |
+| Charts | Recharts |
+| Routing | React Router v6 |
+| Icons | Lucide React |
+| Date Utils | date-fns |
+| Storage | Browser localStorage |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 📁 Project Structure
+
 ```
+src/
+├── components/
+│   ├── charts/          # Recharts chart components
+│   ├── AssessmentCard   # Assessment list item
+│   ├── DomainCard       # CEH domain card
+│   ├── Layout           # App shell with sidebar
+│   ├── Sidebar          # Navigation sidebar
+│   └── StatCard         # Statistics display card
+├── data/
+│   ├── cehDomains       # All 20 CEH v13 domains + topics
+│   ├── mockLeaderboard  # Sample leaderboard data
+│   └── sampleData       # Pre-seeded assessment data
+├── hooks/
+│   ├── useAssessments   # CRUD operations for assessments
+│   └── useSettings      # User settings management
+├── pages/
+│   ├── Dashboard        # Main dashboard
+│   ├── Assessments      # Assessments list + search/filter
+│   ├── AddAssessment    # Add/log new assessment
+│   ├── Analytics        # Charts and analytics
+│   ├── Leaderboard      # Community rankings
+│   ├── Topics           # CEH domain browser
+│   └── Settings         # App settings
+├── types/               # TypeScript type definitions
+└── utils/               # Calculations and localStorage helpers
+```
+
+## 📋 CEH Exam Info
+
+The app is calibrated for the **CEH v13** exam:
+- **125 questions**, 4-hour time limit
+- **Pass threshold**: 70% (88/125 correct)
+- **20 domains** covering all ethical hacking knowledge areas
+- Scored via EC-Council's adaptive scoring system
+
+## 🎨 Design
+
+Built with a professional cybersecurity aesthetic:
+- Background: `#0a0e1a` (deep navy)
+- Card surface: `#111827`
+- Primary accent: `#00ff88` (cyber green)
+- Secondary accent: `#00d4ff` (cyber blue)
+- Text: `#e2e8f0` / `#64748b`

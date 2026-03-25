@@ -6,9 +6,20 @@ interface PassFailProps {
   assessments: Assessment[];
 }
 
-interface TooltipProps {
+interface PassFailTooltipProps {
   active?: boolean;
   payload?: Array<{ name: string; value: number; payload: { fill: string } }>;
+}
+
+function PassFailTooltip({ active, payload }: PassFailTooltipProps) {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-[#111827] border border-[#1f2d40] rounded-lg p-3 text-xs">
+        <p style={{ color: payload[0].payload.fill }}>{payload[0].name}: {payload[0].value}</p>
+      </div>
+    );
+  }
+  return null;
 }
 
 export default function PassFail({ assessments }: PassFailProps) {
@@ -22,17 +33,6 @@ export default function PassFail({ assessments }: PassFailProps) {
 
   const COLORS = ['#00ff88', '#ff4444'];
 
-  const CustomTooltip = ({ active, payload }: TooltipProps) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-[#111827] border border-[#1f2d40] rounded-lg p-3 text-xs">
-          <p style={{ color: payload[0].payload.fill }}>{payload[0].name}: {payload[0].value}</p>
-        </div>
-      );
-    }
-    return null;
-  };
-
   return (
     <ResponsiveContainer width="100%" height={220}>
       <PieChart>
@@ -41,7 +41,7 @@ export default function PassFail({ assessments }: PassFailProps) {
             <Cell key={index} fill={COLORS[index]} />
           ))}
         </Pie>
-        <Tooltip content={<CustomTooltip />} />
+        <Tooltip content={<PassFailTooltip />} />
         <Legend
           formatter={(value) => <span style={{ color: '#64748b', fontSize: '12px' }}>{value}</span>}
         />
