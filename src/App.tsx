@@ -1,5 +1,6 @@
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
+      <SpeedInsights />
       <VercelAnalytics />
     </BrowserRouter>
   );
