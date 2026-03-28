@@ -88,3 +88,26 @@ Built with a professional cybersecurity aesthetic:
 - Primary accent: `#00ff88` (cyber green)
 - Secondary accent: `#00d4ff` (cyber blue)
 - Text: `#e2e8f0` / `#64748b`
+
+## 🌐 Deployment
+
+This application is deployed to GitHub Pages automatically when changes are pushed to the `main` branch.
+
+**Live URL:** https://ovotron-net.github.io/CEH-score/
+
+### Manual Deployment
+
+To deploy manually:
+
+1. Enable GitHub Pages in your repository settings:
+   - Go to Settings → Pages
+   - Set Source to "GitHub Actions"
+
+2. Push to the `main` branch, and the GitHub Actions workflow will automatically build and deploy the app.
+
+### Local Preview of Production Build
+
+```bash
+npm run build
+npm run preview
+```
