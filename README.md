@@ -89,7 +89,7 @@ Built with a professional cybersecurity aesthetic:
 - Secondary accent: `#00d4ff` (cyber blue)
 - Text: `#e2e8f0` / `#64748b`
 
-## 🌐 Deployment
+## Deployment
 
 This application is deployed to GitHub Pages automatically when changes are pushed to the `main` branch.
 
