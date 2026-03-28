@@ -1,19 +1,19 @@
-# CEH Score Tracker Pro 🛡️
+# CEH Score Tracker Pro
 
 A professional, full-featured **Certified Ethical Hacker (CEH)** exam score tracking application with a dark cybersecurity aesthetic. Track your practice scores, monitor progress across all 20 CEH domains, and analyze trends to maximize your exam performance.
 
-## ✨ Features
+## Features
 
-- **📊 Dashboard** — Readiness gauge, score trend chart, domain radar, and recent assessments at a glance
-- **📝 Assessments** — Log practice tests, mock exams, and official results with full details
-- **📈 Analytics** — 6 chart types: score trend, pass/fail ratio, distribution histogram, domain performance, improvement trends, and domain radar
-- **🏆 Leaderboard** — Ranked comparison with mock community data and your own best scores
-- **📚 CEH Topics** — Browse all 20 CEH v13 domains with full topic lists and searchable content
-- **⚙️ Settings** — Customize name, target score, exam date, and manage local data
-- **💾 Persistent Storage** — All data saved to localStorage with pre-seeded sample progress data
-- **🎨 Cybersecurity Theme** — Dark theme with cyber-green accents, glassmorphism cards, custom scrollbars
+- **Dashboard** — Readiness gauge, score trend chart, domain radar, and recent assessments at a glance
+- **Assessments** — Log practice tests, mock exams, and official results with full details
+- **Analytics** — 6 chart types: score trend, pass/fail ratio, distribution histogram, domain performance, improvement trends, and domain radar
+- **Leaderboard** — Ranked comparison with mock community data and your own best scores
+- **CEH Topics** — Browse all 20 CEH v13 domains with full topic lists and searchable content
+- **Settings** — Customize name, target score, exam date, and manage local data
+- **Persistent Storage** — All data saved to localStorage with pre-seeded sample progress data
+- **Cybersecurity Theme** — Dark theme with cyber-green accents, glassmorphism cards, custom scrollbars
 
-## 🚀 Getting Started
+## Getting Started
 
 ```bash
 # Install dependencies
@@ -29,7 +29,7 @@ npm run build
 npm run preview
 ```
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Category | Technology |
 |----------|-----------|
@@ -42,7 +42,7 @@ npm run preview
 | Date Utils | date-fns |
 | Storage | Browser localStorage |
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
@@ -69,10 +69,10 @@ src/
 │   ├── Topics           # CEH domain browser
 │   └── Settings         # App settings
 ├── types/               # TypeScript type definitions
-└── utils/               # Calculations and localStorage helpers
+│── utils/               # Calculations and localStorage helpers
 ```
 
-## 📋 CEH Exam Info
+## CEH Exam Info
 
 The app is calibrated for the **CEH v13** exam:
 - **125 questions**, 4-hour time limit
@@ -80,7 +80,7 @@ The app is calibrated for the **CEH v13** exam:
 - **20 domains** covering all ethical hacking knowledge areas
 - Scored via EC-Council's adaptive scoring system
 
-## 🎨 Design
+## Design
 
 Built with a professional cybersecurity aesthetic:
 - Background: `#0a0e1a` (deep navy)
