@@ -31,16 +31,16 @@ npm run preview
 
 ## Tech Stack
 
-| Category | Technology |
-|----------|-----------|
-| Frontend | React 18 + TypeScript |
-| Build Tool | Vite |
-| Styling | Tailwind CSS |
-| Charts | Recharts |
-| Routing | React Router v6 |
-| Icons | Lucide React |
-| Date Utils | date-fns |
-| Storage | Browser localStorage |
+| Category   | Technology            |
+|------------|-----------------------|
+| Frontend   | React 18 + TypeScript |
+| Build Tool | Vite                  |
+| Styling    | Tailwind CSS          |
+| Charts     | Recharts              |
+| Routing    | React Router v6       |
+| Icons      | Lucide React          |
+| Date Utils | date-fns              |
+| Storage    | Browser localStorage  |
 
 ## Project Structure
 
