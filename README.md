@@ -93,8 +93,6 @@ Built with a professional cybersecurity aesthetic:
 
 This application is deployed to GitHub Pages automatically when changes are pushed to the `main` branch.
 
-**Live URL:** https://ovotron-net.github.io/CEH-score/
-
 ### Manual Deployment
 
 To deploy manually:
