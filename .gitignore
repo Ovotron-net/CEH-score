@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# Generated API clients (run `npm run generate` to recreate)
+src/api/generated
+
+# SQLite database file
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

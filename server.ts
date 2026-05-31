@@ -3,6 +3,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import express from 'express';
 import type { ViteDevServer } from 'vite';
+import assessmentsRouter from './src/server/routes/assessments.js';
+import settingsRouter from './src/server/routes/settings.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProd = process.env.NODE_ENV === 'production';
@@ -10,6 +12,10 @@ const PORT = Number(process.env.PORT ?? 3000);
 
 async function createServer() {
   const app = express();
+
+  app.use(express.json());
+  app.use('/api/assessments', assessmentsRouter);
+  app.use('/api/settings', settingsRouter);
 
   let vite: ViteDevServer | undefined;
 
@@ -60,3 +66,4 @@ async function createServer() {
 }
 
 createServer();
+

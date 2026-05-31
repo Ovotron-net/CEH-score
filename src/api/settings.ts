@@ -1,30 +1,14 @@
-/**
- * Settings API module.
- *
- * Currently backed by localStorage. To switch to a real backend, replace each
- * function body with a `request()` call from `./client`, e.g.:
- *
- *   export async function get() {
- *     return request<UserSettings>('/api/settings');
- *   }
- */
-
 import type { UserSettings } from '../types';
-import { loadSettings, saveSettings } from '../utils/localStorage';
-
-const DEFAULT_SETTINGS: UserSettings = {
-  name: 'Alex Chen',
-  targetScore: 85,
-  examDate: '',
-  theme: 'dark',
-};
+import { request } from './client';
 
 export async function get(): Promise<UserSettings> {
-  if (typeof window === 'undefined') return { ...DEFAULT_SETTINGS };
-  return loadSettings<UserSettings>(DEFAULT_SETTINGS);
+  if (typeof window === 'undefined') {
+    return { name: 'Alex Chen', targetScore: 85, examDate: '', theme: 'dark' };
+  }
+  return request<UserSettings>('/api/settings');
 }
 
 export async function update(settings: UserSettings): Promise<UserSettings> {
-  saveSettings(settings);
-  return settings;
+  return request<UserSettings>('/api/settings', { method: 'PUT', body: settings });
 }
+

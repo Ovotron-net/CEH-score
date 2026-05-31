@@ -5,6 +5,11 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ isSsrBuild }) => ({
   plugins: [react()],
   base: '/',
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3000',
+    },
+  },
   build: {
     outDir: isSsrBuild ? 'dist/server' : 'dist/client',
     chunkSizeWarningLimit: 600,
