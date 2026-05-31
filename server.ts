@@ -30,18 +30,7 @@ const destructiveLimiter = rateLimit({
 async function createServer() {
   const app = express();
 
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", 'https://va.vercel-scripts.com'],
-        connectSrc: ["'self'", 'https://vitals.vercel-insights.com'],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", 'data:'],
-        fontSrc: ["'self'"],
-      },
-    },
-  }));
+  app.use(helmet());
   app.use(express.json({ limit: '50kb' }));
   app.use('/api', apiLimiter);
   app.post('/api/assessments', destructiveLimiter);
