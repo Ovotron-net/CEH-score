@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import express from 'express';
+import helmet from 'helmet';
+import { rateLimit } from 'express-rate-limit';
 import type { ViteDevServer } from 'vite';
 import assessmentsRouter from './src/server/routes/assessments.js';
 import settingsRouter from './src/server/routes/settings.js';
@@ -10,10 +12,28 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProd = process.env.NODE_ENV === 'production';
 const PORT = Number(process.env.PORT ?? 3000);
 
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const destructiveLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' },
+});
+
 async function createServer() {
   const app = express();
 
-  app.use(express.json());
+  app.use(helmet());
+  app.use(express.json({ limit: '50kb' }));
+  app.use('/api', apiLimiter);
+  app.use('/api/assessments', destructiveLimiter);
   app.use('/api/assessments', assessmentsRouter);
   app.use('/api/settings', settingsRouter);
 

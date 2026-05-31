@@ -41,7 +41,6 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_DATABASE_PUBLIC_URL: ${{ secrets.DATABASE_PUBLIC_URL }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PGDATABASE: ${{ secrets.PGDATABASE }}
           PGHOST: ${{ secrets.PGHOST }}
