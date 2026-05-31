@@ -1,7 +1,7 @@
 import type { Assessment } from '../types';
 
 export function calculatePercentage(score: number, maxScore: number): number {
-  return Math.round((score / maxScore) * 100 * 10) / 10;
+  return Math.round((score / maxScore) * 100);
 }
 
 export function isPassed(percentage: number): boolean {

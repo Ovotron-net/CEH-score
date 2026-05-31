@@ -20,12 +20,15 @@ export default function AddAssessment() {
     notes: '',
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   const score = parseInt(form.score) || 0;
   const maxScore = parseInt(form.maxScore) || 125;
   const percentage = form.score ? calculatePercentage(score, maxScore) : 0;
   const passed = isPassed(percentage);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.score || !form.timeTaken) return;
 
@@ -43,8 +46,15 @@ export default function AddAssessment() {
       createdAt: new Date().toISOString(),
     };
 
-    addAssessment(assessment);
-    navigate('/assessments');
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      await addAssessment(assessment);
+      navigate('/assessments');
+    } catch {
+      setSubmitError('Failed to save assessment. Please try again.');
+      setIsSubmitting(false);
+    }
   };
 
   const domainOptions = [FULL_EXAM, ...CEH_DOMAINS.map(d => d.name)];
@@ -186,12 +196,16 @@ export default function AddAssessment() {
           </button>
           <button
             type="submit"
-            className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#00ff88]/10 hover:bg-[#00ff88]/20 border border-[#00ff88]/30 text-[#00ff88] rounded-lg text-sm font-medium transition-all"
+            disabled={isSubmitting}
+            className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#00ff88]/10 hover:bg-[#00ff88]/20 border border-[#00ff88]/30 text-[#00ff88] rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save className="w-4 h-4" />
-            Save Assessment
+            {isSubmitting ? 'Saving…' : 'Save Assessment'}
           </button>
         </div>
+        {submitError && (
+          <p className="text-red-400 text-sm text-center">{submitError}</p>
+        )}
       </form>
     </div>
   );

@@ -20,8 +20,8 @@ export function useSettings() {
   });
 
   const updateSettings = (updates: Partial<UserSettings>) => {
-    if (!settings) return;
-    mutation.mutate({ ...settings, ...updates });
+    if (!settings) return Promise.resolve();
+    return mutation.mutateAsync({ ...settings, ...updates });
   };
 
   return {
@@ -32,6 +32,7 @@ export function useSettings() {
       theme: 'dark' as const,
     },
     isLoading,
+    isSaving: mutation.isPending,
     updateSettings,
   };
 }

@@ -17,12 +17,16 @@ const SettingsSchema = z.object({
 
 router.get('/', async (_req, res) => {
   try {
-    const rows = await db.select().from(settings).where(eq(settings.id, SETTINGS_ID));
-    if (rows.length === 0) {
-      const [created] = await db.insert(settings).values({ id: SETTINGS_ID }).returning();
-      return res.json(created);
-    }
-    res.json(rows[0]);
+    // Atomic upsert: insert default row only if it doesn't exist yet, avoiding a TOCTOU race.
+    const [inserted] = await db
+      .insert(settings)
+      .values({ id: SETTINGS_ID })
+      .onConflictDoNothing()
+      .returning();
+    if (inserted) return res.json(inserted);
+
+    const [existing] = await db.select().from(settings).where(eq(settings.id, SETTINGS_ID));
+    res.json(existing);
   } catch {
     res.status(500).json({ error: 'Failed to fetch settings.' });
   }
