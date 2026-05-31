@@ -33,14 +33,23 @@ async function createServer() {
   app.use(helmet());
   app.use(express.json({ limit: '50kb' }));
   app.use('/api', apiLimiter);
-  app.use('/api/assessments', destructiveLimiter);
+  app.post('/api/assessments', destructiveLimiter);
+  app.delete('/api/assessments', destructiveLimiter);
+  app.delete('/api/assessments/:id', destructiveLimiter);
   app.use('/api/assessments', assessmentsRouter);
   app.use('/api/settings', settingsRouter);
 
   let vite: ViteDevServer | undefined;
+  let prodTemplate: string | undefined;
+  let prodRender: ((url: string) => { html: string }) | undefined;
 
   if (isProd) {
     app.use(express.static(path.resolve(__dirname, 'dist/client'), { index: false }));
+    prodTemplate = fs.readFileSync(
+      path.resolve(__dirname, 'dist/client/index.html'),
+      'utf-8',
+    );
+    ({ render: prodRender } = await import('./dist/server/entry-server.js'));
   } else {
     const { createServer: createViteServer } = await import('vite');
     vite = await createViteServer({
@@ -58,11 +67,8 @@ async function createServer() {
       let render: (url: string) => { html: string };
 
       if (isProd) {
-        template = fs.readFileSync(
-          path.resolve(__dirname, 'dist/client/index.html'),
-          'utf-8',
-        );
-        ({ render } = await import('./dist/server/entry-server.js'));
+        template = prodTemplate!;
+        render = prodRender!;
       } else {
         template = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8');
         template = await vite!.transformIndexHtml(url, template);
