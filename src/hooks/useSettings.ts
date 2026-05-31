@@ -1,24 +1,28 @@
 import { useState, useEffect } from 'react';
 import type { UserSettings } from '../types';
-import { loadSettings, saveSettings } from '../utils/localStorage';
-
-const DEFAULT_SETTINGS: UserSettings = {
-  name: 'Alex Chen',
-  targetScore: 85,
-  examDate: '',
-  theme: 'dark',
-};
+import { settingsApi } from '../api';
 
 export function useSettings() {
-  const [settings, setSettings] = useState<UserSettings>(() => loadSettings(DEFAULT_SETTINGS));
+  const [settings, setSettings] = useState<UserSettings>({
+    name: 'Alex Chen',
+    targetScore: 85,
+    examDate: '',
+    theme: 'dark',
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    saveSettings(settings);
-  }, [settings]);
+    settingsApi.get().then(data => {
+      setSettings(data);
+      setIsLoading(false);
+    });
+  }, []);
 
-  const updateSettings = (updates: Partial<UserSettings>) => {
-    setSettings(prev => ({ ...prev, ...updates }));
+  const updateSettings = async (updates: Partial<UserSettings>) => {
+    const next = { ...settings, ...updates };
+    setSettings(next);
+    await settingsApi.update(next);
   };
 
-  return { settings, updateSettings };
+  return { settings, isLoading, updateSettings };
 }

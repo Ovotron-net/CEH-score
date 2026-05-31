@@ -1,36 +1,32 @@
 import { useState, useEffect } from 'react';
 import type { Assessment } from '../types';
-import { loadAssessments, saveAssessments } from '../utils/localStorage';
-import { SAMPLE_ASSESSMENTS } from '../data/sampleData';
-
-const INITIALIZED_KEY = 'ceh_initialized';
+import { assessmentsApi } from '../api';
 
 export function useAssessments() {
-  const [assessments, setAssessments] = useState<Assessment[]>(() => {
-    const stored = loadAssessments<Assessment>();
-    if (stored.length === 0 && !localStorage.getItem(INITIALIZED_KEY)) {
-      localStorage.setItem(INITIALIZED_KEY, 'true');
-      saveAssessments(SAMPLE_ASSESSMENTS);
-      return SAMPLE_ASSESSMENTS;
-    }
-    return stored;
-  });
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    saveAssessments(assessments);
-  }, [assessments]);
+    assessmentsApi.getAll().then(data => {
+      setAssessments(data);
+      setIsLoading(false);
+    });
+  }, []);
 
-  const addAssessment = (assessment: Assessment) => {
+  const addAssessment = async (assessment: Assessment) => {
+    await assessmentsApi.create(assessment);
     setAssessments(prev => [assessment, ...prev]);
   };
 
-  const deleteAssessment = (id: string) => {
+  const deleteAssessment = async (id: string) => {
+    await assessmentsApi.remove(id);
     setAssessments(prev => prev.filter(a => a.id !== id));
   };
 
-  const clearAll = () => {
+  const clearAll = async () => {
+    await assessmentsApi.clearAll();
     setAssessments([]);
   };
 
-  return { assessments, addAssessment, deleteAssessment, clearAll };
+  return { assessments, isLoading, addAssessment, deleteAssessment, clearAll };
 }
