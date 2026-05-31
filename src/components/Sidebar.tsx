@@ -1,6 +1,8 @@
+'use client';
 
 import { useCallback } from 'react';
-import { NavLink } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, ClipboardList, PlusCircle, BarChart3, Trophy, BookOpen, Settings, Shield, X
 } from 'lucide-react';
@@ -21,9 +23,8 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
-  const handleNavClick = useCallback(() => {
-    onClose?.();
-  }, [onClose]);
+  const pathname = usePathname() ?? '';
+  const handleNavClick = useCallback(() => { onClose?.(); }, [onClose]);
 
   return (
     <aside
@@ -35,7 +36,6 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         isOpen ? 'translate-x-0' : '-translate-x-full',
       ].join(' ')}
     >
-      {/* Logo */}
       <div className="p-6 border-b border-[#1f2d40] flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-[#00ff88]/10 border border-[#00ff88]/30 flex items-center justify-center">
@@ -55,29 +55,27 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         </button>
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {navItems.map(({ to, icon: Icon, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === '/'}
-            onClick={handleNavClick}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium ${
+        {navItems.map(({ to, icon: Icon, label }) => {
+          const isActive = to === '/' ? pathname === '/' : pathname.startsWith(to);
+          return (
+            <Link
+              key={to}
+              href={to}
+              onClick={handleNavClick}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium ${
                 isActive
                   ? 'bg-[#00ff88]/10 text-[#00ff88] border border-[#00ff88]/20'
                   : 'text-[#64748b] hover:text-white hover:bg-[#1a2235]'
-              }`
-            }
-          >
-            <Icon className="w-4 h-4 flex-shrink-0" />
-            {label}
-          </NavLink>
-        ))}
+              }`}
+            >
+              <Icon className="w-4 h-4 flex-shrink-0" />
+              {label}
+            </Link>
+          );
+        })}
       </nav>
 
-      {/* Footer */}
       <div className="p-4 border-t border-[#1f2d40]">
         <div className="text-xs text-[#64748b] text-center">
           <span className="text-[#00ff88]">v1.0.0</span> · CEH v13

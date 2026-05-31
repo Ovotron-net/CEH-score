@@ -6,7 +6,7 @@
  * individual API modules — the hooks and components don't need to change.
  */
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 

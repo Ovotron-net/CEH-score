@@ -47,3 +47,32 @@ export function getReadinessLevel(avgScore: number): string {
   if (avgScore >= 55) return 'Developing';
   return 'Needs Work';
 }
+
+export function formatScore(score: number): string {
+  return Number.isInteger(score) ? score.toString() : score.toFixed(1);
+}
+
+export function calculateStats(assessments: Assessment[]) {
+  const averageScore = getAverageScore(assessments);
+  const bestScore = getBestScore(assessments);
+  const totalAssessments = assessments.length;
+
+  const uniqueDays = [...new Set(assessments.map((assessment) => assessment.date))]
+    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
+  let studyStreak = 0;
+  if (uniqueDays.length > 0) {
+    const cursor = new Date(uniqueDays[0]);
+    while (uniqueDays.includes(cursor.toISOString().slice(0, 10))) {
+      studyStreak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+  }
+
+  return {
+    averageScore,
+    bestScore,
+    totalAssessments,
+    studyStreak,
+  };
+}

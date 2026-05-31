@@ -4,17 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "dev:ssr": "tsx server.ts",
-    "build": "tsc -b && vite build",
-    "build:ssr": "tsc -b && vite build && vite build --ssr src/entry-server.tsx",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "generate": "orval",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "serve": "cross-env NODE_ENV=production tsx server.ts"
+    "lint": "next lint"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -23,31 +20,26 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-toast": "^1.2.15",
     "@tanstack/react-query": "^5.100.14",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.45.2",
-    "express": "^5.2.1",
-    "express-rate-limit": "^8.5.2",
-    "helmet": "^8.2.0",
     "lucide-react": "^1.7.0",
+    "next": "^15.3.3",
     "pg": "^8.21.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-router-dom": "^7.13.2",
     "recharts": "^3.8.1",
     "tailwind-merge": "^3.5.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
-    "@types/express": "^5.0.6",
-    "@types/helmet": "^0.0.48",
+    "@next/eslint-plugin-next": "^16.2.6",
     "@types/node": "^24.12.0",
     "@types/pg": "^8.20.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@types/react-router-dom": "^5.3.3",
-    "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.4.27",
     "cross-env": "^10.1.0",
     "drizzle-kit": "^0.31.10",
@@ -58,9 +50,8 @@
     "orval": "^8.14.0",
     "postcss": "^8.5.13",
     "tailwindcss": "^3.4.19",
-    "tsx": "^4.22.4",
+    "tailwindcss-animate": "^1.0.7",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.57.0",
-    "vite": "^8.0.5"
+    "typescript-eslint": "^8.57.0"
   }
 }
