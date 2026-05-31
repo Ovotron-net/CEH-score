@@ -18,13 +18,14 @@ export default defineConfig(({ isSsrBuild }) => ({
         ? {}
         : {
             manualChunks(id) {
-              if (id.includes('node_modules')) {
-                if (id.includes('recharts')) return 'charts';
-                if (id.includes('date-fns') || id.includes('lucide-react')) return 'utils';
-                if (id.includes('react')) return 'vendor';
-              }
+              if (!id.includes('node_modules')) return;
+              if (id.includes('recharts') || id.includes('d3-') || id.includes('victory-vendor')) return 'charts';
+              if (id.includes('date-fns') || id.includes('lucide-react')) return 'utils';
+              if (id.includes('@radix-ui') || id.includes('react-router') || id.includes('@tanstack')) return 'vendor';
+              if (id.includes('react-dom') || id.includes('react/')) return 'vendor';
             },
           },
     },
   },
 }))
+

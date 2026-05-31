@@ -8,7 +8,7 @@ const router = Router();
 
 const AssessmentSchema = z.object({
   id: z.string().min(1).max(100),
-  date: z.string().min(1).max(50),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
   type: z.enum(['practice', 'official', 'mock']),
   score: z.number().int().min(0).max(10000),
   maxScore: z.number().int().min(1).max(10000),

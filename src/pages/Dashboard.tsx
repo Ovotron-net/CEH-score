@@ -1,4 +1,5 @@
 
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Activity, Target, Award, Calendar, PlusCircle, CheckCircle } from 'lucide-react';
 import StatCard from '../components/StatCard';
@@ -9,24 +10,38 @@ import { useAssessments } from '../hooks/useAssessments';
 import { useSettings } from '../hooks/useSettings';
 import { getAverageScore, getBestScore, getDaysToExam, getReadinessLevel, getPassRate } from '../utils/calculations';
 
+const CIRCUMFERENCE = 2 * Math.PI * 54;
+
 export default function Dashboard() {
-  const { assessments, deleteAssessment } = useAssessments();
+  const { assessments, deleteAssessment, isError } = useAssessments();
   const { settings } = useSettings();
 
-  const avgScore = getAverageScore(assessments);
-  const bestScore = getBestScore(assessments);
-  const daysToExam = getDaysToExam(settings.examDate);
-  const passRate = getPassRate(assessments);
-  const readiness = getReadinessLevel(avgScore);
-  const recent = [...assessments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+  const avgScore = useMemo(() => getAverageScore(assessments), [assessments]);
+  const bestScore = useMemo(() => getBestScore(assessments), [assessments]);
+  const passRate = useMemo(() => getPassRate(assessments), [assessments]);
+  const daysToExam = useMemo(() => getDaysToExam(settings.examDate), [settings.examDate]);
+  const readiness = useMemo(() => getReadinessLevel(avgScore), [avgScore]);
+  const recent = useMemo(
+    () => [...assessments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5),
+    [assessments],
+  );
 
-  // Readiness ring calculation
-  const readinessPercent = Math.min(100, Math.round((avgScore / settings.targetScore) * 100));
-  const circumference = 2 * Math.PI * 54;
-  const strokeDashoffset = circumference - (readinessPercent / 100) * circumference;
+  const readinessPercent = useMemo(
+    () => Math.min(100, Math.round((avgScore / settings.targetScore) * 100)),
+    [avgScore, settings.targetScore],
+  );
+  const strokeDashoffset = useMemo(
+    () => CIRCUMFERENCE - (readinessPercent / 100) * CIRCUMFERENCE,
+    [readinessPercent],
+  );
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto page-enter">
+      {isError && (
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+          Failed to load assessments — your data may be unavailable. Check your connection.
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -71,7 +86,7 @@ export default function Dashboard() {
                 stroke={readinessPercent >= 100 ? '#00ff88' : readinessPercent >= 80 ? '#00d4ff' : '#ffd700'}
                 strokeWidth="8"
                 strokeLinecap="round"
-                strokeDasharray={circumference}
+                strokeDasharray={CIRCUMFERENCE}
                 strokeDashoffset={strokeDashoffset}
                 className="transition-all duration-1000"
               />

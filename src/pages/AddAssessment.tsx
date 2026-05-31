@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Assessment } from '../types';
 import { useAssessments } from '../hooks/useAssessments';
 import { CEH_DOMAINS, FULL_EXAM } from '../data/cehDomains';
 import { calculatePercentage, isPassed } from '../utils/calculations';
-import { CheckCircle, XCircle, Save } from 'lucide-react';
+import { CheckCircle, XCircle, Save, AlertCircle } from 'lucide-react';
 
 export default function AddAssessment() {
   const navigate = useNavigate();
@@ -24,13 +24,23 @@ export default function AddAssessment() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const score = parseInt(form.score) || 0;
-  const maxScore = parseInt(form.maxScore) || 125;
-  const percentage = form.score ? calculatePercentage(score, maxScore) : 0;
+  const maxScore = parseInt(form.maxScore) || 0;
+  const percentage = form.score && maxScore > 0 ? calculatePercentage(score, maxScore) : 0;
   const passed = isPassed(percentage);
+
+  const scoreError = useMemo(() => {
+    const m = parseInt(form.maxScore);
+    if (!form.maxScore || isNaN(m) || m < 1) return 'Max score must be at least 1';
+    if (!form.score) return null;
+    const s = parseInt(form.score);
+    if (isNaN(s) || s < 0) return 'Score must be a positive number';
+    if (s > m) return `Score cannot exceed max score (${m})`;
+    return null;
+  }, [form.score, form.maxScore]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.score || !form.timeTaken) return;
+    if (!form.score || !form.maxScore || !form.timeTaken || scoreError) return;
 
     const assessment: Assessment = {
       id: `assessment-${Date.now()}`,
@@ -60,7 +70,7 @@ export default function AddAssessment() {
   const domainOptions = [FULL_EXAM, ...CEH_DOMAINS.map(d => d.name)];
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="p-6 max-w-2xl mx-auto page-enter">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white">Add Assessment</h1>
         <p className="text-[#64748b] text-sm mt-1">Record a new CEH practice or exam result</p>
@@ -68,7 +78,7 @@ export default function AddAssessment() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Preview */}
-        {form.score && (
+        {form.score && !scoreError && (
           <div className={`flex items-center justify-between p-4 rounded-xl border ${
             passed ? 'bg-[#00ff88]/5 border-[#00ff88]/20' : 'bg-red-500/5 border-red-500/20'
           }`}>
@@ -122,7 +132,7 @@ export default function AddAssessment() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[#64748b] text-xs font-medium uppercase tracking-wider block mb-2">Score (0-125)</label>
+              <label className="text-[#64748b] text-xs font-medium uppercase tracking-wider block mb-2">Score</label>
               <input
                 type="number"
                 min="0"
@@ -131,8 +141,16 @@ export default function AddAssessment() {
                 onChange={e => setForm(p => ({ ...p, score: e.target.value }))}
                 placeholder="e.g. 98"
                 required
-                className="w-full bg-[#0a0e1a] border border-[#1f2d40] rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00ff88]/50 outline-none transition-colors"
+                className={`w-full bg-[#0a0e1a] border rounded-lg px-3 py-2.5 text-white text-sm outline-none transition-colors ${
+                  scoreError ? 'border-red-500/50 focus:border-red-500' : 'border-[#1f2d40] focus:border-[#00ff88]/50'
+                }`}
               />
+              {scoreError && (
+                <p className="flex items-center gap-1 mt-1.5 text-xs text-red-400">
+                  <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                  {scoreError}
+                </p>
+              )}
             </div>
             <div>
               <label className="text-[#64748b] text-xs font-medium uppercase tracking-wider block mb-2">Max Score</label>
@@ -196,7 +214,7 @@ export default function AddAssessment() {
           </button>
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !!scoreError}
             className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#00ff88]/10 hover:bg-[#00ff88]/20 border border-[#00ff88]/30 text-[#00ff88] rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save className="w-4 h-4" />

@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusCircle, Search, Filter, SortAsc } from 'lucide-react';
+import { PlusCircle, Search, Filter, SortAsc, X } from 'lucide-react';
 import AssessmentCard from '../components/AssessmentCard';
 import { useAssessments } from '../hooks/useAssessments';
 
 export default function Assessments() {
-  const { assessments, deleteAssessment } = useAssessments();
+  const { assessments, deleteAssessment, isError } = useAssessments();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [sortBy, setSortBy] = useState<'date' | 'score'>('date');
@@ -23,7 +23,12 @@ export default function Assessments() {
     });
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto page-enter">
+      {isError && (
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+          Failed to load assessments — your data may be unavailable. Check your connection.
+        </div>
+      )}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Assessments</h1>
@@ -41,7 +46,7 @@ export default function Assessments() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="flex items-center gap-2 bg-[#111827] border border-[#1f2d40] rounded-lg px-3 py-2 flex-1 min-w-[192px]">
-          <Search className="w-4 h-4 text-[#64748b]" />
+          <Search className="w-4 h-4 text-[#64748b] flex-shrink-0" />
           <input
             type="text"
             placeholder="Search assessments..."
@@ -49,6 +54,15 @@ export default function Assessments() {
             onChange={e => setSearch(e.target.value)}
             className="bg-transparent text-sm text-white placeholder-[#64748b] outline-none flex-1"
           />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="text-[#64748b] hover:text-white transition-colors flex-shrink-0"
+              aria-label="Clear search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-2">

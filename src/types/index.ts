@@ -26,12 +26,3 @@ export interface UserSettings {
   examDate: string;
   theme: 'dark' | 'light';
 }
-
-export interface LeaderboardEntry {
-  id: string;
-  name: string;
-  score: number;
-  percentage: number;
-  date: string;
-  badge: string;
-}

@@ -1,4 +1,5 @@
 
+import { useMemo } from 'react';
 import { useAssessments } from '../hooks/useAssessments';
 import ScoreTrend from '../components/charts/ScoreTrend';
 import PassFail from '../components/charts/PassFail';
@@ -9,29 +10,37 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { CEH_DOMAINS } from '../data/cehDomains';
 
 export default function Analytics() {
-  const { assessments } = useAssessments();
+  const { assessments, isError } = useAssessments();
 
-  const avgScore = getAverageScore(assessments);
-  const bestScore = getBestScore(assessments);
-  const passRate = getPassRate(assessments);
+  const avgScore = useMemo(() => getAverageScore(assessments), [assessments]);
+  const bestScore = useMemo(() => getBestScore(assessments), [assessments]);
+  const passRate = useMemo(() => getPassRate(assessments), [assessments]);
 
-  // Domain bar chart data
-  const domainBarData = CEH_DOMAINS.slice(0, 10).map(d => {
-    const domainAssessments = assessments.filter(a => a.domain === d.name);
-    const fullExamAssessments = assessments.filter(a => a.domain === 'Full Exam');
-    const globalAvg = fullExamAssessments.length > 0
-      ? fullExamAssessments.reduce((s, a) => s + a.percentage, 0) / fullExamAssessments.length
-      : avgScore;
-    return {
-      name: d.name.split(' ').slice(-1)[0],
-      score: domainAssessments.length > 0
-        ? Math.round(domainAssessments.reduce((s, a) => s + a.percentage, 0) / domainAssessments.length)
-        : Math.round(globalAvg),
-    };
-  });
+  const domainBarData = useMemo(() => {
+    const fullExamAvg = (() => {
+      const fullExam = assessments.filter(a => a.domain === 'Full Exam');
+      return fullExam.length > 0
+        ? fullExam.reduce((s, a) => s + a.percentage, 0) / fullExam.length
+        : avgScore;
+    })();
+    return CEH_DOMAINS.slice(0, 10).map(d => {
+      const domainAssessments = assessments.filter(a => a.domain === d.name);
+      return {
+        name: d.name.split(' ').slice(-1)[0],
+        score: domainAssessments.length > 0
+          ? Math.round(domainAssessments.reduce((s, a) => s + a.percentage, 0) / domainAssessments.length)
+          : Math.round(fullExamAvg),
+      };
+    });
+  }, [assessments, avgScore]);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto page-enter">
+      {isError && (
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+          Failed to load assessments — your data may be unavailable. Check your connection.
+        </div>
+      )}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white">Analytics</h1>
         <p className="text-[#64748b] text-sm mt-1">Detailed performance analysis</p>
@@ -44,7 +53,7 @@ export default function Analytics() {
           { label: 'Best Score', value: `${bestScore}%`, color: 'text-yellow-400' },
           { label: 'Pass Rate', value: `${passRate}%`, color: 'text-[#00d4ff]' },
         ].map(s => (
-          <div key={s.label} className="bg-[#111827] border border-[#1f2d40] rounded-xl p-4 text-center">
+          <div key={s.label} className="bg-[#111827] border border-[#1f2d40] rounded-xl p-4 text-center card-enter">
             <p className="text-[#64748b] text-xs mb-1">{s.label}</p>
             <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
           </div>

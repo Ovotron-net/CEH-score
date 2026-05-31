@@ -1,7 +1,8 @@
 
+import { useCallback } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, ClipboardList, PlusCircle, BarChart3, Trophy, BookOpen, Settings, Shield
+  LayoutDashboard, ClipboardList, PlusCircle, BarChart3, Trophy, BookOpen, Settings, Shield, X
 } from 'lucide-react';
 
 const navItems = [
@@ -14,11 +15,28 @@ const navItems = [
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
+  const handleNavClick = useCallback(() => {
+    onClose?.();
+  }, [onClose]);
+
   return (
-    <aside className="w-64 min-h-screen bg-[#111827] border-r border-[#1f2d40] flex flex-col">
+    <aside
+      className={[
+        'fixed top-0 left-0 z-30 h-screen',
+        'w-64 bg-[#111827] border-r border-[#1f2d40] flex flex-col',
+        'transition-transform duration-300 ease-in-out',
+        'lg:sticky lg:translate-x-0 lg:flex-shrink-0',
+        isOpen ? 'translate-x-0' : '-translate-x-full',
+      ].join(' ')}
+    >
       {/* Logo */}
-      <div className="p-6 border-b border-[#1f2d40]">
+      <div className="p-6 border-b border-[#1f2d40] flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-[#00ff88]/10 border border-[#00ff88]/30 flex items-center justify-center">
             <Shield className="w-5 h-5 text-[#00ff88]" />
@@ -28,15 +46,23 @@ export default function Sidebar() {
             <p className="text-[#64748b] text-xs">Score Analytics</p>
           </div>
         </div>
+        <button
+          onClick={onClose}
+          className="lg:hidden text-[#64748b] hover:text-white transition-colors p-1"
+          aria-label="Close navigation"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/'}
+            onClick={handleNavClick}
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium ${
                 isActive

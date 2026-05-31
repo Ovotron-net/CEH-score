@@ -1,4 +1,5 @@
 
+import { memo } from 'react';
 import type { LucideIcon } from 'lucide-react';
 
 interface StatCardProps {
@@ -18,10 +19,10 @@ const colorMap = {
   purple: { text: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/20', glow: 'shadow-[0_0_20px_rgba(167,139,250,0.1)]' },
 };
 
-export default function StatCard({ title, value, subtitle, icon: Icon, color = 'green', trend }: StatCardProps) {
+const StatCard = memo(function StatCard({ title, value, subtitle, icon: Icon, color = 'green', trend }: StatCardProps) {
   const c = colorMap[color];
   return (
-    <div className={`bg-[#111827] border border-[#1f2d40] rounded-xl p-6 transition-all duration-300 ${c.glow} hover:scale-[1.02]`}>
+    <div className={`bg-[#111827] border border-[#1f2d40] rounded-xl p-6 transition-all duration-300 ${c.glow} hover:scale-[1.02] card-enter`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-[#64748b] text-sm font-medium mb-1">{title}</p>
@@ -39,4 +40,7 @@ export default function StatCard({ title, value, subtitle, icon: Icon, color = '
       </div>
     </div>
   );
-}
+});
+
+export default StatCard;
+

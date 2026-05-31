@@ -1,48 +1,65 @@
-import { useState } from 'react';
-import { Trophy } from 'lucide-react';
-import { MOCK_LEADERBOARD } from '../data/mockLeaderboard';
+import { useMemo, useState } from 'react';
+import { Trophy, PlusCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAssessments } from '../hooks/useAssessments';
 import { useSettings } from '../hooks/useSettings';
-import { getBestScore } from '../utils/calculations';
+import { format } from 'date-fns';
+
+type Period = 'all' | 'month' | 'week';
+
+const PERIOD_LABELS: Record<Period, string> = { all: 'All Time', month: 'This Month', week: 'This Week' };
+
+function cutoffDate(period: Period): Date | null {
+  if (period === 'all') return null;
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  if (period === 'week') d.setDate(d.getDate() - 7);
+  if (period === 'month') d.setDate(d.getDate() - 30);
+  return d;
+}
+
+const getRankBadge = (rank: number) => {
+  if (rank === 1) return '🥇';
+  if (rank === 2) return '🥈';
+  if (rank === 3) return '🥉';
+  return `#${rank}`;
+};
+
+const scoreColor = (pct: number) =>
+  pct >= 90 ? 'text-[#00ff88]' : pct >= 80 ? 'text-[#00d4ff]' : pct >= 70 ? 'text-yellow-400' : 'text-red-400';
 
 export default function Leaderboard() {
-  const { assessments } = useAssessments();
+  const { assessments, isError } = useAssessments();
   const { settings } = useSettings();
-  const [period, setPeriod] = useState('all');
+  const [period, setPeriod] = useState<Period>('all');
 
-  const bestScore = getBestScore(assessments);
-  const userEntry = bestScore > 0 ? {
-    id: 'user',
-    name: settings.name + ' (You)',
-    score: Math.round(bestScore * 1.25),
-    percentage: bestScore,
-    date: new Date().toISOString().split('T')[0],
-    badge: '🎯',
-  } : null;
-
-  const allEntries = [...MOCK_LEADERBOARD, ...(userEntry ? [userEntry] : [])]
-    .sort((a, b) => b.percentage - a.percentage)
-    .map((entry, i) => ({ ...entry, rank: i + 1 }));
-
-  const getRankBadge = (rank: number) => {
-    if (rank === 1) return '🥇';
-    if (rank === 2) return '🥈';
-    if (rank === 3) return '🥉';
-    return `#${rank}`;
-  };
+  const entries = useMemo(() => {
+    const cutoff = cutoffDate(period);
+    return assessments
+      .filter(a => !cutoff || new Date(a.date) >= cutoff)
+      .sort((a, b) => b.percentage - a.percentage)
+      .map((a, i) => ({ ...a, rank: i + 1 }));
+  }, [assessments, period]);
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-4xl mx-auto page-enter">
+      {isError && (
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+          Failed to load assessments — your data may be unavailable. Check your connection.
+        </div>
+      )}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
             <Trophy className="w-7 h-7 text-yellow-400" />
             Leaderboard
           </h1>
-          <p className="text-[#64748b] text-sm mt-1">Top CEH practitioners</p>
+          <p className="text-[#64748b] text-sm mt-1">
+            Your personal best scores — <span className="text-[#00ff88]">{settings.name}</span>
+          </p>
         </div>
         <div className="flex gap-2">
-          {['all', 'month', 'week'].map(p => (
+          {(Object.keys(PERIOD_LABELS) as Period[]).map(p => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
@@ -52,67 +69,70 @@ export default function Leaderboard() {
                   : 'bg-[#111827] text-[#64748b] border border-[#1f2d40] hover:text-white'
               }`}
             >
-              {p.charAt(0).toUpperCase() + p.slice(1)}
+              {PERIOD_LABELS[p]}
             </button>
           ))}
         </div>
       </div>
 
       {/* Top 3 podium */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        {allEntries.slice(0, 3).map((entry, i) => (
-          <div
-            key={entry.id}
-            className={`bg-[#111827] border rounded-xl p-5 text-center ${
-              i === 0 ? 'border-yellow-400/30 shadow-[0_0_20px_rgba(250,204,21,0.1)]' :
-              i === 1 ? 'border-gray-400/30' :
-              'border-orange-700/30'
-            } ${entry.id === 'user' ? 'ring-2 ring-[#00ff88]/30' : ''}`}
-          >
-            <div className="text-4xl mb-2">{getRankBadge(entry.rank)}</div>
-            <p className="text-white font-semibold text-sm">{entry.name}</p>
-            <p className={`text-2xl font-bold mt-1 ${
-              i === 0 ? 'text-yellow-400' : i === 1 ? 'text-gray-400' : 'text-orange-500'
-            }`}>{entry.percentage}%</p>
-            <p className="text-[#64748b] text-xs mt-1">{entry.score}/125</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Rest of leaderboard */}
-      <div className="bg-[#111827] border border-[#1f2d40] rounded-xl overflow-hidden">
-        <div className="grid grid-cols-[48px_1fr_80px_80px_100px] gap-4 px-5 py-3 border-b border-[#1f2d40] text-[#64748b] text-xs font-medium uppercase tracking-wider">
-          <span>Rank</span>
-          <span>Name</span>
-          <span className="text-right">Score</span>
-          <span className="text-right">%</span>
-          <span className="text-right">Date</span>
+      {entries.length >= 1 && (
+        <div className={`grid gap-4 mb-8 ${entries.length >= 3 ? 'grid-cols-3' : entries.length === 2 ? 'grid-cols-2 max-w-sm mx-auto' : 'grid-cols-1 max-w-xs mx-auto'}`}>
+          {entries.slice(0, 3).map((entry, i) => (
+            <div
+              key={entry.id}
+              className={`bg-[#111827] border rounded-xl p-5 text-center card-enter ${
+                i === 0 ? 'border-yellow-400/30 shadow-[0_0_20px_rgba(250,204,21,0.1)]' :
+                i === 1 ? 'border-gray-400/30' :
+                'border-orange-700/30'
+              }`}
+            >
+              <div className="text-4xl mb-2">{getRankBadge(entry.rank)}</div>
+              <p className="text-[#64748b] text-xs mb-1 truncate">{entry.domain}</p>
+              <p className={`text-2xl font-bold ${scoreColor(entry.percentage)}`}>{entry.percentage}%</p>
+              <p className="text-[#64748b] text-xs mt-1">{entry.score}/{entry.maxScore} correct</p>
+              <p className="text-[#64748b] text-xs mt-0.5">{format(new Date(entry.date), 'MMM d, yyyy')}</p>
+            </div>
+          ))}
         </div>
-        {allEntries.map(entry => (
-          <div
-            key={entry.id}
-            className={`grid grid-cols-[48px_1fr_80px_80px_100px] gap-4 px-5 py-4 border-b border-[#1f2d40] last:border-0 hover:bg-[#1a2235] transition-colors ${
-              entry.id === 'user' ? 'bg-[#00ff88]/5 border-l-2 border-l-[#00ff88]' : ''
-            }`}
+      )}
+
+      {/* Full rankings */}
+      {entries.length === 0 ? (
+        <div className="bg-[#111827] border border-[#1f2d40] rounded-xl p-12 text-center text-[#64748b]">
+          <Trophy className="w-10 h-10 mx-auto mb-3 opacity-30" />
+          <p className="mb-3">No assessments for this period</p>
+          <Link
+            to="/add"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#00ff88]/10 hover:bg-[#00ff88]/20 border border-[#00ff88]/30 text-[#00ff88] rounded-lg text-sm font-medium transition-all"
           >
-            <span className="text-lg">{getRankBadge(entry.rank)}</span>
-            <span className="text-white font-medium text-sm flex items-center gap-2">
-              {entry.name}
-              {entry.id === 'user' && (
-                <span className="text-xs px-2 py-0.5 bg-[#00ff88]/10 text-[#00ff88] border border-[#00ff88]/20 rounded-full">You</span>
-              )}
-            </span>
-            <span className="text-right text-[#64748b] text-sm">{entry.score}</span>
-            <span className={`text-right text-sm font-medium ${
-              entry.percentage >= 90 ? 'text-[#00ff88]' :
-              entry.percentage >= 80 ? 'text-[#00d4ff]' :
-              entry.percentage >= 70 ? 'text-yellow-400' :
-              'text-red-400'
-            }`}>{entry.percentage}%</span>
-            <span className="text-right text-[#64748b] text-xs">{entry.date}</span>
+            <PlusCircle className="w-4 h-4" />
+            Add Assessment
+          </Link>
+        </div>
+      ) : (
+        <div className="bg-[#111827] border border-[#1f2d40] rounded-xl overflow-hidden">
+          <div className="grid grid-cols-[48px_1fr_80px_80px_100px] gap-4 px-5 py-3 border-b border-[#1f2d40] text-[#64748b] text-xs font-medium uppercase tracking-wider">
+            <span>Rank</span>
+            <span>Domain</span>
+            <span className="text-right">Score</span>
+            <span className="text-right">%</span>
+            <span className="text-right">Date</span>
           </div>
-        ))}
-      </div>
+          {entries.map(entry => (
+            <div
+              key={entry.id}
+              className="grid grid-cols-[48px_1fr_80px_80px_100px] gap-4 px-5 py-4 border-b border-[#1f2d40] last:border-0 hover:bg-[#1a2235] transition-colors"
+            >
+              <span className="text-lg">{getRankBadge(entry.rank)}</span>
+              <span className="text-white font-medium text-sm truncate">{entry.domain}</span>
+              <span className="text-right text-[#64748b] text-sm">{entry.score}/{entry.maxScore}</span>
+              <span className={`text-right text-sm font-medium ${scoreColor(entry.percentage)}`}>{entry.percentage}%</span>
+              <span className="text-right text-[#64748b] text-xs">{format(new Date(entry.date), 'MMM d, yy')}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

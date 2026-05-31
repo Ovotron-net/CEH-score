@@ -1,4 +1,5 @@
 
+import { memo, useState } from 'react';
 import type { Assessment } from '../types';
 import { Trash2, Clock, Target, CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
@@ -14,7 +15,9 @@ const typeColors = {
   official: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
 };
 
-export default function AssessmentCard({ assessment, onDelete }: AssessmentCardProps) {
+const AssessmentCard = memo(function AssessmentCard({ assessment, onDelete }: AssessmentCardProps) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   const scoreColor = assessment.percentage >= 85
     ? 'text-[#00ff88]'
     : assessment.percentage >= 70
@@ -23,8 +26,16 @@ export default function AssessmentCard({ assessment, onDelete }: AssessmentCardP
     ? 'text-yellow-400'
     : 'text-red-400';
 
+  const handleDeleteClick = () => {
+    if (confirmDelete) {
+      onDelete?.(assessment.id);
+    } else {
+      setConfirmDelete(true);
+    }
+  };
+
   return (
-    <div className="bg-[#111827] border border-[#1f2d40] rounded-xl p-5 hover:bg-[#1a2235] transition-all duration-200 group">
+    <div className="bg-[#111827] border border-[#1f2d40] rounded-xl p-5 hover:bg-[#1a2235] transition-all duration-200 card-enter">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className={`text-2xl font-bold ${scoreColor}`}>
@@ -43,17 +54,35 @@ export default function AssessmentCard({ assessment, onDelete }: AssessmentCardP
             <p className="text-[#64748b] text-xs">{assessment.score}/{assessment.maxScore} correct</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <span className={`text-xs px-2 py-1 rounded border ${typeColors[assessment.type]} capitalize`}>
             {assessment.type}
           </span>
           {onDelete && (
-            <button
-              onClick={() => onDelete(assessment.id)}
-              className="opacity-0 group-hover:opacity-100 text-[#64748b] hover:text-red-400 transition-all"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            confirmDelete ? (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={handleDeleteClick}
+                  className="text-xs px-2 py-1 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 rounded transition-all"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="text-xs px-2 py-1 bg-[#1f2d40]/50 hover:bg-[#1f2d40] border border-[#1f2d40] text-[#64748b] rounded transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleDeleteClick}
+                className="text-[#64748b] hover:text-red-400 transition-colors p-1"
+                aria-label="Delete assessment"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )
           )}
         </div>
       </div>
@@ -88,4 +117,7 @@ export default function AssessmentCard({ assessment, onDelete }: AssessmentCardP
       </div>
     </div>
   );
-}
+});
+
+export default AssessmentCard;
+

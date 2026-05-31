@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings as SettingsIcon, Save, Trash2 } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Trash2, AlertTriangle } from 'lucide-react';
 import { useSettings } from '../hooks/useSettings';
 import { useAssessments } from '../hooks/useAssessments';
 import type { UserSettings } from '../types';
@@ -17,6 +17,7 @@ function SettingsForm({
 }) {
   const [form, setForm] = useState(settings);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [confirmClear, setConfirmClear] = useState(false);
 
   const handleSave = async () => {
     setSaveState('saving');
@@ -98,45 +99,65 @@ function SettingsForm({
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3">
-        <button
-          onClick={handleSave}
-          disabled={saveState === 'saving'}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-            saveState === 'saved'
-              ? 'bg-[#00ff88]/20 border border-[#00ff88]/40 text-[#00ff88]'
-              : saveState === 'error'
-              ? 'bg-red-500/10 border border-red-500/30 text-red-400'
-              : 'bg-[#00ff88]/10 hover:bg-[#00ff88]/20 border border-[#00ff88]/30 text-[#00ff88]'
-          }`}
-        >
-          <Save className="w-4 h-4" />
-          {saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? 'Saved!' : saveState === 'error' ? 'Save Failed' : 'Save Settings'}
-        </button>
-        <button
-          onClick={onClearData}
-          className="flex items-center justify-center gap-2 px-4 py-3 border border-red-500/30 text-red-400 rounded-lg text-sm font-medium hover:bg-red-500/10 transition-all"
-        >
-          <Trash2 className="w-4 h-4" />
-          Clear Data
-        </button>
+      <div className="space-y-3">
+        <div className="flex gap-3">
+          <button
+            onClick={handleSave}
+            disabled={saveState === 'saving'}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+              saveState === 'saved'
+                ? 'bg-[#00ff88]/20 border border-[#00ff88]/40 text-[#00ff88]'
+                : saveState === 'error'
+                ? 'bg-red-500/10 border border-red-500/30 text-red-400'
+                : 'bg-[#00ff88]/10 hover:bg-[#00ff88]/20 border border-[#00ff88]/30 text-[#00ff88]'
+            }`}
+          >
+            <Save className="w-4 h-4" />
+            {saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? 'Saved!' : saveState === 'error' ? 'Save Failed' : 'Save Settings'}
+          </button>
+          <button
+            onClick={() => setConfirmClear(true)}
+            className="flex items-center justify-center gap-2 px-4 py-3 border border-red-500/30 text-red-400 rounded-lg text-sm font-medium hover:bg-red-500/10 transition-all"
+          >
+            <Trash2 className="w-4 h-4" />
+            Clear Data
+          </button>
+        </div>
+
+        {confirmClear && (
+          <div className="flex items-start gap-3 p-4 bg-red-500/5 border border-red-500/20 rounded-xl">
+            <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-red-400 text-sm font-medium">Delete all {assessments.length} assessment{assessments.length !== 1 ? 's' : ''}?</p>
+              <p className="text-[#64748b] text-xs mt-0.5">This cannot be undone.</p>
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => { onClearData(); setConfirmClear(false); }}
+                  className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-400 rounded-lg text-xs font-medium transition-all"
+                >
+                  Yes, delete all
+                </button>
+                <button
+                  onClick={() => setConfirmClear(false)}
+                  className="px-3 py-1.5 bg-[#1f2d40]/50 hover:bg-[#1f2d40] border border-[#1f2d40] text-[#64748b] rounded-lg text-xs font-medium transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 export default function Settings() {
-  const { settings, isLoading, updateSettings } = useSettings();
+  const { settings, isLoading, isError, updateSettings } = useSettings();
   const { assessments, clearAll } = useAssessments();
 
-  const handleClearData = () => {
-    if (window.confirm('Are you sure? This will delete all assessment data.')) {
-      clearAll();
-    }
-  };
-
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="p-6 max-w-2xl mx-auto page-enter">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
           <SettingsIcon className="w-7 h-7 text-[#64748b]" />
@@ -145,6 +166,12 @@ export default function Settings() {
         <p className="text-[#64748b] text-sm mt-1">Configure your CEH tracker</p>
       </div>
 
+      {isError && (
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+          Could not load settings from server — changes cannot be saved. Check your connection.
+        </div>
+      )}
+
       {isLoading ? (
         <p className="text-[#64748b] text-sm">Loading…</p>
       ) : (
@@ -152,7 +179,7 @@ export default function Settings() {
           settings={settings}
           updateSettings={updateSettings}
           assessments={assessments}
-          onClearData={handleClearData}
+          onClearData={clearAll}
         />
       )}
     </div>

@@ -5,7 +5,7 @@ import { CEH_DOMAINS } from '../data/cehDomains';
 import { useAssessments } from '../hooks/useAssessments';
 
 export default function Topics() {
-  const { assessments } = useAssessments();
+  const { assessments, isError } = useAssessments();
   const [search, setSearch] = useState('');
 
   const filtered = CEH_DOMAINS.filter(d =>
@@ -22,7 +22,12 @@ export default function Topics() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-4xl mx-auto page-enter">
+      {isError && (
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+          Failed to load assessments — domain stats unavailable. Check your connection.
+        </div>
+      )}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
           <BookOpen className="w-7 h-7 text-[#00d4ff]" />
