@@ -29,7 +29,6 @@ export function useAssessments() {
   };
 
   const clearAll = () => {
-    localStorage.removeItem(INITIALIZED_KEY);
     setAssessments([]);
   };
 
