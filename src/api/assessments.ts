@@ -39,4 +39,5 @@ export async function remove(id: string): Promise<void> {
 
 export async function clearAll(): Promise<void> {
   saveAssessments([]);
+  localStorage.removeItem(INITIALIZED_KEY);
 }

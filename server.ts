@@ -50,7 +50,7 @@ async function createServer() {
     } catch (err) {
       vite?.ssrFixStacktrace(err as Error);
       console.error(err);
-      res.status(500).send((err as Error).message);
+      res.status(500).send('Internal server error');
     }
   });
 

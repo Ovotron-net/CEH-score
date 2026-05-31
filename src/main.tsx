@@ -24,7 +24,7 @@ const app = (
 );
 
 // Hydrate if the server rendered HTML into the root, otherwise do a fresh mount.
-if (rootEl.innerHTML) {
+if (rootEl.firstElementChild !== null) {
   ReactDOM.hydrateRoot(rootEl, app);
 } else {
   ReactDOM.createRoot(rootEl).render(app);
