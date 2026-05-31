@@ -16,6 +16,7 @@ import { SAMPLE_ASSESSMENTS } from '../data/sampleData';
 const INITIALIZED_KEY = 'ceh_initialized';
 
 export async function getAll(): Promise<Assessment[]> {
+  if (typeof window === 'undefined') return [];
   const stored = loadAssessments<Assessment>();
   if (stored.length === 0 && !localStorage.getItem(INITIALIZED_KEY)) {
     localStorage.setItem(INITIALIZED_KEY, 'true');

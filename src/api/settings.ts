@@ -20,6 +20,7 @@ const DEFAULT_SETTINGS: UserSettings = {
 };
 
 export async function get(): Promise<UserSettings> {
+  if (typeof window === 'undefined') return { ...DEFAULT_SETTINGS };
   return loadSettings<UserSettings>(DEFAULT_SETTINGS);
 }
 
