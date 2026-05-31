@@ -1,32 +1,43 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Assessment } from '../types';
 import { assessmentsApi } from '../api';
 
+const QUERY_KEY = ['assessments'] as const;
+
 export function useAssessments() {
-  const [assessments, setAssessments] = useState<Assessment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const qc = useQueryClient();
 
-  useEffect(() => {
-    assessmentsApi.getAll().then(data => {
-      setAssessments(data);
-      setIsLoading(false);
-    });
-  }, []);
+  const { data: assessments = [], isLoading } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: assessmentsApi.getAll,
+  });
 
-  const addAssessment = async (assessment: Assessment) => {
-    await assessmentsApi.create(assessment);
-    setAssessments(prev => [assessment, ...prev]);
+  const addAssessment = useMutation({
+    mutationFn: assessmentsApi.create,
+    onSuccess: (created) => {
+      qc.setQueryData<Assessment[]>(QUERY_KEY, prev => [created, ...(prev ?? [])]);
+    },
+  });
+
+  const deleteAssessment = useMutation({
+    mutationFn: assessmentsApi.remove,
+    onSuccess: (_, id) => {
+      qc.setQueryData<Assessment[]>(QUERY_KEY, prev => prev?.filter(a => a.id !== id) ?? []);
+    },
+  });
+
+  const clearAll = useMutation({
+    mutationFn: assessmentsApi.clearAll,
+    onSuccess: () => {
+      qc.setQueryData<Assessment[]>(QUERY_KEY, []);
+    },
+  });
+
+  return {
+    assessments,
+    isLoading,
+    addAssessment: (a: Assessment) => addAssessment.mutateAsync(a),
+    deleteAssessment: (id: string) => deleteAssessment.mutateAsync(id),
+    clearAll: () => clearAll.mutateAsync(),
   };
-
-  const deleteAssessment = async (id: string) => {
-    await assessmentsApi.remove(id);
-    setAssessments(prev => prev.filter(a => a.id !== id));
-  };
-
-  const clearAll = async () => {
-    await assessmentsApi.clearAll();
-    setAssessments([]);
-  };
-
-  return { assessments, isLoading, addAssessment, deleteAssessment, clearAll };
 }

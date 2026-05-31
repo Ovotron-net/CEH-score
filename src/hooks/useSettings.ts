@@ -1,28 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UserSettings } from '../types';
 import { settingsApi } from '../api';
 
+const QUERY_KEY = ['settings'] as const;
+
 export function useSettings() {
-  const [settings, setSettings] = useState<UserSettings>({
-    name: 'Alex Chen',
-    targetScore: 85,
-    examDate: '',
-    theme: 'dark',
+  const qc = useQueryClient();
+
+  const { data: settings, isLoading } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: settingsApi.get,
   });
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    settingsApi.get().then(data => {
-      setSettings(data);
-      setIsLoading(false);
-    });
-  }, []);
+  const mutation = useMutation({
+    mutationFn: settingsApi.update,
+    onSuccess: (updated) => {
+      qc.setQueryData<UserSettings>(QUERY_KEY, updated);
+    },
+  });
 
-  const updateSettings = async (updates: Partial<UserSettings>) => {
-    const next = { ...settings, ...updates };
-    setSettings(next);
-    await settingsApi.update(next);
+  const updateSettings = (updates: Partial<UserSettings>) => {
+    if (!settings) return;
+    mutation.mutate({ ...settings, ...updates });
   };
 
-  return { settings, isLoading, updateSettings };
+  return {
+    settings: settings ?? {
+      name: 'Alex Chen',
+      targetScore: 85,
+      examDate: '',
+      theme: 'dark' as const,
+    },
+    isLoading,
+    updateSettings,
+  };
 }
