@@ -1,11 +1,1 @@
-{
-  "/api/assessments/route": "app/api/assessments/route.js",
-  "/api/settings/route": "app/api/settings/route.js",
-  "/page": "app/page.js",
-  "/analytics/page": "app/analytics/page.js",
-  "/topics/page": "app/topics/page.js",
-  "/settings/page": "app/settings/page.js",
-  "/assessments/page": "app/assessments/page.js",
-  "/leaderboard/page": "app/leaderboard/page.js",
-  "/add/page": "app/add/page.js"
-}
+{}
