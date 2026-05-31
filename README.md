@@ -44,7 +44,7 @@ npm run preview
 
 ## Project Structure
 
-```
+```txt
 src/
 ├── components/
 │   ├── charts/          # Recharts chart components
@@ -75,6 +75,7 @@ src/
 ## CEH Exam Info
 
 The app is calibrated for the **CEH v13** exam:
+
 - **125 questions**, 4-hour time limit
 - **Pass threshold**: 70% (88/125 correct)
 - **20 domains** covering all ethical hacking knowledge areas
@@ -83,6 +84,7 @@ The app is calibrated for the **CEH v13** exam:
 ## Design
 
 Built with a professional cybersecurity aesthetic:
+
 - Background: `#0a0e1a` (deep navy)
 - Card surface: `#111827`
 - Primary accent: `#00ff88` (cyber green)
@@ -91,17 +93,7 @@ Built with a professional cybersecurity aesthetic:
 
 ## Deployment
 
-This application is deployed to GitHub Pages automatically when changes are pushed to the `main` branch.
-
-### Manual Deployment
-
-To deploy manually:
-
-1. Enable GitHub Pages in your repository settings:
-   - Go to Settings → Pages
-   - Set Source to "GitHub Actions"
-
-2. Push to the `main` branch, and the GitHub Actions workflow will automatically build and deploy the app.
+This application is deployed to GitHub Pages automatically when changes are pushed to the `master` branch.
 
 ### Local Preview of Production Build
 

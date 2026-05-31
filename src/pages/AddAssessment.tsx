@@ -74,7 +74,7 @@ export default function AddAssessment() {
               <p className="text-[#64748b] text-xs">Pass threshold: 70%</p>
               {passed ? (
                 <p className="text-sm font-medium mt-0.5 text-[#00ff88]">
-                  {score - Math.ceil(0.7 * maxScore) + 1} above passing threshold
+                  {score - Math.ceil(0.7 * maxScore)} above passing threshold
                 </p>
               ) : (
                 <p className="text-sm font-medium mt-0.5 text-red-400">

@@ -1,37 +1,43 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Assessment } from '../types';
-import { loadAssessments, saveAssessments } from '../utils/localStorage';
-import { SAMPLE_ASSESSMENTS } from '../data/sampleData';
+import { assessmentsApi } from '../api';
 
-const INITIALIZED_KEY = 'ceh_initialized';
+const QUERY_KEY = ['assessments'] as const;
 
 export function useAssessments() {
-  const [assessments, setAssessments] = useState<Assessment[]>(() => {
-    const stored = loadAssessments<Assessment>();
-    if (stored.length === 0 && !localStorage.getItem(INITIALIZED_KEY)) {
-      localStorage.setItem(INITIALIZED_KEY, 'true');
-      saveAssessments(SAMPLE_ASSESSMENTS);
-      return SAMPLE_ASSESSMENTS;
-    }
-    return stored;
+  const qc = useQueryClient();
+
+  const { data: assessments = [], isLoading } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: assessmentsApi.getAll,
   });
 
-  useEffect(() => {
-    saveAssessments(assessments);
-  }, [assessments]);
+  const addAssessment = useMutation({
+    mutationFn: assessmentsApi.create,
+    onSuccess: (created) => {
+      qc.setQueryData<Assessment[]>(QUERY_KEY, prev => [created, ...(prev ?? [])]);
+    },
+  });
 
-  const addAssessment = (assessment: Assessment) => {
-    setAssessments(prev => [assessment, ...prev]);
+  const deleteAssessment = useMutation({
+    mutationFn: assessmentsApi.remove,
+    onSuccess: (_, id) => {
+      qc.setQueryData<Assessment[]>(QUERY_KEY, prev => prev?.filter(a => a.id !== id) ?? []);
+    },
+  });
+
+  const clearAll = useMutation({
+    mutationFn: assessmentsApi.clearAll,
+    onSuccess: () => {
+      qc.setQueryData<Assessment[]>(QUERY_KEY, []);
+    },
+  });
+
+  return {
+    assessments,
+    isLoading,
+    addAssessment: (a: Assessment) => addAssessment.mutateAsync(a),
+    deleteAssessment: (id: string) => deleteAssessment.mutateAsync(id),
+    clearAll: () => clearAll.mutateAsync(),
   };
-
-  const deleteAssessment = (id: string) => {
-    setAssessments(prev => prev.filter(a => a.id !== id));
-  };
-
-  const clearAll = () => {
-    localStorage.removeItem(INITIALIZED_KEY);
-    setAssessments([]);
-  };
-
-  return { assessments, addAssessment, deleteAssessment, clearAll };
 }

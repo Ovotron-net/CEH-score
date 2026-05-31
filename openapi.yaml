@@ -1,0 +1,142 @@
+openapi: 3.0.3
+info:
+  title: CEH Score API
+  version: 1.0.0
+
+tags:
+  - name: assessments
+  - name: settings
+
+paths:
+  /api/assessments:
+    get:
+      tags: [assessments]
+      operationId: getAssessments
+      summary: List all assessments
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Assessment'
+
+    post:
+      tags: [assessments]
+      operationId: createAssessment
+      summary: Create a new assessment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Assessment'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assessment'
+
+    delete:
+      tags: [assessments]
+      operationId: clearAssessments
+      summary: Delete all assessments
+      responses:
+        '204':
+          description: No Content
+
+  /api/assessments/{id}:
+    delete:
+      tags: [assessments]
+      operationId: deleteAssessment
+      summary: Delete an assessment by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+
+  /api/settings:
+    get:
+      tags: [settings]
+      operationId: getSettings
+      summary: Get user settings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSettings'
+
+    put:
+      tags: [settings]
+      operationId: updateSettings
+      summary: Update user settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSettings'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSettings'
+
+components:
+  schemas:
+    Assessment:
+      type: object
+      required: [id, date, type, score, maxScore, percentage, timeTaken, domain, notes, passed, createdAt]
+      properties:
+        id:
+          type: string
+        date:
+          type: string
+          format: date
+        type:
+          type: string
+          enum: [practice, official, mock]
+        score:
+          type: integer
+        maxScore:
+          type: integer
+        percentage:
+          type: number
+        timeTaken:
+          type: integer
+        domain:
+          type: string
+        notes:
+          type: string
+        passed:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    UserSettings:
+      type: object
+      required: [name, targetScore, examDate, theme]
+      properties:
+        name:
+          type: string
+        targetScore:
+          type: integer
+        examDate:
+          type: string
+        theme:
+          type: string
+          enum: [dark, light]
