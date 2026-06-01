@@ -1,1 +1,3 @@
-export { default } from '../../../app/analytics/page';
+import Analytics from '@/views/Analytics';
+
+export default Analytics;

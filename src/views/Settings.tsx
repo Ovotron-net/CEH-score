@@ -36,27 +36,27 @@ function SettingsForm({
   return (
     <div className="space-y-6">
       {/* Profile */}
-      <div className="bg-[#111827] border border-[#1f2d40] rounded-xl p-6">
+      <div className="bg-card border border-border rounded-xl p-6">
         <h2 className="text-white font-semibold mb-5">Profile</h2>
         <div className="space-y-4">
           <div>
-            <label className="text-[#64748b] text-xs font-medium uppercase tracking-wider block mb-2">Your Name</label>
+            <label className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2">Your Name</label>
             <input
               type="text"
               value={form.name}
               onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-              className="w-full bg-[#0a0e1a] border border-[#1f2d40] rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00ff88]/50 outline-none transition-colors"
+              className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-white text-sm focus:border-primary/50 outline-none transition-colors"
             />
           </div>
         </div>
       </div>
 
       {/* Exam Goals */}
-      <div className="bg-[#111827] border border-[#1f2d40] rounded-xl p-6">
+      <div className="bg-card border border-border rounded-xl p-6">
         <h2 className="text-white font-semibold mb-5">Exam Goals</h2>
         <div className="space-y-4">
           <div>
-            <label className="text-[#64748b] text-xs font-medium uppercase tracking-wider block mb-2">
+            <label className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2">
               Target Score ({form.targetScore}%)
             </label>
             <input
@@ -65,36 +65,36 @@ function SettingsForm({
               max="100"
               value={form.targetScore}
               onChange={e => setForm(p => ({ ...p, targetScore: parseInt(e.target.value) }))}
-              className="w-full accent-[#00ff88]"
+              className="w-full accent-primary"
             />
-            <div className="flex justify-between text-[#64748b] text-xs mt-1">
+            <div className="flex justify-between text-muted-foreground text-xs mt-1">
               <span>70% (Min pass)</span>
-              <span className="text-[#00ff88] font-medium">{form.targetScore}%</span>
+              <span className="text-primary font-medium">{form.targetScore}%</span>
               <span>100%</span>
             </div>
           </div>
           <div>
-            <label className="text-[#64748b] text-xs font-medium uppercase tracking-wider block mb-2">Exam Date</label>
+            <label className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2">Exam Date</label>
             <input
               type="date"
               value={form.examDate}
               onChange={e => setForm(p => ({ ...p, examDate: e.target.value }))}
-              className="w-full bg-[#0a0e1a] border border-[#1f2d40] rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00ff88]/50 outline-none transition-colors"
+              className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-white text-sm focus:border-primary/50 outline-none transition-colors"
             />
           </div>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="bg-[#111827] border border-[#1f2d40] rounded-xl p-6">
+      <div className="bg-card border border-border rounded-xl p-6">
         <h2 className="text-white font-semibold mb-4">Statistics</h2>
         <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="bg-[#0a0e1a] rounded-lg p-3">
-            <p className="text-[#64748b] text-xs">Total Assessments</p>
+          <div className="bg-background rounded-lg p-3">
+            <p className="text-muted-foreground text-xs">Total Assessments</p>
             <p className="text-white font-bold text-xl mt-1">{assessments.length}</p>
           </div>
-          <div className="bg-[#0a0e1a] rounded-lg p-3">
-            <p className="text-[#64748b] text-xs">Data Size</p>
+          <div className="bg-background rounded-lg p-3">
+            <p className="text-muted-foreground text-xs">Data Size</p>
             <p className="text-white font-bold text-xl mt-1">{(JSON.stringify(assessments).length / 1024).toFixed(1)}KB</p>
           </div>
         </div>
@@ -108,10 +108,10 @@ function SettingsForm({
             disabled={saveState === 'saving'}
             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
               saveState === 'saved'
-                ? 'bg-[#00ff88]/20 border border-[#00ff88]/40 text-[#00ff88]'
+                ? 'bg-primary/20 border border-primary/40 text-primary'
                 : saveState === 'error'
                 ? 'bg-red-500/10 border border-red-500/30 text-red-400'
-                : 'bg-[#00ff88]/10 hover:bg-[#00ff88]/20 border border-[#00ff88]/30 text-[#00ff88]'
+                : 'bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary'
             }`}
           >
             <Save className="w-4 h-4" />
@@ -131,7 +131,7 @@ function SettingsForm({
             <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-red-400 text-sm font-medium">Delete all {assessments.length} assessment{assessments.length !== 1 ? 's' : ''}?</p>
-              <p className="text-[#64748b] text-xs mt-0.5">This cannot be undone.</p>
+              <p className="text-muted-foreground text-xs mt-0.5">This cannot be undone.</p>
               <div className="flex gap-2 mt-3">
                 <button
                   onClick={() => { onClearData(); setConfirmClear(false); }}
@@ -141,7 +141,7 @@ function SettingsForm({
                 </button>
                 <button
                   onClick={() => setConfirmClear(false)}
-                  className="px-3 py-1.5 bg-[#1f2d40]/50 hover:bg-[#1f2d40] border border-[#1f2d40] text-[#64748b] rounded-lg text-xs font-medium transition-all"
+                  className="px-3 py-1.5 bg-border/50 hover:bg-border border border-border text-muted-foreground rounded-lg text-xs font-medium transition-all"
                 >
                   Cancel
                 </button>
@@ -162,10 +162,10 @@ export default function Settings() {
     <div className="p-6 max-w-2xl mx-auto page-enter">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-          <SettingsIcon className="w-7 h-7 text-[#64748b]" />
+          <SettingsIcon className="w-7 h-7 text-muted-foreground" />
           Settings
         </h1>
-        <p className="text-[#64748b] text-sm mt-1">Configure your CEH tracker</p>
+        <p className="text-muted-foreground text-sm mt-1">Configure your CEH tracker</p>
       </div>
 
       {isError && (
@@ -175,7 +175,7 @@ export default function Settings() {
       )}
 
       {isLoading ? (
-        <p className="text-[#64748b] text-sm">Loading…</p>
+        <p className="text-muted-foreground text-sm">Loading…</p>
       ) : (
         <SettingsForm
           settings={settings}
@@ -187,3 +187,6 @@ export default function Settings() {
     </div>
   );
 }
+
+
+

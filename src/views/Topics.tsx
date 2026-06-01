@@ -32,37 +32,37 @@ export default function Topics() {
       )}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-          <BookOpen className="w-7 h-7 text-[#00d4ff]" />
+          <BookOpen className="w-7 h-7 text-accent" />
           CEH Topics
         </h1>
-        <p className="text-[#64748b] text-sm mt-1">All {CEH_DOMAINS.length} official CEH v13 domains</p>
+        <p className="text-muted-foreground text-sm mt-1">All {CEH_DOMAINS.length} official CEH v13 domains</p>
       </div>
 
       {/* Stats summary */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-[#111827] border border-[#1f2d40] rounded-xl p-4 text-center">
-          <p className="text-2xl font-bold text-[#00ff88]">{CEH_DOMAINS.length}</p>
-          <p className="text-[#64748b] text-xs mt-1">Domains</p>
+        <div className="bg-card border border-border rounded-xl p-4 text-center">
+          <p className="text-2xl font-bold text-primary">{CEH_DOMAINS.length}</p>
+          <p className="text-muted-foreground text-xs mt-1">Domains</p>
         </div>
-        <div className="bg-[#111827] border border-[#1f2d40] rounded-xl p-4 text-center">
-          <p className="text-2xl font-bold text-[#00d4ff]">{CEH_DOMAINS.reduce((s, d) => s + d.topics.length, 0)}</p>
-          <p className="text-[#64748b] text-xs mt-1">Total Topics</p>
+        <div className="bg-card border border-border rounded-xl p-4 text-center">
+          <p className="text-2xl font-bold text-accent">{CEH_DOMAINS.reduce((s, d) => s + d.topics.length, 0)}</p>
+          <p className="text-muted-foreground text-xs mt-1">Total Topics</p>
         </div>
-        <div className="bg-[#111827] border border-[#1f2d40] rounded-xl p-4 text-center">
+        <div className="bg-card border border-border rounded-xl p-4 text-center">
           <p className="text-2xl font-bold text-yellow-400">{assessments.filter(a => a.domain !== 'Full Exam').length}</p>
-          <p className="text-[#64748b] text-xs mt-1">Domain Assessments</p>
+          <p className="text-muted-foreground text-xs mt-1">Domain Assessments</p>
         </div>
       </div>
 
       {/* Search */}
-      <div className="flex items-center gap-2 bg-[#111827] border border-[#1f2d40] rounded-lg px-4 py-3 mb-6">
-        <Search className="w-4 h-4 text-[#64748b]" />
+      <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-4 py-3 mb-6">
+        <Search className="w-4 h-4 text-muted-foreground" />
         <input
           type="text"
           placeholder="Search domains, topics..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="bg-transparent text-sm text-white placeholder-[#64748b] outline-none flex-1"
+          className="bg-transparent text-sm text-white placeholder-muted-foreground outline-none flex-1"
         />
       </div>
 
@@ -80,7 +80,7 @@ export default function Topics() {
           );
         })}
         {filtered.length === 0 && (
-          <div className="text-center py-12 text-[#64748b]">
+          <div className="text-center py-12 text-muted-foreground">
             <p>No domains match your search</p>
           </div>
         )}
@@ -88,3 +88,6 @@ export default function Topics() {
     </div>
   );
 }
+
+
+

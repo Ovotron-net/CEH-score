@@ -1,6 +1,6 @@
 
 import { memo, useState } from 'react';
-import type { Assessment } from '../types';
+import type { Assessment } from '@/types';
 import { Trash2, Clock, Target, CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -19,9 +19,9 @@ const AssessmentCard = memo(function AssessmentCard({ assessment, onDelete }: As
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const scoreColor = assessment.percentage >= 85
-    ? 'text-[#00ff88]'
+    ? 'text-primary'
     : assessment.percentage >= 70
-    ? 'text-[#00d4ff]'
+    ? 'text-accent'
     : assessment.percentage >= 60
     ? 'text-yellow-400'
     : 'text-red-400';
@@ -35,7 +35,7 @@ const AssessmentCard = memo(function AssessmentCard({ assessment, onDelete }: As
   };
 
   return (
-    <div className="bg-[#111827] border border-[#1f2d40] rounded-xl p-5 hover:bg-[#1a2235] transition-all duration-200 card-enter">
+    <div className="bg-card border border-border rounded-xl p-5 hover:bg-secondary transition-all duration-200 card-enter">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className={`text-2xl font-bold ${scoreColor}`}>
@@ -44,14 +44,14 @@ const AssessmentCard = memo(function AssessmentCard({ assessment, onDelete }: As
           <div>
             <div className="flex items-center gap-2">
               {assessment.passed
-                ? <CheckCircle className="w-4 h-4 text-[#00ff88]" />
+                ? <CheckCircle className="w-4 h-4 text-primary" />
                 : <XCircle className="w-4 h-4 text-red-400" />
               }
-              <span className={`text-xs font-medium ${assessment.passed ? 'text-[#00ff88]' : 'text-red-400'}`}>
+              <span className={`text-xs font-medium ${assessment.passed ? 'text-primary' : 'text-red-400'}`}>
                 {assessment.passed ? 'PASSED' : 'FAILED'}
               </span>
             </div>
-            <p className="text-[#64748b] text-xs">{assessment.score}/{assessment.maxScore} correct</p>
+            <p className="text-muted-foreground text-xs">{assessment.score}/{assessment.maxScore} correct</p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -69,7 +69,7 @@ const AssessmentCard = memo(function AssessmentCard({ assessment, onDelete }: As
                 </button>
                 <button
                   onClick={() => setConfirmDelete(false)}
-                  className="text-xs px-2 py-1 bg-[#1f2d40]/50 hover:bg-[#1f2d40] border border-[#1f2d40] text-[#64748b] rounded transition-all"
+                  className="text-xs px-2 py-1 bg-border/50 hover:bg-border border border-border text-muted-foreground rounded transition-all"
                 >
                   Cancel
                 </button>
@@ -77,7 +77,7 @@ const AssessmentCard = memo(function AssessmentCard({ assessment, onDelete }: As
             ) : (
               <button
                 onClick={handleDeleteClick}
-                className="text-[#64748b] hover:text-red-400 transition-colors p-1"
+                className="text-muted-foreground hover:text-red-400 transition-colors p-1"
                 aria-label="Delete assessment"
               >
                 <Trash2 className="w-4 h-4" />
@@ -87,7 +87,7 @@ const AssessmentCard = memo(function AssessmentCard({ assessment, onDelete }: As
         </div>
       </div>
 
-      <div className="flex items-center gap-4 text-xs text-[#64748b]">
+      <div className="flex items-center gap-4 text-xs text-muted-foreground">
         <span>{format(new Date(assessment.date), 'MMM d, yyyy')}</span>
         <span className="flex items-center gap-1">
           <Clock className="w-3 h-3" />{assessment.timeTaken}m
@@ -98,19 +98,19 @@ const AssessmentCard = memo(function AssessmentCard({ assessment, onDelete }: As
       </div>
 
       {assessment.notes && (
-        <p className="mt-3 text-xs text-[#64748b] border-t border-[#1f2d40] pt-3 line-clamp-2">
+        <p className="mt-3 text-xs text-muted-foreground border-t border-border pt-3 line-clamp-2">
           {assessment.notes}
         </p>
       )}
 
       {/* Score bar */}
-      <div className="mt-3 h-1.5 bg-[#1f2d40] rounded-full overflow-hidden">
+      <div className="mt-3 h-1.5 bg-border rounded-full overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{
             width: `${assessment.percentage}%`,
             background: assessment.percentage >= 70
-              ? 'linear-gradient(90deg, #00ff88, #00d4ff)'
+              ? 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))'
               : 'linear-gradient(90deg, #ff4444, #ff8800)',
           }}
         />
@@ -120,4 +120,3 @@ const AssessmentCard = memo(function AssessmentCard({ assessment, onDelete }: As
 });
 
 export default AssessmentCard;
-

@@ -20,11 +20,9 @@ function getDb() {
   return _db;
 }
 
-export const db = {
-  select: (...args: any[]) => getDb().select(...args),
-  insert: (...args: any[]) => getDb().insert(...args),
-  update: (...args: any[]) => getDb().update(...args),
-  delete: (...args: any[]) => getDb().delete(...args),
-  query: (...args: any[]) => getDb().query(...args),
-} as ReturnType<typeof drizzle<typeof schema>>;
+export const db: DrizzleDb = new Proxy({} as DrizzleDb, {
+  get(_target, prop) {
+    return (getDb() as unknown as Record<string | symbol, unknown>)[prop];
+  },
+});
 

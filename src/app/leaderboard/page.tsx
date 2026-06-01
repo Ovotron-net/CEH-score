@@ -1,1 +1,3 @@
-export { default } from '../../../app/leaderboard/page';
+import Leaderboard from '@/views/Leaderboard';
+
+export default Leaderboard;

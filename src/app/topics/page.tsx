@@ -1,1 +1,3 @@
-export { default } from '../../../app/topics/page';
+import Topics from '@/views/Topics';
+
+export default Topics;

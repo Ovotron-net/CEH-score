@@ -34,8 +34,8 @@ export function getDaysToExam(examDate: string): number {
 }
 
 export function getScoreColor(percentage: number): string {
-  if (percentage >= 85) return '#00ff88';
-  if (percentage >= 70) return '#00d4ff';
+  if (percentage >= 85) return 'hsl(var(--primary))';
+  if (percentage >= 70) return 'hsl(var(--accent))';
   if (percentage >= 60) return '#ffd700';
   return '#ff4444';
 }
@@ -76,3 +76,6 @@ export function calculateStats(assessments: Assessment[]) {
     studyStreak,
   };
 }
+
+
+

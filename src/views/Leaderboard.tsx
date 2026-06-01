@@ -28,7 +28,7 @@ const getRankBadge = (rank: number) => {
 };
 
 const scoreColor = (pct: number) =>
-  pct >= 90 ? 'text-[#00ff88]' : pct >= 80 ? 'text-[#00d4ff]' : pct >= 70 ? 'text-yellow-400' : 'text-red-400';
+  pct >= 90 ? 'text-primary' : pct >= 80 ? 'text-accent' : pct >= 70 ? 'text-yellow-400' : 'text-red-400';
 
 export default function Leaderboard() {
   const { assessments, isError } = useAssessments();
@@ -56,8 +56,8 @@ export default function Leaderboard() {
             <Trophy className="w-7 h-7 text-yellow-400" />
             Leaderboard
           </h1>
-          <p className="text-[#64748b] text-sm mt-1">
-            Your personal best scores — <span className="text-[#00ff88]">{settings.name}</span>
+          <p className="text-muted-foreground text-sm mt-1">
+            Your personal best scores — <span className="text-primary">{settings.name}</span>
           </p>
         </div>
         <div className="flex gap-2">
@@ -68,7 +68,7 @@ export default function Leaderboard() {
               className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                 period === p
                   ? 'bg-yellow-400/10 text-yellow-400 border border-yellow-400/30'
-                  : 'bg-[#111827] text-[#64748b] border border-[#1f2d40] hover:text-white'
+                  : 'bg-card text-muted-foreground border border-border hover:text-white'
               }`}
             >
               {PERIOD_LABELS[p]}
@@ -83,17 +83,17 @@ export default function Leaderboard() {
           {entries.slice(0, 3).map((entry, i) => (
             <div
               key={entry.id}
-              className={`bg-[#111827] border rounded-xl p-5 text-center card-enter ${
+              className={`bg-card border rounded-xl p-5 text-center card-enter ${
                 i === 0 ? 'border-yellow-400/30 shadow-[0_0_20px_rgba(250,204,21,0.1)]' :
                 i === 1 ? 'border-gray-400/30' :
                 'border-orange-700/30'
               }`}
             >
               <div className="text-4xl mb-2">{getRankBadge(entry.rank)}</div>
-              <p className="text-[#64748b] text-xs mb-1 truncate">{entry.domain}</p>
+              <p className="text-muted-foreground text-xs mb-1 truncate">{entry.domain}</p>
               <p className={`text-2xl font-bold ${scoreColor(entry.percentage)}`}>{entry.percentage}%</p>
-              <p className="text-[#64748b] text-xs mt-1">{entry.score}/{entry.maxScore} correct</p>
-              <p className="text-[#64748b] text-xs mt-0.5">{format(new Date(entry.date), 'MMM d, yyyy')}</p>
+              <p className="text-muted-foreground text-xs mt-1">{entry.score}/{entry.maxScore} correct</p>
+              <p className="text-muted-foreground text-xs mt-0.5">{format(new Date(entry.date), 'MMM d, yyyy')}</p>
             </div>
           ))}
         </div>
@@ -101,20 +101,20 @@ export default function Leaderboard() {
 
       {/* Full rankings */}
       {entries.length === 0 ? (
-        <div className="bg-[#111827] border border-[#1f2d40] rounded-xl p-12 text-center text-[#64748b]">
+        <div className="bg-card border border-border rounded-xl p-12 text-center text-muted-foreground">
           <Trophy className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p className="mb-3">No assessments for this period</p>
           <Link
             href="/add"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#00ff88]/10 hover:bg-[#00ff88]/20 border border-[#00ff88]/30 text-[#00ff88] rounded-lg text-sm font-medium transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary rounded-lg text-sm font-medium transition-all"
           >
             <PlusCircle className="w-4 h-4" />
             Add Assessment
           </Link>
         </div>
       ) : (
-        <div className="bg-[#111827] border border-[#1f2d40] rounded-xl overflow-hidden">
-          <div className="grid grid-cols-[48px_1fr_80px_80px_100px] gap-4 px-5 py-3 border-b border-[#1f2d40] text-[#64748b] text-xs font-medium uppercase tracking-wider">
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="grid grid-cols-[48px_1fr_80px_80px_100px] gap-4 px-5 py-3 border-b border-border text-muted-foreground text-xs font-medium uppercase tracking-wider">
             <span>Rank</span>
             <span>Domain</span>
             <span className="text-right">Score</span>
@@ -124,13 +124,13 @@ export default function Leaderboard() {
           {entries.map(entry => (
             <div
               key={entry.id}
-              className="grid grid-cols-[48px_1fr_80px_80px_100px] gap-4 px-5 py-4 border-b border-[#1f2d40] last:border-0 hover:bg-[#1a2235] transition-colors"
+              className="grid grid-cols-[48px_1fr_80px_80px_100px] gap-4 px-5 py-4 border-b border-border last:border-0 hover:bg-secondary transition-colors"
             >
               <span className="text-lg">{getRankBadge(entry.rank)}</span>
               <span className="text-white font-medium text-sm truncate">{entry.domain}</span>
-              <span className="text-right text-[#64748b] text-sm">{entry.score}/{entry.maxScore}</span>
+              <span className="text-right text-muted-foreground text-sm">{entry.score}/{entry.maxScore}</span>
               <span className={`text-right text-sm font-medium ${scoreColor(entry.percentage)}`}>{entry.percentage}%</span>
-              <span className="text-right text-[#64748b] text-xs">{format(new Date(entry.date), 'MMM d, yy')}</span>
+              <span className="text-right text-muted-foreground text-xs">{format(new Date(entry.date), 'MMM d, yy')}</span>
             </div>
           ))}
         </div>
@@ -138,3 +138,6 @@ export default function Leaderboard() {
     </div>
   );
 }
+
+
+

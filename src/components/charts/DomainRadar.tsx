@@ -1,8 +1,8 @@
 
 import { useMemo } from 'react';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Tooltip } from 'recharts';
-import type { Assessment } from '../../types';
-import { CEH_DOMAINS } from '../../data/cehDomains';
+import type { Assessment } from '@/types';
+import { CEH_DOMAINS } from '@/data/cehDomains';
 
 interface DomainRadarProps {
   assessments: Assessment[];
@@ -32,20 +32,20 @@ export default function DomainRadar({ assessments }: DomainRadarProps) {
   return (
     <ResponsiveContainer width="100%" height={280}>
       <RadarChart data={domainData} margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
-        <PolarGrid stroke="#1f2d40" />
-        <PolarAngleAxis dataKey="domain" tick={{ fill: '#64748b', fontSize: 10 }} />
+        <PolarGrid stroke="hsl(var(--border))" />
+        <PolarAngleAxis dataKey="domain" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
         <Radar
           name="Score"
           dataKey="score"
-          stroke="#00ff88"
-          fill="#00ff88"
+          stroke="hsl(var(--primary))"
+          fill="hsl(var(--primary))"
           fillOpacity={0.15}
           strokeWidth={2}
         />
         <Tooltip
-          contentStyle={{ background: '#111827', border: '1px solid #1f2d40', borderRadius: '8px' }}
-          labelStyle={{ color: '#e2e8f0', fontSize: 11 }}
-          itemStyle={{ color: '#00ff88', fontSize: 11 }}
+          contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }}
+          labelStyle={{ color: 'hsl(var(--foreground))', fontSize: 11 }}
+          itemStyle={{ color: 'hsl(var(--primary))', fontSize: 11 }}
         />
       </RadarChart>
     </ResponsiveContainer>

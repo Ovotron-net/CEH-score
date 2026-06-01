@@ -1,1 +1,3 @@
-export { default } from '../../../app/settings/page';
+import Settings from '@/views/Settings';
+
+export default Settings;
