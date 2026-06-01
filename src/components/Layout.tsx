@@ -9,7 +9,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const close = useCallback(() => setSidebarOpen(false), []);
 
   return (
-    <div className="flex min-h-screen bg-[#0a0e1a]">
+    <div className="flex min-h-screen bg-background">
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-20 bg-black/60 lg:hidden"
@@ -21,16 +21,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <Sidebar isOpen={sidebarOpen} onClose={close} />
 
       <main className="flex-1 overflow-auto min-w-0">
-        <div className="lg:hidden flex items-center gap-3 px-4 py-3 bg-[#111827] border-b border-[#1f2d40] sticky top-0 z-10">
+        <div className="lg:hidden flex items-center gap-3 px-4 py-3 bg-card border-b border-border sticky top-0 z-10">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="text-[#64748b] hover:text-white transition-colors p-1"
+            className="text-muted-foreground hover:text-white transition-colors p-1"
             aria-label="Open navigation"
           >
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-[#00ff88]" />
+            <Shield className="w-4 h-4 text-primary" />
             <span className="text-white font-bold text-sm">CEH Tracker</span>
           </div>
         </div>
@@ -39,3 +39,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+
+

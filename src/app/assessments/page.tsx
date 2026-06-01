@@ -1,1 +1,3 @@
-export { default } from '../../../app/assessments/page';
+import Assessments from '@/views/Assessments';
+
+export default Assessments;

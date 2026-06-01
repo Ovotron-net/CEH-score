@@ -1,1 +1,2 @@
-export { default } from '../../app/page';
+import Dashboard from '@/views/Dashboard';
+export default Dashboard;

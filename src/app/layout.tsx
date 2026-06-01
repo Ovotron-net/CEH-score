@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
-import '../../app/globals.css';
+import './globals.css';
 import Providers from '@/components/providers';
-import Layout from '@/src/components/Layout';
+import Layout from '@/components/Layout';
+import React from "react";
 
 export const metadata: Metadata = {
   title: 'CEH Tracker',

@@ -7,6 +7,12 @@ import { useAssessments } from '../hooks/useAssessments';
 import { CEH_DOMAINS, FULL_EXAM } from '../data/cehDomains';
 import { calculatePercentage, isPassed } from '../utils/calculations';
 import { CheckCircle, XCircle, Save, AlertCircle } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function AddAssessment() {
   const router = useRouter();
@@ -72,70 +78,81 @@ export default function AddAssessment() {
   const domainOptions = [FULL_EXAM, ...CEH_DOMAINS.map(d => d.name)];
 
   return (
-    <div className="p-6 max-w-2xl mx-auto page-enter">
+    <div className="mx-auto max-w-2xl p-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Add Assessment</h1>
-        <p className="text-[#64748b] text-sm mt-1">Record a new CEH practice or exam result</p>
+        <h1 className="text-2xl font-bold">Add Assessment</h1>
+        <p className="text-muted-foreground text-sm mt-1">Record a new CEH practice or exam result</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Preview */}
         {form.score && !scoreError && (
-          <div className={`flex items-center justify-between p-4 rounded-xl border ${
-            passed ? 'bg-[#00ff88]/5 border-[#00ff88]/20' : 'bg-red-500/5 border-red-500/20'
-          }`}>
-            <div>
-              <div className="flex items-center gap-2">
-                {passed ? <CheckCircle className="w-5 h-5 text-[#00ff88]" /> : <XCircle className="w-5 h-5 text-red-400" />}
-                <span className={`font-bold text-xl ${passed ? 'text-[#00ff88]' : 'text-red-400'}`}>{percentage}%</span>
-                <span className={`text-sm ${passed ? 'text-[#00ff88]' : 'text-red-400'}`}>{passed ? 'PASSED' : 'FAILED'}</span>
+          <Card className={
+            passed ? 'bg-primary/5 border-primary/20' : 'bg-red-500/5 border-red-500/20'
+          }>
+            <CardContent className="flex items-center justify-between p-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  {passed ? <CheckCircle className="h-5 w-5 text-primary" /> : <XCircle className="h-5 w-5 text-destructive" />}
+                  <span className={`text-xl font-bold ${passed ? 'text-primary' : 'text-destructive'}`}>{percentage}%</span>
+                  <span className={`text-sm ${passed ? 'text-primary' : 'text-destructive'}`}>{passed ? 'PASSED' : 'FAILED'}</span>
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">{score}/{maxScore} correct answers</p>
               </div>
-              <p className="text-[#64748b] text-sm mt-1">{score}/{maxScore} correct answers</p>
-            </div>
-            <div className="text-right">
-              <p className="text-[#64748b] text-xs">Pass threshold: 70%</p>
-              {passed ? (
-                <p className="text-sm font-medium mt-0.5 text-[#00ff88]">
-                  {score - Math.ceil(0.7 * maxScore)} above passing threshold
-                </p>
-              ) : (
-                <p className="text-sm font-medium mt-0.5 text-red-400">
-                  Need {Math.ceil(0.7 * maxScore) - score} more to pass
-                </p>
-              )}
-            </div>
-          </div>
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Pass threshold: 70%</p>
+                {passed ? (
+                  <p className="mt-0.5 text-sm font-medium text-primary">
+                    {score - Math.ceil(0.7 * maxScore)} above passing threshold
+                  </p>
+                ) : (
+                  <p className="mt-0.5 text-sm font-medium text-destructive">
+                    Need {Math.ceil(0.7 * maxScore) - score} more to pass
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
-        <div className="bg-[#111827] border border-[#1f2d40] rounded-xl p-6 space-y-5">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Assessment Details</CardTitle>
+            <CardDescription>Fill out the exam result fields below.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[#64748b] text-xs font-medium uppercase tracking-wider block mb-2">Date</label>
-              <input
+              <Label htmlFor="assessment-date" className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">Date</Label>
+              <Input
+                id="assessment-date"
                 type="date"
                 value={form.date}
                 onChange={e => setForm(p => ({ ...p, date: e.target.value }))}
-                className="w-full bg-[#0a0e1a] border border-[#1f2d40] rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00ff88]/50 outline-none transition-colors"
               />
             </div>
             <div>
-              <label className="text-[#64748b] text-xs font-medium uppercase tracking-wider block mb-2">Type</label>
-              <select
+              <Label className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">Type</Label>
+              <Select
                 value={form.type}
-                onChange={e => setForm(p => ({ ...p, type: e.target.value as Assessment['type'] }))}
-                className="w-full bg-[#0a0e1a] border border-[#1f2d40] rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00ff88]/50 outline-none transition-colors"
+                onValueChange={value => setForm(p => ({ ...p, type: value as Assessment['type'] }))}
               >
-                <option value="practice">Practice</option>
-                <option value="mock">Mock Exam</option>
-                <option value="official">Official</option>
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="practice">Practice</SelectItem>
+                  <SelectItem value="mock">Mock Exam</SelectItem>
+                  <SelectItem value="official">Official</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-[#64748b] text-xs font-medium uppercase tracking-wider block mb-2">Score</label>
-              <input
+              <Label htmlFor="assessment-score" className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">Score</Label>
+              <Input
+                id="assessment-score"
                 type="number"
                 min="0"
                 max={maxScore}
@@ -143,46 +160,51 @@ export default function AddAssessment() {
                 onChange={e => setForm(p => ({ ...p, score: e.target.value }))}
                 placeholder="e.g. 98"
                 required
-                className={`w-full bg-[#0a0e1a] border rounded-lg px-3 py-2.5 text-white text-sm outline-none transition-colors ${
-                  scoreError ? 'border-red-500/50 focus:border-red-500' : 'border-[#1f2d40] focus:border-[#00ff88]/50'
-                }`}
+                className={
+                  scoreError ? 'border-destructive focus-visible:ring-destructive' : undefined
+                }
               />
               {scoreError && (
-                <p className="flex items-center gap-1 mt-1.5 text-xs text-red-400">
-                  <AlertCircle className="w-3 h-3 flex-shrink-0" />
+                <p className="mt-1.5 flex items-center gap-1 text-xs text-destructive">
+                  <AlertCircle className="h-3 w-3 flex-shrink-0" />
                   {scoreError}
                 </p>
               )}
             </div>
             <div>
-              <label className="text-[#64748b] text-xs font-medium uppercase tracking-wider block mb-2">Max Score</label>
-              <input
+              <Label htmlFor="assessment-max-score" className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">Max Score</Label>
+              <Input
+                id="assessment-max-score"
                 type="number"
                 min="1"
                 max="200"
                 value={form.maxScore}
                 onChange={e => setForm(p => ({ ...p, maxScore: e.target.value }))}
-                className="w-full bg-[#0a0e1a] border border-[#1f2d40] rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00ff88]/50 outline-none transition-colors"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-[#64748b] text-xs font-medium uppercase tracking-wider block mb-2">Domain</label>
-            <select
+            <Label className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">Domain</Label>
+            <Select
               value={form.domain}
-              onChange={e => setForm(p => ({ ...p, domain: e.target.value }))}
-              className="w-full bg-[#0a0e1a] border border-[#1f2d40] rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00ff88]/50 outline-none transition-colors"
+              onValueChange={value => setForm(p => ({ ...p, domain: value }))}
             >
-              {domainOptions.map(d => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder="Select domain" />
+              </SelectTrigger>
+              <SelectContent>
+                {domainOptions.map(d => (
+                  <SelectItem key={d} value={d}>{d}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
-            <label className="text-[#64748b] text-xs font-medium uppercase tracking-wider block mb-2">Time Taken (minutes)</label>
-            <input
+            <Label htmlFor="assessment-time" className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">Time Taken (minutes)</Label>
+            <Input
+              id="assessment-time"
               type="number"
               min="1"
               max="300"
@@ -190,43 +212,48 @@ export default function AddAssessment() {
               onChange={e => setForm(p => ({ ...p, timeTaken: e.target.value }))}
               placeholder="e.g. 120"
               required
-              className="w-full bg-[#0a0e1a] border border-[#1f2d40] rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00ff88]/50 outline-none transition-colors"
             />
           </div>
 
           <div>
-            <label className="text-[#64748b] text-xs font-medium uppercase tracking-wider block mb-2">Notes (optional)</label>
-            <textarea
+            <Label htmlFor="assessment-notes" className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">Notes (optional)</Label>
+            <Textarea
+              id="assessment-notes"
               value={form.notes}
               onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
               placeholder="What did you learn? What needs improvement?"
               rows={3}
-              className="w-full bg-[#0a0e1a] border border-[#1f2d40] rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00ff88]/50 outline-none transition-colors resize-none"
+              className="resize-none"
             />
           </div>
-        </div>
+          </CardContent>
+        </Card>
 
         <div className="flex gap-3">
-          <button
+          <Button
             type="button"
             onClick={() => router.back()}
-            className="flex-1 py-3 border border-[#1f2d40] text-[#64748b] rounded-lg text-sm font-medium hover:text-white hover:border-[#64748b] transition-all"
+            variant="outline"
+            className="flex-1"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             disabled={isSubmitting || !!scoreError}
-            className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#00ff88]/10 hover:bg-[#00ff88]/20 border border-[#00ff88]/30 text-[#00ff88] rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1"
           >
-            <Save className="w-4 h-4" />
+            <Save className="h-4 w-4" />
             {isSubmitting ? 'Saving…' : 'Save Assessment'}
-          </button>
+          </Button>
         </div>
         {submitError && (
-          <p className="text-red-400 text-sm text-center">{submitError}</p>
+          <p className="text-center text-sm text-destructive">{submitError}</p>
         )}
       </form>
     </div>
   );
 }
+
+
+

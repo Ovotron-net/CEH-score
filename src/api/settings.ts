@@ -12,3 +12,6 @@ export async function update(settings: UserSettings): Promise<UserSettings> {
   return request<UserSettings>('/api/settings', { method: 'PUT', body: settings });
 }
 
+
+
+

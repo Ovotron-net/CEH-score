@@ -1,1 +1,7 @@
-export { default } from '../../../app/add/page';
+import AddAssessment from '@/views/AddAssessment';
+
+export default AddAssessment;
+
+
+
+

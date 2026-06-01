@@ -2,25 +2,23 @@
 export default {
   darkMode: ['class'],
   content: [
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
       colors: {
         cyber: {
-          bg: '#0a0e1a',
-          card: '#111827',
-          'card-hover': '#1a2235',
-          border: '#1f2d40',
-          green: '#00ff88',
+          bg: 'hsl(var(--background))',
+          card: 'hsl(var(--card))',
+          'card-hover': 'hsl(var(--secondary))',
+          border: 'hsl(var(--border))',
+          green: 'hsl(var(--primary))',
           blue: '#00d4ff',
           purple: '#7c3aed',
-          red: '#ff4444',
+          red: 'hsl(var(--destructive))',
           yellow: '#ffd700',
-          text: '#e2e8f0',
-          muted: '#64748b',
+          text: 'hsl(var(--foreground))',
+          muted: 'hsl(var(--muted-foreground))',
         },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
