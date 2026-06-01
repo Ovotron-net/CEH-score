@@ -1,1 +1,13 @@
-{}
+{
+  "/api/assessments/[id]/route": "app/api/assessments/[id]/route.js",
+  "/api/settings/route": "app/api/settings/route.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/assessments/route": "app/api/assessments/route.js",
+  "/analytics/page": "app/analytics/page.js",
+  "/add/page": "app/add/page.js",
+  "/page": "app/page.js",
+  "/assessments/page": "app/assessments/page.js",
+  "/settings/page": "app/settings/page.js",
+  "/leaderboard/page": "app/leaderboard/page.js",
+  "/topics/page": "app/topics/page.js"
+}
