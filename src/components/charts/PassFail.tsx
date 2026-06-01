@@ -1,6 +1,6 @@
 
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import type { Assessment } from '../../types';
+import type { Assessment } from '@/types';
 
 interface PassFailProps {
   assessments: Assessment[];
@@ -14,7 +14,7 @@ interface PassFailTooltipProps {
 function PassFailTooltip({ active, payload }: PassFailTooltipProps) {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-[#111827] border border-[#1f2d40] rounded-lg p-3 text-xs">
+      <div className="bg-card border border-border rounded-lg p-3 text-xs">
         <p style={{ color: payload[0].payload.fill }}>{payload[0].name}: {payload[0].value}</p>
       </div>
     );
@@ -31,7 +31,7 @@ export default function PassFail({ assessments }: PassFailProps) {
     { name: 'Failed', value: failed },
   ];
 
-  const COLORS = ['#00ff88', '#ff4444'];
+  const COLORS = ['hsl(var(--primary))', '#ff4444'];
 
   return (
     <ResponsiveContainer width="100%" height={220}>
@@ -43,7 +43,7 @@ export default function PassFail({ assessments }: PassFailProps) {
         </Pie>
         <Tooltip content={<PassFailTooltip />} />
         <Legend
-          formatter={(value) => <span style={{ color: '#64748b', fontSize: '12px' }}>{value}</span>}
+          formatter={(value) => <span style={{ color: 'hsl(var(--muted-foreground))', fontSize: '12px' }}>{value}</span>}
         />
       </PieChart>
     </ResponsiveContainer>

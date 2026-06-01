@@ -1,7 +1,7 @@
 import type { Assessment } from '../types';
 
 export function calculatePercentage(score: number, maxScore: number): number {
-  return Math.round((score / maxScore) * 100 * 10) / 10;
+  return Math.round((score / maxScore) * 100);
 }
 
 export function isPassed(percentage: number): boolean {
@@ -34,8 +34,8 @@ export function getDaysToExam(examDate: string): number {
 }
 
 export function getScoreColor(percentage: number): string {
-  if (percentage >= 85) return '#00ff88';
-  if (percentage >= 70) return '#00d4ff';
+  if (percentage >= 85) return 'hsl(var(--primary))';
+  if (percentage >= 70) return 'hsl(var(--accent))';
   if (percentage >= 60) return '#ffd700';
   return '#ff4444';
 }
@@ -47,3 +47,35 @@ export function getReadinessLevel(avgScore: number): string {
   if (avgScore >= 55) return 'Developing';
   return 'Needs Work';
 }
+
+export function formatScore(score: number): string {
+  return Number.isInteger(score) ? score.toString() : score.toFixed(1);
+}
+
+export function calculateStats(assessments: Assessment[]) {
+  const averageScore = getAverageScore(assessments);
+  const bestScore = getBestScore(assessments);
+  const totalAssessments = assessments.length;
+
+  const uniqueDays = [...new Set(assessments.map((assessment) => assessment.date))]
+    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
+  let studyStreak = 0;
+  if (uniqueDays.length > 0) {
+    const cursor = new Date(uniqueDays[0]);
+    while (uniqueDays.includes(cursor.toISOString().slice(0, 10))) {
+      studyStreak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+  }
+
+  return {
+    averageScore,
+    bestScore,
+    totalAssessments,
+    studyStreak,
+  };
+}
+
+
+
