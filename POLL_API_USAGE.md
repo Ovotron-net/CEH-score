@@ -1,3 +1,7 @@
+---
+render_with_liquid: false
+---
+
 # Poll API Usage Guide
 
 ## Basic Usage

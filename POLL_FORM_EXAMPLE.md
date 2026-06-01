@@ -1,3 +1,7 @@
+---
+render_with_liquid: false
+---
+
 # Poll Form with API Integration
 
 ## Updated JavaScript Code
