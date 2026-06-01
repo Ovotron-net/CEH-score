@@ -55,6 +55,7 @@ export function Poll({
           question={question}
           options={options}
           userId={userId}
+          onSuccess={handleVoteSuccess}
         />
       </div>
 

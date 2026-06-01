@@ -5,10 +5,10 @@ import { eq } from 'drizzle-orm';
 
 export async function GET(
   request: Request,
-  { params }: { params: { pollId: string } },
+  { params }: { params: Promise<{ pollId: string }> },
 ) {
   try {
-    const { pollId } = params;
+    const { pollId } = await params;
 
     const rows = await db
       .select()
@@ -46,10 +46,10 @@ export async function GET(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { pollId: string } },
+  { params }: { params: Promise<{ pollId: string }> },
 ) {
   try {
-    const { pollId } = params;
+    const { pollId } = await params;
 
     await db.delete(pollResults).where(eq(pollResults.pollId, pollId));
 

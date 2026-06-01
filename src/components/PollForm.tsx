@@ -8,9 +8,10 @@ interface PollFormProps {
   question: string;
   options: string[];
   userId?: string;
+  onSuccess?: () => void;
 }
 
-export function PollForm({ pollId, question, options, userId }: PollFormProps) {
+export function PollForm({ pollId, question, options, userId, onSuccess }: PollFormProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +38,7 @@ export function PollForm({ pollId, question, options, userId }: PollFormProps) {
 
       setSuccess(true);
       setSelected(null);
+      onSuccess?.();
       // Reset success message after 3 seconds
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {

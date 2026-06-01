@@ -11,11 +11,7 @@ const PollResultSchema = z.object({
   userId: z.string().max(100).optional().nullable(),
 });
 
-const VoteSchema = z.object({
-  pollId: z.string().min(1).max(100),
-  optionText: z.string().min(1).max(500),
-  userId: z.string().max(100).optional().nullable(),
-});
+
 
 export async function GET(request: Request) {
   try {

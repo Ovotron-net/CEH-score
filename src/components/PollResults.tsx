@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { pollsApi } from '@/api';
 import type { PollStats } from '@/api/polls';
 
@@ -14,7 +14,7 @@ export function PollResults({ pollId, refreshInterval = 5000 }: PollResultsProps
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadPoll = async () => {
+  const loadPoll = useCallback(async () => {
     try {
       setError(null);
       const stats = await pollsApi.getPollStats(pollId);
@@ -25,7 +25,7 @@ export function PollResults({ pollId, refreshInterval = 5000 }: PollResultsProps
     } finally {
       setLoading(false);
     }
-  };
+  }, [pollId]);
 
   useEffect(() => {
     loadPoll();
@@ -34,7 +34,7 @@ export function PollResults({ pollId, refreshInterval = 5000 }: PollResultsProps
     const interval = setInterval(loadPoll, refreshInterval);
 
     return () => clearInterval(interval);
-  }, [pollId, refreshInterval]);
+  }, [loadPoll, refreshInterval]);
 
   if (loading && !poll) {
     return <div className="text-gray-500 text-sm">Loading results...</div>;
