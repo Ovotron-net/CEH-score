@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, ClipboardList, PlusCircle, BarChart3, Trophy, BookOpen, Settings, Shield, X
+  LayoutDashboard, ClipboardList, PlusCircle, BarChart3, Trophy, BookOpen, Settings, Shield, X, PieChart
 } from 'lucide-react';
 
 const navItems = [
@@ -13,6 +13,7 @@ const navItems = [
   { to: '/add', icon: PlusCircle, label: 'Add Assessment' },
   { to: '/analytics', icon: BarChart3, label: 'Analytics' },
   { to: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
+  { to: '/polls', icon: PieChart, label: 'Polls' },
   { to: '/topics', icon: BookOpen, label: 'CEH Topics' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
@@ -84,6 +85,4 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     </aside>
   );
 }
-
-
 
