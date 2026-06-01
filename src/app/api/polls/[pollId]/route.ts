@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { pollResults } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import type { InferSelectModel } from 'drizzle-orm';
+
+type PollResultRow = InferSelectModel<typeof pollResults>;
 
 export async function GET(
   request: Request,
@@ -21,10 +24,10 @@ export async function GET(
     }
 
     // Calculate statistics
-    const totalVotes = rows.reduce((sum, row) => sum + row.voteCount, 0);
+    const totalVotes = rows.reduce((sum: number, row: PollResultRow) => sum + row.voteCount, 0);
     const pollQuestion = rows[0].pollQuestion;
 
-    const options = rows.map((row) => ({
+    const options = rows.map((row: PollResultRow) => ({
       id: row.id,
       optionText: row.optionText,
       voteCount: row.voteCount,

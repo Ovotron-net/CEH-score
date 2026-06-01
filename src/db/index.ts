@@ -2,8 +2,10 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import * as schema from './schema';
 
+type DrizzleDb = ReturnType<typeof drizzle<typeof schema>>;
+
 let pool: Pool | null = null;
-let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
+let _db: DrizzleDb | null = null;
 
 function getDb() {
   if (!_db) {
