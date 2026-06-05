@@ -1,0 +1,98 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import { pollsApi } from '@/api';
+import type { PollStats } from '@/api/polls';
+
+interface PollResultsProps {
+  pollId: string;
+  refreshInterval?: number; // in milliseconds, default 5000
+}
+
+export function PollResults({ pollId, refreshInterval = 5000 }: PollResultsProps) {
+  const [poll, setPoll] = useState<PollStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadPoll = useCallback(async () => {
+    try {
+      setError(null);
+      const stats = await pollsApi.getPollStats(pollId);
+      setPoll(stats);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load poll results');
+      console.error('Failed to load poll:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [pollId]);
+
+  useEffect(() => {
+    loadPoll();
+
+    // Set up auto-refresh
+    const interval = setInterval(loadPoll, refreshInterval);
+
+    return () => clearInterval(interval);
+  }, [loadPoll, refreshInterval]);
+
+  if (loading && !poll) {
+    return <div className="flex items-center justify-center py-8"><div className="spinner" /></div>;
+  }
+
+  if (error && !poll) {
+    return <div className="text-destructive text-sm">Error: {error}</div>;
+  }
+
+  if (!poll) {
+    return <div className="text-cyber-muted text-sm">No poll data available</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-base font-semibold text-white">{poll.pollQuestion || 'Poll Results'}</h3>
+        <button
+          onClick={loadPoll}
+          disabled={loading}
+          className="text-xs px-2.5 py-1 bg-secondary hover:bg-secondary/80 text-foreground border border-border rounded-lg disabled:opacity-50 transition-colors"
+        >
+          {loading ? 'Refreshing...' : 'Refresh'}
+        </button>
+      </div>
+
+      <p className="text-xs text-cyber-muted">Total votes: {poll.totalVotes}</p>
+
+      <div className="space-y-3">
+        {poll.options.length === 0 ? (
+          <p className="text-cyber-muted text-sm">No votes yet</p>
+        ) : (
+          poll.options.map((option) => (
+            <div key={option.id} className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-foreground">{option.optionText}</span>
+                <span className="text-xs text-cyber-muted">
+                  {option.voteCount} vote{option.voteCount !== 1 ? 's' : ''} ({option.percentage}%)
+                </span>
+              </div>
+
+              <div className="w-full h-5 bg-secondary rounded-full overflow-hidden border border-border">
+                <div
+                  className="h-full bg-gradient-to-r from-cyber-green/80 to-cyber-green transition-all duration-300 ease-out flex items-center justify-center"
+                  style={{ width: `${option.percentage}%` }}
+                >
+                  {option.percentage > 10 && (
+                    <span className="text-xs font-semibold text-cyber-bg">{option.percentage}%</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {error && <p className="text-yellow-500 text-xs mt-2">Note: {error}</p>}
+    </div>
+  );
+}
+

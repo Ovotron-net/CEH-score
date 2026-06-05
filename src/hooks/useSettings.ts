@@ -1,24 +1,47 @@
-import { useState, useEffect } from 'react';
+import { useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UserSettings } from '../types';
-import { loadSettings, saveSettings } from '../utils/localStorage';
+import { settingsApi } from '../api';
 
-const DEFAULT_SETTINGS: UserSettings = {
-  name: 'Alex Chen',
-  targetScore: 85,
-  examDate: '',
-  theme: 'dark',
-};
+const QUERY_KEY = ['settings'] as const;
 
 export function useSettings() {
-  const [settings, setSettings] = useState<UserSettings>(() => loadSettings(DEFAULT_SETTINGS));
+  const qc = useQueryClient();
 
-  useEffect(() => {
-    saveSettings(settings);
-  }, [settings]);
+  const { data: settings, isLoading, isError } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: settingsApi.get,
+  });
 
-  const updateSettings = (updates: Partial<UserSettings>) => {
-    setSettings(prev => ({ ...prev, ...updates }));
+  const mutation = useMutation({
+    mutationFn: settingsApi.update,
+    onSuccess: (updated) => {
+      qc.setQueryData<UserSettings>(QUERY_KEY, updated);
+    },
+  });
+
+  const updateSettings = useCallback(
+    (updates: Partial<UserSettings>) => {
+      if (!settings) return Promise.reject(new Error('Settings not loaded'));
+      return mutation.mutateAsync({ ...settings, ...updates });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [settings, mutation.mutateAsync],
+  );
+
+  return {
+    settings: settings ?? {
+      name: 'Alex Chen',
+      targetScore: 85,
+      examDate: '',
+      theme: 'dark' as const,
+    },
+    isLoading,
+    isError,
+    isSaving: mutation.isPending,
+    updateSettings,
   };
-
-  return { settings, updateSettings };
 }
+
+
+

@@ -1,111 +1,166 @@
-# CEH Score Tracker Pro
+# CEH Score Tracker
 
-A professional, full-featured **Certified Ethical Hacker (CEH)** exam score tracking application with a dark cybersecurity aesthetic. Track your practice scores, monitor progress across all 20 CEH domains, and analyze trends to maximize your exam performance.
+A modern dashboard to track and analyze CEH exam preparation performance.
 
-## Features
+This project helps you:
+- Record practice, mock, and official assessment results
+- Track pass/fail progress over time
+- Analyze trends by CEH domain
+- Manage personal exam goals (target score and exam date)
 
-- **Dashboard** — Readiness gauge, score trend chart, domain radar, and recent assessments at a glance
-- **Assessments** — Log practice tests, mock exams, and official results with full details
-- **Analytics** — 6 chart types: score trend, pass/fail ratio, distribution histogram, domain performance, improvement trends, and domain radar
-- **Leaderboard** — Ranked comparison with mock community data and your own best scores
-- **CEH Topics** — Browse all 20 CEH v13 domains with full topic lists and searchable content
-- **Settings** — Customize name, target score, exam date, and manage local data
-- **Persistent Storage** — All data saved to localStorage with pre-seeded sample progress data
-- **Cybersecurity Theme** — Dark theme with cyber-green accents, glassmorphism cards, custom scrollbars
-
-## Getting Started
-
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-```
+Built with Next.js App Router, React Query, Drizzle ORM, and PostgreSQL.
 
 ## Tech Stack
 
-| Category   | Technology            |
-|------------|-----------------------|
-| Frontend   | React 18 + TypeScript |
-| Build Tool | Vite                  |
-| Styling    | Tailwind CSS          |
-| Charts     | Recharts              |
-| Routing    | React Router v6       |
-| Icons      | Lucide React          |
-| Date Utils | date-fns              |
-| Storage    | Browser localStorage  |
+- Next.js 15 (App Router)
+- React 19 + TypeScript
+- Tailwind CSS + Radix UI
+- TanStack Query
+- Recharts
+- Drizzle ORM + drizzle-kit
+- PostgreSQL
+- OpenAPI + Orval (typed client generation)
+
+## Features
+
+- Dashboard with key stats:
+	- Current average
+	- Best score
+	- Total assessments
+	- Study streak
+- Analytics view:
+	- Score trend chart
+	- Pass/fail ratio
+	- Score distribution
+	- Domain performance charts (bar and radar)
+- Assessment management:
+	- Add a new assessment with validation
+	- Delete individual assessments
+	- Clear all assessments
+- Personal leaderboard (all time, monthly, weekly)
+- User settings:
+	- Name
+	- Target score
+	- Exam date
+	- Theme field in the API model
 
 ## Project Structure
 
-```
+```text
 src/
-├── components/
-│   ├── charts/          # Recharts chart components
-│   ├── AssessmentCard   # Assessment list item
-│   ├── DomainCard       # CEH domain card
-│   ├── Layout           # App shell with sidebar
-│   ├── Sidebar          # Navigation sidebar
-│   └── StatCard         # Statistics display card
-├── data/
-│   ├── cehDomains       # All 20 CEH v13 domains + topics
-│   ├── mockLeaderboard  # Sample leaderboard data
-│   └── sampleData       # Pre-seeded assessment data
-├── hooks/
-│   ├── useAssessments   # CRUD operations for assessments
-│   └── useSettings      # User settings management
-├── pages/
-│   ├── Dashboard        # Main dashboard
-│   ├── Assessments      # Assessments list + search/filter
-│   ├── AddAssessment    # Add/log new assessment
-│   ├── Analytics        # Charts and analytics
-│   ├── Leaderboard      # Community rankings
-│   ├── Topics           # CEH domain browser
-│   └── Settings         # App settings
-├── types/               # TypeScript type definitions
-│── utils/               # Calculations and localStorage helpers
+	app/                 # Next.js routes and API route handlers
+	components/          # UI and chart components
+	hooks/               # React Query data hooks
+	api/                 # API layer + generated API client
+	views/               # Page-level view components
+	db/                  # Drizzle schema and DB client
+	data/                # CEH domain metadata
+	utils/               # Calculation and utility helpers
 ```
 
-## CEH Exam Info
+## Prerequisites
 
-The app is calibrated for the **CEH v13** exam:
-- **125 questions**, 4-hour time limit
-- **Pass threshold**: 70% (88/125 correct)
-- **20 domains** covering all ethical hacking knowledge areas
-- Scored via EC-Council's adaptive scoring system
+- Node.js 20+
+- npm 10+
+- PostgreSQL 14+
 
-## Design
+## Getting Started
 
-Built with a professional cybersecurity aesthetic:
-- Background: `#0a0e1a` (deep navy)
-- Card surface: `#111827`
-- Primary accent: `#00ff88` (cyber green)
-- Secondary accent: `#00d4ff` (cyber blue)
-- Text: `#e2e8f0` / `#64748b`
+1. Install dependencies:
 
-## Deployment
+```bash
+npm install
+```
 
-This application is deployed to GitHub Pages automatically when changes are pushed to the `main` branch.
+2. Generate and run DB migrations:
 
-### Manual Deployment
+```bash
+npm run db:generate
+npm run db:migrate
+```
 
-To deploy manually:
+3. Start development server:
 
-1. Enable GitHub Pages in your repository settings:
-   - Go to Settings → Pages
-   - Set Source to "GitHub Actions"
+```bash
+npm run dev
+```
 
-2. Push to the `main` branch, and the GitHub Actions workflow will automatically build and deploy the app.
+5. Open:
 
-### Local Preview of Production Build
+```text
+http://localhost:3000
+```
+
+## Available Scripts
+
+- `npm run dev` - Start dev server
+- `npm run build` - Build production app
+- `npm run start` - Start production server
+- `npm run lint` - Run lint checks
+- `npm run generate` - Regenerate Orval API client from OpenAPI spec
+- `npm run db:generate` - Generate Drizzle migration files
+- `npm run db:migrate` - Run pending migrations
+- `npm run db:studio` - Open Drizzle Studio
+
+## API Endpoints
+
+### Assessments
+
+- `GET /api/assessments` - List all assessments
+- `POST /api/assessments` - Create an assessment
+- `DELETE /api/assessments` - Delete all assessments
+- `DELETE /api/assessments/{id}` - Delete assessment by ID
+
+Create request body (important fields):
+- `id`, `date`, `type`, `score`, `maxScore`, `timeTaken`, `domain`, `createdAt`
+- `notes` is optional in UI and defaults to empty string
+
+Server-calculated fields:
+- `percentage` is calculated as `Math.round((score / maxScore) * 100)`
+- `passed` is `true` when percentage is 70 or above
+
+### Settings
+
+- `GET /api/settings` - Get user settings
+- `PUT /api/settings` - Update user settings
+
+Settings model:
+- `name`: string
+- `targetScore`: integer (0–100)
+- `examDate`: string
+- `theme`: `dark | light`
+
+## OpenAPI and Client Generation
+
+- API contract is defined in `openapi.yaml`
+- Generated client/types are under `src/api/generated`
+- Regenerate client after spec changes:
+
+```bash
+npm run generate
+```
+
+## Database Notes
+
+- Drizzle config: `drizzle.config.ts`
+- Schema tables:
+	- `assessments`
+	- `settings`
+- Migrations are stored in `drizzle/`
+
+## Build for Production
 
 ```bash
 npm run build
-npm run preview
+npm run start
 ```
+
+## Troubleshooting
+
+- If you get database connection errors, verify `DATABASE_URL` (or PG* vars) and ensure PostgreSQL is running.
+- If the app starts but data does not load, check API route responses at `/api/assessments` and `/api/settings`.
+- If typed API client changes are missing, run `npm run generate`.
+
+## License
+
+No license file is currently included in this repository.

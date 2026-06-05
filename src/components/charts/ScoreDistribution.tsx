@@ -1,6 +1,6 @@
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import type { Assessment } from '../../types';
+import type { Assessment } from '@/types';
 
 interface ScoreDistributionProps {
   assessments: Assessment[];
@@ -29,8 +29,8 @@ export default function ScoreDistribution({ assessments }: ScoreDistributionProp
   });
 
   const getColor = (range: string) => {
-    if (range.startsWith('9')) return '#00ff88';
-    if (range.startsWith('8')) return '#00d4ff';
+    if (range.startsWith('9')) return 'hsl(var(--primary))';
+    if (range.startsWith('8')) return 'hsl(var(--accent))';
     if (range.startsWith('7')) return '#ffd700';
     if (range.startsWith('6')) return '#ff8800';
     return '#ff4444';
@@ -39,12 +39,12 @@ export default function ScoreDistribution({ assessments }: ScoreDistributionProp
   return (
     <ResponsiveContainer width="100%" height={220}>
       <BarChart data={bins} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#1f2d40" />
-        <XAxis dataKey="range" tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
-        <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+        <XAxis dataKey="range" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} axisLine={false} tickLine={false} />
+        <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
         <Tooltip
-          contentStyle={{ background: '#111827', border: '1px solid #1f2d40', borderRadius: '8px' }}
-          labelStyle={{ color: '#e2e8f0', fontSize: 11 }}
+          contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }}
+          labelStyle={{ color: 'hsl(var(--foreground))', fontSize: 11 }}
           itemStyle={{ fontSize: 11 }}
         />
         <Bar dataKey="count" radius={[4, 4, 0, 0]}>
