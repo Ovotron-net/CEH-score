@@ -116,6 +116,16 @@ http://localhost:3000
 - `npm run db:migrate` - Run pending migrations
 - `npm run db:studio` - Open Drizzle Studio
 
+## Continuous Integration
+
+The project uses GitHub Actions for automated CI checks on all pull requests and pushes:
+
+- **Lint**: Runs ESLint to check code quality
+- **Build**: Validates that the project builds successfully
+- **OpenAPI Validation**: Ensures generated API client is in sync with `openapi.yaml`
+
+All checks must pass before merging. The workflow configuration is in `.github/workflows/ci.yml`.
+
 ## Environment Variables
 
 The application supports the following environment variables:
