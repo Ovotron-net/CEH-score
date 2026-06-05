@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "poll_id_option_text_idx" ON "poll_results" USING btree ("poll_id","option_text");

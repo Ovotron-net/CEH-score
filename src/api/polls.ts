@@ -46,11 +46,16 @@ export async function createPollResult(data: {
 export async function vote(data: {
   pollId: string;
   optionText: string;
+  pollQuestion?: string;
   userId?: string | null;
 }): Promise<PollResult> {
-  return request<PollResult>('/api/polls/vote', {
+  return request<PollResult>(`/api/polls/${encodeURIComponent(data.pollId)}/votes`, {
     method: 'POST',
-    body: data,
+    body: {
+      optionText: data.optionText,
+      pollQuestion: data.pollQuestion,
+      userId: data.userId,
+    },
   });
 }
 

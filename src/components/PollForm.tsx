@@ -33,6 +33,7 @@ export function PollForm({ pollId, question, options, userId, onSuccess }: PollF
       await pollsApi.vote({
         pollId,
         optionText: selected,
+        pollQuestion: question,
         userId,
       });
 
