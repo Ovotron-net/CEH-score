@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '@/db';
 import { settings } from '@/db/schema';
@@ -22,7 +21,7 @@ export async function GET() {
       .returning();
     if (inserted) return NextResponse.json(inserted);
 
-    const [existing] = await db.select().from(settings).where(eq(settings.id, SETTINGS_ID));
+    const existing = (await db.select().from(settings)).find((row) => row.id === SETTINGS_ID);
     return NextResponse.json(existing);
   } catch {
     return NextResponse.json({ error: 'Failed to fetch settings.' }, { status: 500 });

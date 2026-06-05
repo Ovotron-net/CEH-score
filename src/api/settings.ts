@@ -3,7 +3,7 @@ import { request } from './client';
 
 export async function get(): Promise<UserSettings> {
   if (typeof window === 'undefined') {
-    return { name: 'Alex Chen', targetScore: 85, examDate: '', theme: 'dark' };
+    return { name: 'Author', targetScore: 85, examDate: '', theme: 'dark' };
   }
   return request<UserSettings>('/api/settings');
 }

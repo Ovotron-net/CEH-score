@@ -2,9 +2,9 @@ import { Poll } from '@/components/Poll';
 
 export default function PollsPage() {
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="p-6 lg:p-8 page-enter">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Polls</h1>
+        <h1 className="text-3xl font-bold text-foreground mb-8">Polls</h1>
 
         {/* Example 1: Module Selection Poll */}
         <div className="mb-12">

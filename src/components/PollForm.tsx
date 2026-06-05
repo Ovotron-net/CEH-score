@@ -51,7 +51,7 @@ export function PollForm({ pollId, question, options, userId, onSuccess }: PollF
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold mb-4">{question}</h3>
+        <h3 className="text-base font-semibold text-foreground mb-4">{question}</h3>
 
         <fieldset className="space-y-3">
           {options.map((option) => (
@@ -63,9 +63,9 @@ export function PollForm({ pollId, question, options, userId, onSuccess }: PollF
                 checked={selected === option}
                 onChange={(e) => setSelected(e.target.value)}
                 disabled={loading}
-                className="w-4 h-4 mr-3"
+                className="w-4 h-4 mr-3 accent-primary"
               />
-              <span className="text-sm">{option}</span>
+              <span className="text-sm text-foreground">{option}</span>
             </label>
           ))}
         </fieldset>
@@ -74,13 +74,13 @@ export function PollForm({ pollId, question, options, userId, onSuccess }: PollF
       <button
         type="submit"
         disabled={loading || !selected}
-        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+        className="w-full px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {loading ? 'Submitting...' : 'Submit Vote'}
       </button>
 
-      {error && <p className="text-red-600 text-sm">{error}</p>}
-      {success && <p className="text-green-600 text-sm">✓ Vote submitted successfully!</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
+      {success && <p className="text-primary text-sm">✓ Vote submitted successfully!</p>}
     </form>
   );
 }

@@ -58,6 +58,7 @@ export async function vote(data: {
  * Get all poll results, optionally filtered by pollId
  */
 export async function getAllResults(pollId?: string): Promise<PollResult[]> {
+  if (typeof window === 'undefined') return [];
   const query = pollId ? `?pollId=${encodeURIComponent(pollId)}` : '';
   return request<PollResult[]>(`/api/polls${query}`, {
     method: 'GET',
