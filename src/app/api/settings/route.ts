@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { settings } from '@/db/schema';
+import { authenticate } from '@/lib/auth';
 
 const SETTINGS_ID = 1;
 
@@ -12,7 +13,10 @@ const SettingsSchema = z.object({
   theme: z.enum(['dark', 'light']),
 });
 
-export async function GET() {
+export async function GET(request: Request) {
+  const authError = authenticate(request);
+  if (authError) return authError;
+
   try {
     const [inserted] = await db
       .insert(settings)
@@ -29,6 +33,9 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
+  const authError = authenticate(request);
+  if (authError) return authError;
+
   const body = await request.json().catch(() => null);
   const parsed = SettingsSchema.safeParse(body);
   if (!parsed.success) {

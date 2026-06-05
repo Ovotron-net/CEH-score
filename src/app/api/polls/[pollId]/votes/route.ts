@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { eq, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { pollResults } from '@/db/schema';
+import { authenticate } from '@/lib/auth';
+import { isAllowed } from '@/lib/rate-limit';
 
 const VoteBodySchema = z.object({
   optionText: z.string().min(1).max(500),
@@ -14,6 +16,9 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ pollId: string }> },
 ) {
+  const authError = authenticate(request);
+  if (authError) return authError;
+
   const body = await request.json().catch(() => null);
   const parsed = VoteBodySchema.safeParse(body);
 
@@ -26,6 +31,21 @@ export async function POST(
 
   try {
     const { pollId } = await params;
+
+    if (!pollId || pollId.length > 100) {
+      return NextResponse.json({ error: 'Invalid pollId.' }, { status: 400 });
+    }
+
+    // Rate limit: max 5 votes per IP per poll per 60 seconds
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+    const rateLimitKey = `vote:${ip}:${pollId}`;
+    if (!isAllowed(rateLimitKey, 5, 60_000)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 },
+      );
+    }
+
     const { optionText, pollQuestion, userId } = parsed.data;
 
     let resolvedPollQuestion = pollQuestion;

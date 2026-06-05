@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { pollResults } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { authenticate } from '@/lib/auth';
 
 const PollResultSchema = z.object({
   pollId: z.string().min(1).max(100),
@@ -14,11 +15,17 @@ const PollResultSchema = z.object({
 
 
 export async function GET(request: Request) {
+  const authError = authenticate(request);
+  if (authError) return authError;
+
   try {
     const { searchParams } = new URL(request.url);
     const pollId = searchParams.get('pollId');
 
     if (pollId) {
+      if (pollId.length > 100) {
+        return NextResponse.json({ error: 'Invalid pollId.' }, { status: 400 });
+      }
       const rows = await db
         .select()
         .from(pollResults)
@@ -35,6 +42,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const authError = authenticate(request);
+  if (authError) return authError;
+
   const body = await request.json().catch(() => null);
   const parsed = PollResultSchema.safeParse(body);
 
