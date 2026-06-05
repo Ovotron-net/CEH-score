@@ -72,14 +72,28 @@ src/
 npm install
 ```
 
-2. Generate and run DB migrations:
+2. Configure environment variables:
+
+Create a `.env.local` file (or `.env`) in the project root. See `.env.example` for all available options.
+
+**Required:**
+```bash
+DATABASE_URL=postgresql://username:password@localhost:5432/ceh_score
+```
+
+**Optional:**
+```bash
+API_SECRET=your-secure-random-string-here  # Enable API authentication
+```
+
+3. Generate and run DB migrations:
 
 ```bash
 npm run db:generate
 npm run db:migrate
 ```
 
-3. Start development server:
+4. Start development server:
 
 ```bash
 npm run dev
@@ -102,7 +116,85 @@ http://localhost:3000
 - `npm run db:migrate` - Run pending migrations
 - `npm run db:studio` - Open Drizzle Studio
 
+## Environment Variables
+
+The application supports the following environment variables:
+
+### Database Connection
+
+The database connection can be configured in two ways:
+
+**Option 1: Connection String (Recommended)**
+```bash
+DATABASE_URL=postgresql://username:password@localhost:5432/ceh_score
+# or
+DATABASE_PUBLIC_URL=postgresql://username:password@localhost:5432/ceh_score
+```
+
+**Option 2: Individual Variables**
+```bash
+PGUSER=username
+PGPASSWORD=password
+PGHOST=localhost
+PGPORT=5432
+PGDATABASE=ceh_score
+```
+
+Connection resolution order: `DATABASE_PUBLIC_URL` → `DATABASE_URL` → individual `PG*` variables
+
+### Security
+
+**API_SECRET** (optional)
+- When set, all API endpoints require authentication via `Authorization: Bearer <API_SECRET>` header
+- When not set, API endpoints are open (useful for development)
+- Example: `API_SECRET=your-secure-random-string-here`
+
+### Other
+
+**NEXT_PUBLIC_API_BASE_URL** (optional)
+- Override the default API base URL for client-side API calls
+- Default: same-origin (relative URLs)
+
+## Security Features
+
+### API Authentication
+
+The application supports optional API key authentication:
+
+- **Opt-in**: Authentication is disabled by default for easy development
+- **Enable**: Set the `API_SECRET` environment variable to enable authentication
+- **Usage**: Include `Authorization: Bearer <your-api-secret>` header in all API requests
+- **Scope**: All API endpoints (`/api/*`) require authentication when enabled
+
+### Rate Limiting
+
+The vote endpoint includes built-in rate limiting:
+
+- **Endpoint**: `POST /api/polls/[pollId]/votes`
+- **Limit**: 5 requests per IP address per poll per 60 seconds
+- **Response**: Returns `429 Too Many Requests` when limit exceeded
+- **Implementation**: In-memory sliding window with automatic cleanup
+
+### Input Validation
+
+All API endpoints include comprehensive input validation:
+
+- Maximum string lengths (e.g., pollId limited to 100 characters)
+- Zod schema validation for request bodies
+- Division-by-zero guards in calculations
+- SQL injection prevention via Drizzle ORM parameterized queries
+
+### Database Connection Pooling
+
+The database connection uses a singleton pattern to prevent connection leaks:
+
+- Connection pool persists across hot reloads in development
+- Graceful shutdown handlers (SIGTERM, SIGINT) properly close connections
+- Prevents connection pool exhaustion in production
+
 ## API Endpoints
+
+**Authentication**: All API endpoints support optional authentication. When `API_SECRET` environment variable is set, requests must include `Authorization: Bearer <API_SECRET>` header.
 
 ### Assessments
 
@@ -129,6 +221,16 @@ Settings model:
 - `targetScore`: integer (0–100)
 - `examDate`: string
 - `theme`: `dark | light`
+
+### Polls
+
+- `GET /api/polls` - List all poll results (optional `?pollId=<id>` query param)
+- `POST /api/polls` - Create a poll result
+- `GET /api/polls/[pollId]` - Get results for a specific poll
+- `DELETE /api/polls/[pollId]` - Delete all results for a specific poll
+- `POST /api/polls/[pollId]/votes` - Submit a vote (⚠️ **Rate limited**: 5 requests per IP per poll per 60 seconds)
+
+**Rate Limiting**: The vote endpoint returns `429 Too Many Requests` if the rate limit is exceeded.
 
 ## OpenAPI and Client Generation
 
