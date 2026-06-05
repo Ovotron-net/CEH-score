@@ -83,7 +83,7 @@ export function PollResults({ pollId, refreshInterval = 5000 }: PollResultsProps
                   style={{ width: `${option.percentage}%` }}
                 >
                   {option.percentage > 10 && (
-                    <span className="text-xs font-semibold text-white">{option.percentage}%</span>
+                    <span className="text-xs font-semibold text-primary-foreground">{option.percentage}%</span>
                   )}
                 </div>
               </div>
