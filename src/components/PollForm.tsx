@@ -52,11 +52,18 @@ export function PollForm({ pollId, question, options, userId, onSuccess }: PollF
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold mb-4">{question}</h3>
+        <h3 className="text-base font-semibold text-white mb-4">{question}</h3>
 
         <fieldset className="space-y-3">
           {options.map((option) => (
-            <label key={option} className="flex items-center cursor-pointer">
+            <label
+              key={option}
+              className={`flex items-center gap-3 cursor-pointer p-3 rounded-lg border transition-colors ${
+                selected === option
+                  ? 'border-cyber-green/60 bg-cyber-green/10'
+                  : 'border-border bg-background/40 hover:border-border hover:bg-secondary/40'
+              } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
               <input
                 type="radio"
                 name="poll-option"
@@ -64,9 +71,9 @@ export function PollForm({ pollId, question, options, userId, onSuccess }: PollF
                 checked={selected === option}
                 onChange={(e) => setSelected(e.target.value)}
                 disabled={loading}
-                className="w-4 h-4 mr-3"
+                className="w-4 h-4 accent-cyber-green shrink-0"
               />
-              <span className="text-sm">{option}</span>
+              <span className="text-sm text-foreground">{option}</span>
             </label>
           ))}
         </fieldset>
@@ -75,13 +82,13 @@ export function PollForm({ pollId, question, options, userId, onSuccess }: PollF
       <button
         type="submit"
         disabled={loading || !selected}
-        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+        className="w-full px-4 py-2.5 bg-cyber-green hover:bg-cyber-green/90 text-cyber-bg font-medium rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors cyber-glow"
       >
         {loading ? 'Submitting...' : 'Submit Vote'}
       </button>
 
-      {error && <p className="text-red-600 text-sm">{error}</p>}
-      {success && <p className="text-green-600 text-sm">✓ Vote submitted successfully!</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
+      {success && <p className="text-cyber-green text-sm">✓ Vote submitted successfully!</p>}
     </form>
   );
 }

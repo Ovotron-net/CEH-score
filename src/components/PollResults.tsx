@@ -37,53 +37,52 @@ export function PollResults({ pollId, refreshInterval = 5000 }: PollResultsProps
   }, [loadPoll, refreshInterval]);
 
   if (loading && !poll) {
-    return <div className="text-gray-500 text-sm">Loading results...</div>;
+    return <div className="flex items-center justify-center py-8"><div className="spinner" /></div>;
   }
 
   if (error && !poll) {
-    return <div className="text-red-600 text-sm">Error: {error}</div>;
+    return <div className="text-destructive text-sm">Error: {error}</div>;
   }
 
   if (!poll) {
-    return <div className="text-gray-500 text-sm">No poll data available</div>;
+    return <div className="text-cyber-muted text-sm">No poll data available</div>;
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">{poll.pollQuestion || 'Poll Results'}</h3>
+        <h3 className="text-base font-semibold text-white">{poll.pollQuestion || 'Poll Results'}</h3>
         <button
           onClick={loadPoll}
           disabled={loading}
-          className="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50 transition-colors"
+          className="text-xs px-2.5 py-1 bg-secondary hover:bg-secondary/80 text-foreground border border-border rounded-lg disabled:opacity-50 transition-colors"
         >
           {loading ? 'Refreshing...' : 'Refresh'}
         </button>
       </div>
 
-      <p className="text-sm text-gray-600">Total votes: {poll.totalVotes}</p>
+      <p className="text-xs text-cyber-muted">Total votes: {poll.totalVotes}</p>
 
       <div className="space-y-3">
         {poll.options.length === 0 ? (
-          <p className="text-gray-500 text-sm">No votes yet</p>
+          <p className="text-cyber-muted text-sm">No votes yet</p>
         ) : (
           poll.options.map((option) => (
             <div key={option.id} className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{option.optionText}</span>
-                <span className="text-xs text-gray-600">
+                <span className="text-sm text-foreground">{option.optionText}</span>
+                <span className="text-xs text-cyber-muted">
                   {option.voteCount} vote{option.voteCount !== 1 ? 's' : ''} ({option.percentage}%)
                 </span>
               </div>
 
-              {/* Progress bar */}
-              <div className="w-full h-6 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-full h-5 bg-secondary rounded-full overflow-hidden border border-border">
                 <div
-                  className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300 ease-out flex items-center justify-center"
+                  className="h-full bg-gradient-to-r from-cyber-green/80 to-cyber-green transition-all duration-300 ease-out flex items-center justify-center"
                   style={{ width: `${option.percentage}%` }}
                 >
                   {option.percentage > 10 && (
-                    <span className="text-xs font-semibold text-white">{option.percentage}%</span>
+                    <span className="text-xs font-semibold text-cyber-bg">{option.percentage}%</span>
                   )}
                 </div>
               </div>
@@ -92,7 +91,7 @@ export function PollResults({ pollId, refreshInterval = 5000 }: PollResultsProps
         )}
       </div>
 
-      {error && <p className="text-yellow-600 text-xs mt-2">Note: {error}</p>}
+      {error && <p className="text-yellow-500 text-xs mt-2">Note: {error}</p>}
     </div>
   );
 }
