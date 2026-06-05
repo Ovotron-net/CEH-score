@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { pollResults } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import type { InferSelectModel } from 'drizzle-orm';
+import { authenticate } from '@/lib/auth';
 
 type PollResultRow = InferSelectModel<typeof pollResults>;
 
@@ -10,8 +11,15 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ pollId: string }> },
 ) {
+  const authError = authenticate(request);
+  if (authError) return authError;
+
   try {
     const { pollId } = await params;
+
+    if (!pollId || pollId.length > 100) {
+      return NextResponse.json({ error: 'Invalid pollId.' }, { status: 400 });
+    }
 
     const rows = await db
       .select()
@@ -51,8 +59,15 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ pollId: string }> },
 ) {
+  const authError = authenticate(request);
+  if (authError) return authError;
+
   try {
     const { pollId } = await params;
+
+    if (!pollId || pollId.length > 100) {
+      return NextResponse.json({ error: 'Invalid pollId.' }, { status: 400 });
+    }
 
     await db.delete(pollResults).where(eq(pollResults.pollId, pollId));
 
