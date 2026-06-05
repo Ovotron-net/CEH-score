@@ -32,9 +32,9 @@ Built with Next.js App Router, React Query, Drizzle ORM, and PostgreSQL.
 	- Score trend chart
 	- Pass/fail ratio
 	- Score distribution
-	- Domain performance charts (bar + radar)
+	- Domain performance charts (bar and radar)
 - Assessment management:
-	- Add new assessment with validation
+	- Add a new assessment with validation
 	- Delete individual assessments
 	- Clear all assessments
 - Personal leaderboard (all time, monthly, weekly)
@@ -42,7 +42,7 @@ Built with Next.js App Router, React Query, Drizzle ORM, and PostgreSQL.
 	- Name
 	- Target score
 	- Exam date
-	- Theme field in API model
+	- Theme field in the API model
 
 ## Project Structure
 
@@ -126,7 +126,7 @@ Server-calculated fields:
 
 Settings model:
 - `name`: string
-- `targetScore`: integer (0-100)
+- `targetScore`: integer (0–100)
 - `examDate`: string
 - `theme`: `dark | light`
 

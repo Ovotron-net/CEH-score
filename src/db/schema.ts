@@ -1,4 +1,4 @@
-import { pgTable, text, integer, doublePrecision, boolean, serial, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, doublePrecision, boolean, serial, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 
 export const assessments = pgTable('assessments', {
   id: text('id').primaryKey(),
@@ -31,5 +31,7 @@ export const pollResults = pgTable('poll_results', {
   userId: text('user_id'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+}, (table) => ({
+  pollIdOptionTextIdx: uniqueIndex('poll_id_option_text_idx').on(table.pollId, table.optionText),
+}));
 
