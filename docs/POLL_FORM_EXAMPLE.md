@@ -86,6 +86,7 @@ Replace your existing script with this version that calls the poll API:
 ## Key Changes
 
 ### 1. **Async/Await for API Call**
+
 ```javascript
 const response = await fetch("/api/polls/vote", {
   method: "POST",
@@ -98,6 +99,7 @@ const response = await fetch("/api/polls/vote", {
 ```
 
 ### 2. **Error Handling**
+
 ```javascript
 if (!response.ok) {
   throw new Error(`API error: ${response.status}`);
@@ -105,12 +107,14 @@ if (!response.ok) {
 ```
 
 ### 3. **Response Handling**
+
 ```javascript
 const data = await response.json();
 result.textContent = `Thanks! You selected: ${selected.value}. Total votes: ${data.voteCount}`;
 ```
 
 ### 4. **Loading State**
+
 ```javascript
 result.textContent = "Submitting your vote...";
 result.style.color = "blue";
@@ -179,12 +183,15 @@ export function PollForm() {
 ## Configuration
 
 ### Change the Poll ID
+
 Replace `"module-selection"` with your desired poll identifier:
+
 ```javascript
 pollId: "your-poll-name"
 ```
 
 ### Add User Tracking (Optional)
+
 ```javascript
 body: JSON.stringify({
   pollId: "module-selection",
@@ -194,6 +201,7 @@ body: JSON.stringify({
 ```
 
 ### Get Current Poll Results
+
 ```javascript
 // After voting, fetch updated stats
 const stats = await fetch("/api/polls/module-selection").then(r => r.json());
@@ -301,10 +309,10 @@ console.log(stats); // { pollId, totalVotes, options: [...] }
 ```
 
 This version:
+
 - ✅ Submits votes to the API
 - ✅ Shows loading state
 - ✅ Displays confirmation message
 - ✅ Loads and displays live poll results
 - ✅ Updates stats after each vote
-- ✅ Handles errors gracefully
-
+- ✅ Handles errors gracefully.

@@ -1,4 +1,5 @@
-import { BarChart2 } from 'lucide-react';
+import Link from 'next/link';
+import { BarChart2, PieChart } from 'lucide-react';
 import { Poll } from '@/components/Poll';
 
 export default function PollsPage() {
@@ -9,10 +10,17 @@ export default function PollsPage() {
           <div className="p-2 rounded-lg bg-cyber-blue/10 border border-cyber-blue/20">
             <BarChart2 className="w-6 h-6 text-cyber-blue" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl font-bold text-white">Community Polls</h1>
             <p className="text-cyber-muted mt-1">Share your opinion and see what the community thinks</p>
           </div>
+          <Link
+            href="/polls/analytics"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-cyber-blue/10 hover:bg-cyber-blue/15 border border-cyber-blue/20 hover:border-cyber-blue/30 text-sm font-medium text-cyber-blue transition-colors"
+          >
+            <PieChart className="w-4 h-4" />
+            Poll Analytics
+          </Link>
         </div>
       </div>
 
