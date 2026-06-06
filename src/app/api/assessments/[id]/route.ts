@@ -2,11 +2,15 @@ import { NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { assessments } from '@/db/schema';
+import { authenticate } from '@/lib/auth';
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const authError = authenticate(request);
+  if (authError) return authError;
+
   const { id } = await params;
   if (!id || id.length > 100) {
     return NextResponse.json({ error: 'Invalid ID.' }, { status: 400 });

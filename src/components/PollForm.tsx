@@ -53,7 +53,6 @@ export function PollForm({ pollId, question, options, userId, onSuccess }: PollF
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <h3 className="text-base font-semibold text-white mb-4">{question}</h3>
-
         <fieldset className="space-y-3">
           {options.map((option) => (
             <label
@@ -71,7 +70,7 @@ export function PollForm({ pollId, question, options, userId, onSuccess }: PollF
                 checked={selected === option}
                 onChange={(e) => setSelected(e.target.value)}
                 disabled={loading}
-                className="w-4 h-4 accent-cyber-green shrink-0"
+                className="w-4 h-4 mr-3 accent-primary"
               />
               <span className="text-sm text-foreground">{option}</span>
             </label>
@@ -82,13 +81,13 @@ export function PollForm({ pollId, question, options, userId, onSuccess }: PollF
       <button
         type="submit"
         disabled={loading || !selected}
-        className="w-full px-4 py-2.5 bg-cyber-green hover:bg-cyber-green/90 text-cyber-bg font-medium rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors cyber-glow"
+        className="w-full px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         {loading ? 'Submitting...' : 'Submit Vote'}
       </button>
 
       {error && <p className="text-destructive text-sm">{error}</p>}
-      {success && <p className="text-cyber-green text-sm">✓ Vote submitted successfully!</p>}
+      {success && <p className="text-primary text-sm">✓ Vote submitted successfully!</p>}
     </form>
   );
 }

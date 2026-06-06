@@ -47,9 +47,9 @@ export function Poll({
       : 'space-y-6';
 
   return (
-    <div className={`glass-card rounded-xl p-6 card-enter ${containerClass}`}>
+    <div className={`bg-card border border-border rounded-xl p-6 ${containerClass}`}>
       <div>
-        <h2 className="text-lg font-semibold text-white mb-4">Cast Your Vote</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Vote</h2>
         <PollForm
           pollId={pollId}
           question={question}
@@ -60,7 +60,7 @@ export function Poll({
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold text-white mb-4">Live Results</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Live Results</h2>
         <PollResults key={refreshKey} pollId={pollId} refreshInterval={refreshInterval} />
       </div>
     </div>

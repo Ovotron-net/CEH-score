@@ -85,7 +85,7 @@ export default function Leaderboard() {
               key={entry.id}
               className={`bg-card border rounded-xl p-5 text-center card-enter ${
                 i === 0 ? 'border-yellow-400/30 shadow-[0_0_20px_rgba(250,204,21,0.1)]' :
-                i === 1 ? 'border-gray-400/30' :
+                i === 1 ? 'border-muted-foreground/30' :
                 'border-orange-700/30'
               }`}
             >

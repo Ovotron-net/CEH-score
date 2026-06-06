@@ -11,7 +11,8 @@ if (existsSync(envLocalPath)) {
     const eqIdx = trimmed.indexOf('=');
     if (eqIdx === -1) continue;
     const key = trimmed.slice(0, eqIdx).trim();
-    const value = trimmed.slice(eqIdx + 1).trim();
+    const raw = trimmed.slice(eqIdx + 1).trim();
+    const value = /^(["']).*\1$/.test(raw) ? raw.slice(1, -1) : raw;
     if (key && !(key in process.env)) process.env[key] = value;
   }
 }

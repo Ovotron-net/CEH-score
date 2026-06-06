@@ -1,11 +1,3 @@
-/**
- * Base HTTP client for the CEH-score API.
- *
- * All API modules route requests through this client. When a real backend is
- * available, swap the base URL and remove the localStorage adapters in the
- * individual API modules — the hooks and components don't need to change.
- */
-
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
