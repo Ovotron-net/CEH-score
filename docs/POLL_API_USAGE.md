@@ -1,6 +1,7 @@
 ---
 render_with_liquid: false
 ---
+{% raw %}
 
 # Poll API Usage Guide
 
@@ -338,3 +339,4 @@ Delete all results for a poll.
 await pollsApi.deletePoll('poll-123');
 ```
 
+{% endraw %}
