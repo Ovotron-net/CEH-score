@@ -91,3 +91,44 @@ Mutations use `qc.setQueryData` for optimistic local updates rather than refetch
 
 ### No `pages/` directory
 This project uses **Next.js App Router only** (`src/app/`). Do not use `getServerSideProps`, `getStaticProps`, or `pages/` patterns.
+
+### Authentication in every route handler
+All route handlers call `authenticate(request)` from `@/lib/auth` as the **first** operation. Returns `null` on success or a `401` `NextResponse` when `API_SECRET` is set and the header is missing/wrong:
+```ts
+const authError = authenticate(request);
+if (authError) return authError;
+```
+When `API_SECRET` is not set (development), the function is a no-op.
+
+### Dynamic route params are async (Next.js 15)
+In App Router route handlers, `params` is a `Promise` and must be awaited:
+```ts
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ pollId: string }> },
+) {
+  const { pollId } = await params;
+```
+
+### Unique constraint violation handling
+PostgreSQL unique violations have error code `'23505'`. Route handlers that insert data with a unique key detect this specifically and return `409`:
+```ts
+const isUniqueViolation =
+  typeof err === 'object' && err !== null && 'code' in err &&
+  (err as { code: string }).code === '23505';
+if (isUniqueViolation) return NextResponse.json({ error: '...' }, { status: 409 });
+```
+
+### Settings singleton
+`settings` is always a single row with `id = 1`. `GET` upserts with `onConflictDoNothing`; `PUT` upserts with `onConflictDoUpdate`. Never insert additional rows.
+
+### Poll votes upsert
+`POST /api/polls/[pollId]/votes` upserts on the `(pollId, optionText)` unique index — incrementing `voteCount` atomically via `sql\`${pollResults.voteCount} + 1\`` on conflict. Rate-limited to 5 requests per IP per poll per 60 seconds using `isAllowed()` from `@/lib/rate-limit`; exceeding the limit returns `429`.
+
+### Assessment date format
+The `date` field must match `/^\d{4}-\d{2}-\d{2}$/` (ISO date, validated by Zod in the route handler).
+
+### Poll feature docs
+Before modifying poll API or poll components, read:
+- `docs/POLL_API_USAGE.md` — `pollsApi` function signatures and usage patterns
+- `docs/POLL_COMPONENTS.md` — component prop contracts
