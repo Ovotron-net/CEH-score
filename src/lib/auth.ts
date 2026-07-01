@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import {NextResponse} from 'next/server';
 
 /**
  * Validates the API key from the Authorization header.
@@ -6,16 +6,16 @@ import { NextResponse } from 'next/server';
  * When set, requests must include "Authorization: ******".
  */
 export function authenticate(request: Request): NextResponse | null {
-  const apiSecret = process.env.API_SECRET;
+    const apiSecret = process.env.API_SECRET;
 
-  // If no secret is configured, skip authentication (open mode)
-  if (!apiSecret) return null;
+    // If no secret is configured, skip authentication (open mode)
+    if (!apiSecret) return null;
 
-  const authHeader = request.headers.get('authorization');
-  const expected = 'Bearer ' + apiSecret;
-  if (!authHeader || authHeader !== expected) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+    const authHeader = request.headers.get('authorization');
+    const expected = 'Bearer ' + apiSecret;
+    if (!authHeader || authHeader !== expected) {
+        return NextResponse.json({error: 'Unauthorized'}, {status: 401});
+    }
 
-  return null;
+    return null;
 }

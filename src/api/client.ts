@@ -3,47 +3,47 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export interface RequestOptions {
-  method?: HttpMethod;
-  body?: unknown;
-  headers?: Record<string, string>;
+    method?: HttpMethod;
+    body?: unknown;
+    headers?: Record<string, string>;
 }
 
 export class ApiError extends Error {
-  readonly status: number;
+    readonly status: number;
 
-  constructor(status: number, message: string) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-  }
+    constructor(status: number, message: string) {
+        super(message);
+        this.name = 'ApiError';
+        this.status = status;
+    }
 }
 
 export async function request<T>(
-  path: string,
-  options: RequestOptions = {},
+    path: string,
+    options: RequestOptions = {},
 ): Promise<T> {
-  const { method = 'GET', body, headers = {} } = options;
+    const {method = 'GET', body, headers = {}} = options;
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      ...headers,
-    },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+        method,
+        headers: {
+            'Content-Type': 'application/json',
+            ...headers,
+        },
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
 
-  if (!response.ok) {
-    const text = await response.text().catch(() => response.statusText);
-    throw new ApiError(response.status, text);
-  }
+    if (!response.ok) {
+        const text = await response.text().catch(() => response.statusText);
+        throw new ApiError(response.status, text);
+    }
 
-  // 204 No Content — nothing to parse
-  if (response.status === 204) {
-    return undefined as T;
-  }
+    // 204 No Content — nothing to parse
+    if (response.status === 204) {
+        return undefined as T;
+    }
 
-  return response.json() as Promise<T>;
+    return response.json() as Promise<T>;
 }
 
 

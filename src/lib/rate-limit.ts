@@ -4,8 +4,8 @@
  */
 
 interface RateLimitEntry {
-  count: number;
-  resetAt: number;
+    count: number;
+    resetAt: number;
 }
 
 const store = new Map<string, RateLimitEntry>();
@@ -15,23 +15,23 @@ const CLEANUP_INTERVAL = 60_000; // 1 minute
 let cleanupTimer: ReturnType<typeof setInterval> | null = null;
 
 function ensureCleanup() {
-  if (cleanupTimer) return;
-  cleanupTimer = setInterval(() => {
-    const now = Date.now();
-    for (const [key, entry] of store) {
-      if (now > entry.resetAt) {
-        store.delete(key);
-      }
+    if (cleanupTimer) return;
+    cleanupTimer = setInterval(() => {
+        const now = Date.now();
+        for (const [key, entry] of store) {
+            if (now > entry.resetAt) {
+                store.delete(key);
+            }
+        }
+        if (store.size === 0 && cleanupTimer) {
+            clearInterval(cleanupTimer);
+            cleanupTimer = null;
+        }
+    }, CLEANUP_INTERVAL);
+    // Don't prevent process exit
+    if (cleanupTimer && typeof cleanupTimer === 'object' && 'unref' in cleanupTimer) {
+        cleanupTimer.unref();
     }
-    if (store.size === 0 && cleanupTimer) {
-      clearInterval(cleanupTimer);
-      cleanupTimer = null;
-    }
-  }, CLEANUP_INTERVAL);
-  // Don't prevent process exit
-  if (cleanupTimer && typeof cleanupTimer === 'object' && 'unref' in cleanupTimer) {
-    cleanupTimer.unref();
-  }
 }
 
 /**
@@ -42,20 +42,20 @@ function ensureCleanup() {
  * @returns true if the request is allowed, false if rate-limited
  */
 export function isAllowed(key: string, maxRequests: number, windowMs: number): boolean {
-  ensureCleanup();
+    ensureCleanup();
 
-  const now = Date.now();
-  const entry = store.get(key);
+    const now = Date.now();
+    const entry = store.get(key);
 
-  if (!entry || now > entry.resetAt) {
-    store.set(key, { count: 1, resetAt: now + windowMs });
-    return true;
-  }
+    if (!entry || now > entry.resetAt) {
+        store.set(key, {count: 1, resetAt: now + windowMs});
+        return true;
+    }
 
-  if (entry.count < maxRequests) {
-    entry.count++;
-    return true;
-  }
+    if (entry.count < maxRequests) {
+        entry.count++;
+        return true;
+    }
 
-  return false;
+    return false;
 }

@@ -25,6 +25,7 @@ export default function Page() {
 ```
 
 **Props:**
+
 - `pollId` (string, required) — Unique poll identifier
 - `question` (string, required) — Poll question text
 - `options` (string[], required) — Array of poll options
@@ -54,12 +55,14 @@ export default function Page() {
 ```
 
 **Props:**
+
 - `pollId` (string, required) — Poll identifier
 - `question` (string, required) — Poll question
 - `options` (string[], required) — Poll options
 - `userId` (string, optional) — User identifier
 
 **Features:**
+
 - Radio button selection
 - Form validation
 - Loading state
@@ -86,10 +89,12 @@ export default function Page() {
 ```
 
 **Props:**
+
 - `pollId` (string, required) — Poll identifier
 - `refreshInterval` (number, default: 5000) — Auto-refresh interval in ms
 
 **Features:**
+
 - Live vote counts
 - Percentage calculations
 - Animated progress bars
@@ -230,7 +235,7 @@ npm run dev
 ✅ User tracking (optional)  
 ✅ Customizable layout  
 ✅ Animated progress bars  
-✅ TypeScript support  
+✅ TypeScript support
 
 ---
 
@@ -256,16 +261,19 @@ npm run dev
 ## Troubleshooting
 
 ### Results not updating?
+
 - Check `refreshInterval` prop (default: 5000ms)
 - Click "Refresh" button manually
 - Check browser console for errors
 
 ### Votes not saving?
+
 - Verify API endpoint is running
 - Check network tab in DevTools
 - Ensure `pollId` is unique
 
 ### Styling issues?
+
 - Ensure Tailwind CSS is configured
 - Check for CSS conflicts
 - Verify className attributes

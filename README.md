@@ -3,6 +3,7 @@
 A modern dashboard to track and analyze CEH exam preparation performance.
 
 This project helps you:
+
 - Record practice, mock, and official assessment results
 - Track pass/fail progress over time
 - Analyze trends by CEH domain
@@ -24,25 +25,25 @@ Built with Next.js App Router, React Query, Drizzle ORM, and PostgreSQL.
 ## Features
 
 - Dashboard with key stats:
-	- Current average
-	- Best score
-	- Total assessments
-	- Study streak
+    - Current average
+    - Best score
+    - Total assessments
+    - Study streak
 - Analytics view:
-	- Score trend chart
-	- Pass/fail ratio
-	- Score distribution
-	- Domain performance charts (bar and radar)
+    - Score trend chart
+    - Pass/fail ratio
+    - Score distribution
+    - Domain performance charts (bar and radar)
 - Assessment management:
-	- Add a new assessment with validation
-	- Delete individual assessments
-	- Clear all assessments
+    - Add a new assessment with validation
+    - Delete individual assessments
+    - Clear all assessments
 - Personal leaderboard (all time, monthly, weekly)
 - User settings:
-	- Name
-	- Target score
-	- Exam date
-	- Theme field in the API model
+    - Name
+    - Target score
+    - Exam date
+    - Theme field in the API model
 
 ## Project Structure
 
@@ -112,10 +113,12 @@ http://localhost:3000
 - `DELETE /api/assessments/{id}` - Delete assessment by ID
 
 Create request body (important fields):
+
 - `id`, `date`, `type`, `score`, `maxScore`, `timeTaken`, `domain`, `createdAt`
 - `notes` is optional in UI and defaults to empty string
 
 Server-calculated fields:
+
 - `percentage` is calculated as `Math.round((score / maxScore) * 100)`
 - `passed` is `true` when percentage is 70 or above
 
@@ -125,6 +128,7 @@ Server-calculated fields:
 - `PUT /api/settings` - Update user settings
 
 Settings model:
+
 - `name`: string
 - `targetScore`: integer (0–100)
 - `examDate`: string
@@ -144,8 +148,8 @@ npm run generate
 
 - Drizzle config: `drizzle.config.ts`
 - Schema tables:
-	- `assessments`
-	- `settings`
+    - `assessments`
+    - `settings`
 - Migrations are stored in `drizzle/`
 
 ## Build for Production
