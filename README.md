@@ -61,7 +61,7 @@ src/
 
 ## Prerequisites
 
-- Node.js 20+
+- Node.js 22.18+
 - npm 10+
 - PostgreSQL 14+
 
