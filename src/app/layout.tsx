@@ -1,8 +1,8 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import Providers from '@/components/providers';
-import Layout from '@/components/Layout';
-import React from "react";
+import ClientShell from '@/components/ClientShell';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 export const metadata: Metadata = {
     title: 'CEH Tracker',
@@ -14,7 +14,9 @@ export default function RootLayout({children}: { children: React.ReactNode }) {
         <html lang="en" className="dark">
         <body>
         <Providers>
-            <Layout>{children}</Layout>
+            <ErrorBoundary>
+                <ClientShell>{children}</ClientShell>
+            </ErrorBoundary>
         </Providers>
         </body>
         </html>

@@ -1,6 +1,6 @@
 'use client';
 
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {AlertTriangle, Save, Settings as SettingsIcon, Trash2} from 'lucide-react';
 import {useSettings} from '../hooks/useSettings';
 import {useAssessments} from '../hooks/useAssessments';
@@ -20,6 +20,10 @@ function SettingsForm({
     const [form, setForm] = useState(settings);
     const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
     const [confirmClear, setConfirmClear] = useState(false);
+
+    useEffect(() => {
+        setForm(settings);
+    }, [settings]);
 
     const handleSave = async () => {
         setSaveState('saving');

@@ -1,16 +1,16 @@
 'use client';
 
+import {useMemo} from 'react';
 import Link from 'next/link';
 import {Activity, BookOpen, Clock, Shield, Target, TrendingUp, Trophy, Zap} from 'lucide-react';
 import {useAssessments} from '../hooks/useAssessments';
 import {calculateStats, formatScore} from '../utils/calculations';
 import StatCard from '../components/StatCard';
-import ScoreTrend from '../components/charts/ScoreTrend';
-import DomainRadar from '../components/charts/DomainRadar';
+import {DomainRadar, ScoreTrend} from '../components/charts/lazy';
 
 export default function Dashboard() {
     const {assessments, isLoading} = useAssessments();
-    const stats = calculateStats(assessments);
+    const stats = useMemo(() => calculateStats(assessments), [assessments]);
     const recentAssessments = assessments.slice(-5).reverse();
 
     if (isLoading) {

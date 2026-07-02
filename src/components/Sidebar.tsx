@@ -1,6 +1,6 @@
 'use client';
 
-import {useCallback} from 'react';
+import {forwardRef, useCallback} from 'react';
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
 import {
@@ -32,7 +32,7 @@ interface SidebarProps {
     onClose?: () => void;
 }
 
-export default function Sidebar({isOpen = false, onClose}: SidebarProps) {
+const Sidebar = forwardRef<HTMLElement, SidebarProps>(function Sidebar({isOpen = false, onClose}, ref) {
     const pathname = usePathname() ?? '';
     const handleNavClick = useCallback(() => {
         onClose?.();
@@ -40,6 +40,7 @@ export default function Sidebar({isOpen = false, onClose}: SidebarProps) {
 
     return (
         <aside
+            ref={ref}
             className={[
                 'fixed top-0 left-0 z-30 h-screen',
                 'w-64 bg-card border-r border-border flex flex-col',
@@ -96,5 +97,7 @@ export default function Sidebar({isOpen = false, onClose}: SidebarProps) {
             </div>
         </aside>
     );
-}
+});
+
+export default Sidebar;
 

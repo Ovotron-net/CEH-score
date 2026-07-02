@@ -52,6 +52,7 @@ export default function Assessments() {
                         <input
                             type="text"
                             placeholder="Search by domain or notes..."
+                            aria-label="Search assessments by domain or notes"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-3 bg-background/50 border border-border rounded-lg text-white placeholder-muted-foreground focus:outline-none focus:border-primary/50 transition-colors"

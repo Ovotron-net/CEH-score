@@ -1,47 +1,23 @@
 'use client';
 
-import {useCallback, useEffect, useState} from 'react';
-import {pollsApi} from '@/api';
-import type {PollStats} from '@/api/polls';
+import {usePollStats} from '@/hooks/usePolls';
 
 interface PollResultsProps {
     pollId: string;
-    refreshInterval?: number; // in milliseconds, default 5000
+    refreshInterval?: number;
 }
 
 export function PollResults({pollId, refreshInterval = 5000}: PollResultsProps) {
-    const [poll, setPoll] = useState<PollStats | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const {poll, isLoading, isError, error, refetch, isFetching} = usePollStats(pollId, refreshInterval);
 
-    const loadPoll = useCallback(async () => {
-        try {
-            setError(null);
-            const stats = await pollsApi.getPollStats(pollId);
-            setPoll(stats);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to load poll results');
-            console.error('Failed to load poll:', err);
-        } finally {
-            setLoading(false);
-        }
-    }, [pollId]);
+    const errorMessage = error instanceof Error ? error.message : isError ? 'Failed to load poll results' : null;
 
-    useEffect(() => {
-        loadPoll();
-
-        // Set up auto-refresh
-        const interval = setInterval(loadPoll, refreshInterval);
-
-        return () => clearInterval(interval);
-    }, [loadPoll, refreshInterval]);
-
-    if (loading && !poll) {
+    if (isLoading && !poll) {
         return <div className="text-muted-foreground text-sm">Loading results...</div>;
     }
 
-    if (error && !poll) {
-        return <div className="text-destructive text-sm">Error: {error}</div>;
+    if (errorMessage && !poll) {
+        return <div className="text-destructive text-sm">Error: {errorMessage}</div>;
     }
 
     if (!poll) {
@@ -53,11 +29,11 @@ export function PollResults({pollId, refreshInterval = 5000}: PollResultsProps) 
             <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-foreground">{poll.pollQuestion || 'Poll Results'}</h3>
                 <button
-                    onClick={loadPoll}
-                    disabled={loading}
+                    onClick={() => refetch()}
+                    disabled={isFetching}
                     className="text-xs px-2 py-1 bg-secondary hover:bg-secondary/80 border border-border text-foreground rounded disabled:opacity-50 transition-colors"
                 >
-                    {loading ? 'Refreshing...' : 'Refresh'}
+                    {isFetching ? 'Refreshing...' : 'Refresh'}
                 </button>
             </div>
 
@@ -72,20 +48,20 @@ export function PollResults({pollId, refreshInterval = 5000}: PollResultsProps) 
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-medium">{option.optionText}</span>
                                 <span className="text-xs text-muted-foreground">
-                  {option.voteCount} vote{option.voteCount !== 1 ? 's' : ''} ({option.percentage}%)
-                </span>
+                                    {option.voteCount} vote{option.voteCount !== 1 ? 's' : ''} ({option.percentage}%)
+                                </span>
                             </div>
 
-                            {/* Progress bar */}
                             <div className="w-full h-6 bg-secondary rounded-full overflow-hidden">
                                 <div
                                     className="h-full bg-gradient-to-r from-primary/70 to-primary transition-all duration-300 ease-out flex items-center justify-center"
                                     style={{width: `${option.percentage}%`}}
                                 >
-                                    {option.percentage > 10 && (
-                                        <span
-                                            className="text-xs font-semibold text-primary-foreground">{option.percentage}%</span>
-                                    )}
+                                    {option.percentage > 10 ? (
+                                        <span className="text-xs font-semibold text-primary-foreground">
+                                            {option.percentage}%
+                                        </span>
+                                    ) : null}
                                 </div>
                             </div>
                         </div>
@@ -93,8 +69,9 @@ export function PollResults({pollId, refreshInterval = 5000}: PollResultsProps) 
                 )}
             </div>
 
-            {error && <p className="text-yellow-400 text-xs mt-2">Note: {error}</p>}
+            {errorMessage ? (
+                <p className="text-yellow-400 text-xs mt-2">Note: {errorMessage}</p>
+            ) : null}
         </div>
     );
 }
-
