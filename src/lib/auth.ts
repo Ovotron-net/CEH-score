@@ -1,5 +1,5 @@
 import {NextResponse} from 'next/server';
-import {timingSafeEqual} from 'crypto';
+import {timingSafeEqual} from 'node:crypto';
 
 /**
  * Validates the API key from the Authorization header.
