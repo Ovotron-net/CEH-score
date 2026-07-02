@@ -59,9 +59,15 @@ export default function Assessments() {
                         />
                     </div>
                     <div className="relative">
+                        <label htmlFor="assessment-type-filter" className="sr-only">
+                            Filter assessments by type
+                        </label>
                         <Filter
                             className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground"/>
                         <select
+                            id="assessment-type-filter"
+                            title="Filter assessments by type"
+                            aria-label="Filter assessments by type"
                             value={selectedType}
                             onChange={(e) => setSelectedType(e.target.value as Assessment['type'] | 'all')}
                             className="pl-10 pr-8 py-3 bg-background/50 border border-border rounded-lg text-white focus:outline-none focus:border-primary/50 transition-colors appearance-none min-w-[140px]"
@@ -161,6 +167,3 @@ export default function Assessments() {
         </div>
     );
 }
-
-
-

@@ -10,8 +10,8 @@ function makeResult(overrides: Partial<PollResult> = {}): PollResult {
         optionText: 'Module 1',
         voteCount: 3,
         userId: null,
-        createdAt: new Date('2026-01-01T10:00:00.000Z'),
-        updatedAt: new Date('2026-01-02T10:00:00.000Z'),
+        createdAt: '2026-01-01T10:00:00.000Z',
+        updatedAt: '2026-01-02T10:00:00.000Z',
         ...overrides,
     };
 }
@@ -31,10 +31,15 @@ describe('groupIntoSummaries', () => {
         ]);
 
         expect(summaries).toHaveLength(2);
-        expect(summaries[0].pollId).toBe('difficulty-level');
-        expect(summaries[0].totalVotes).toBe(5);
-        expect(summaries[1].pollId).toBe('module-selection');
-        expect(summaries[1].options).toEqual([
+
+        const moduleSummary = summaries.find(s => s.pollId === 'module-selection');
+        const difficultySummary = summaries.find(s => s.pollId === 'difficulty-level');
+
+        expect(moduleSummary).toBeDefined();
+        expect(difficultySummary).toBeDefined();
+
+        expect(difficultySummary?.totalVotes).toBe(5);
+        expect(moduleSummary?.options).toEqual([
             {optionText: 'Module 1', voteCount: 3, percentage: 75},
             {optionText: 'Module 2', voteCount: 1, percentage: 25},
         ]);

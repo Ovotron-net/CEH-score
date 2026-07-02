@@ -66,4 +66,3 @@
 - Repository-level guidance source found: `README.md`.
 - No existing `.github/copilot-instructions.md`, `AGENT.md`, `AGENTS.md`, `CLAUDE.md`, or cursor/windsurf/cline rule
   files were found at generation time.
-

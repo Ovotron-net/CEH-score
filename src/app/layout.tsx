@@ -1,5 +1,4 @@
-import type {Metadata} from 'next';
-import './globals.css';
+import type { Metadata } from 'next';
 import Providers from '@/components/providers';
 import ClientShell from '@/components/ClientShell';
 import ErrorBoundary from '@/components/ErrorBoundary';

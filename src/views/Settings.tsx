@@ -7,11 +7,11 @@ import {useAssessments} from '../hooks/useAssessments';
 import type {UserSettings} from '../types';
 
 function SettingsForm({
-                          settings,
-                          updateSettings,
-                          assessments,
-                          onClearData,
-                      }: {
+    settings,
+    updateSettings,
+    assessments,
+    onClearData,
+}: {
     settings: UserSettings;
     updateSettings: (u: Partial<UserSettings>) => Promise<unknown>;
     assessments: unknown[];
@@ -45,9 +45,14 @@ function SettingsForm({
                 <div className="space-y-4">
                     <div>
                         <label
-                            className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2">Your
-                            Name</label>
+                            htmlFor="settings-name"
+                            className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2"
+                        >
+                            Your Name
+                        </label>
                         <input
+                            id="settings-name"
+                            name="name"
                             type="text"
                             value={form.name}
                             onChange={e => setForm(p => ({...p, name: e.target.value}))}
@@ -63,15 +68,19 @@ function SettingsForm({
                 <div className="space-y-4">
                     <div>
                         <label
-                            className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2">
+                            htmlFor="settings-target-score"
+                            className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2"
+                        >
                             Target Score ({form.targetScore}%)
                         </label>
                         <input
+                            id="settings-target-score"
+                            name="targetScore"
                             type="range"
                             min="70"
                             max="100"
                             value={form.targetScore}
-                            onChange={e => setForm(p => ({...p, targetScore: parseInt(e.target.value)}))}
+                            onChange={e => setForm(p => ({...p, targetScore: parseInt(e.target.value, 10)}))}
                             className="w-full accent-primary"
                         />
                         <div className="flex justify-between text-muted-foreground text-xs mt-1">
@@ -82,9 +91,14 @@ function SettingsForm({
                     </div>
                     <div>
                         <label
-                            className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2">Exam
-                            Date</label>
+                            htmlFor="settings-exam-date"
+                            className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2"
+                        >
+                            Exam Date
+                        </label>
                         <input
+                            id="settings-exam-date"
+                            name="examDate"
                             type="date"
                             value={form.examDate}
                             onChange={e => setForm(p => ({...p, examDate: e.target.value}))}
@@ -227,6 +241,3 @@ export default function Settings() {
         </div>
     );
 }
-
-
-
