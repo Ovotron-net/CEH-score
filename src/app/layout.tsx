@@ -3,6 +3,7 @@ import './globals.css';
 import Providers from '@/components/providers';
 import ClientShell from '@/components/ClientShell';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import ThemeApplier from '@/components/ThemeApplier';
 
 export const metadata: Metadata = {
     title: 'CEH Tracker',
@@ -14,6 +15,7 @@ export default function RootLayout({children}: { children: React.ReactNode }) {
         <html lang="en" className="dark">
         <body>
         <Providers>
+            <ThemeApplier/>
             <ErrorBoundary>
                 <ClientShell>{children}</ClientShell>
             </ErrorBoundary>

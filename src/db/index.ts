@@ -8,6 +8,7 @@ type DrizzleDb = ReturnType<typeof drizzle<typeof schema>>;
 const globalForDb = globalThis as unknown as {
     _pool: Pool | undefined;
     _db: DrizzleDb | undefined;
+    _shutdownHooked: boolean | undefined;
 };
 
 function getDb() {
@@ -31,7 +32,9 @@ export const db: DrizzleDb = new Proxy({} as DrizzleDb, {
     },
 });
 
-/* Graceful shutdown: release the connection pool */
+/* Graceful shutdown: release the connection pool.
+   Registered once per process (guarded via globalThis) so hot-reload in dev
+   doesn't accumulate duplicate SIGTERM/SIGINT listeners. */
 function shutdown() {
     if (globalForDb._pool) {
         globalForDb._pool.end().catch(() => {
@@ -41,6 +44,9 @@ function shutdown() {
     }
 }
 
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);
+if (!globalForDb._shutdownHooked) {
+    globalForDb._shutdownHooked = true;
+    process.on('SIGTERM', shutdown);
+    process.on('SIGINT', shutdown);
+}
 

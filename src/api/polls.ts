@@ -7,8 +7,8 @@ export interface PollResult {
     optionText: string;
     voteCount: number;
     userId: string | null;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface PollStats {
@@ -21,8 +21,8 @@ export interface PollStats {
         voteCount: number;
         percentage: number;
     }>;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string;
+    updatedAt: string;
 }
 
 /**

@@ -1,5 +1,6 @@
 import {NextResponse} from 'next/server';
 import {z} from 'zod';
+import {desc} from 'drizzle-orm';
 import {db} from '@/db';
 import {assessments} from '@/db/schema';
 import {authenticate} from '@/lib/auth';
@@ -14,6 +15,9 @@ const AssessmentSchema = z.object({
     domain: z.string().min(1).max(200),
     notes: z.string().max(2000).default(''),
     createdAt: z.string().min(1).max(50),
+}).refine((data) => data.score <= data.maxScore, {
+    message: 'score cannot exceed maxScore',
+    path: ['score'],
 });
 
 export async function GET(request: Request) {
@@ -21,7 +25,7 @@ export async function GET(request: Request) {
     if (authError) return authError;
 
     try {
-        const rows = await db.select().from(assessments).orderBy(assessments.createdAt);
+        const rows = await db.select().from(assessments).orderBy(desc(assessments.createdAt));
         return NextResponse.json(rows);
     } catch {
         return NextResponse.json({error: 'Failed to fetch assessments.'}, {status: 500});

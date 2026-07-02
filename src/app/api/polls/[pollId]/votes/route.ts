@@ -48,16 +48,14 @@ export async function POST(
 
         const {optionText, pollQuestion, userId} = parsed.data;
 
-        let resolvedPollQuestion = pollQuestion;
+        // Load existing option rows for this poll to resolve the question and
+        // guard against unbounded, user-driven option creation.
+        const existingRows = await db
+            .select()
+            .from(pollResults)
+            .where(eq(pollResults.pollId, pollId));
 
-        if (!resolvedPollQuestion) {
-            const existingPoll = await db
-                .select()
-                .from(pollResults)
-                .where(eq(pollResults.pollId, pollId))
-                .limit(1);
-            resolvedPollQuestion = existingPoll[0]?.pollQuestion;
-        }
+        const resolvedPollQuestion = pollQuestion ?? existingRows[0]?.pollQuestion;
 
         if (!resolvedPollQuestion) {
             return NextResponse.json(
@@ -65,6 +63,15 @@ export async function POST(
                     error:
                         'pollQuestion is required for a new pollId when no existing poll metadata is present.',
                 },
+                {status: 400},
+            );
+        }
+
+        const isExistingOption = existingRows.some((row) => row.optionText === optionText);
+        const MAX_OPTIONS_PER_POLL = 20;
+        if (!isExistingOption && existingRows.length >= MAX_OPTIONS_PER_POLL) {
+            return NextResponse.json(
+                {error: 'This poll has reached the maximum number of options.'},
                 {status: 400},
             );
         }

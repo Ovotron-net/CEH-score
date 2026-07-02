@@ -47,6 +47,32 @@
         --input: var(--border);
         --ring: var(--primary);
     }
+
+    .light {
+        --background: 210 40% 98%;
+        --foreground: 222 47% 11%;
+        --card: 0 0% 100%;
+        --card-foreground: var(--foreground);
+        --popover: var(--card);
+        --popover-foreground: var(--foreground);
+        --primary: 155 90% 34%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 214 32% 91%;
+        --secondary-foreground: var(--foreground);
+        --muted: var(--secondary);
+        --muted-foreground: 215 16% 40%;
+        --accent: var(--primary);
+        --accent-foreground: 0 0% 100%;
+        --destructive: 0 72% 51%;
+        --destructive-foreground: 0 0% 100%;
+        --border: 214 32% 85%;
+        --input: var(--border);
+        --ring: var(--primary);
+    }
+}
+
+:root.light {
+    color-scheme: light;
 }
 
 :root {

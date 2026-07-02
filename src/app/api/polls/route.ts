@@ -68,7 +68,15 @@ export async function POST(request: Request) {
             })
             .returning();
         return NextResponse.json(created, {status: 201});
-    } catch {
+    } catch (err: unknown) {
+        const isUniqueViolation =
+            typeof err === 'object' && err !== null && 'code' in err && (err as { code: string }).code === '23505';
+        if (isUniqueViolation) {
+            return NextResponse.json(
+                {error: 'A poll option with this text already exists for this poll.'},
+                {status: 409},
+            );
+        }
         return NextResponse.json({error: 'Failed to create poll result.'}, {status: 500});
     }
 }

@@ -94,6 +94,33 @@ function SettingsForm({
                 </div>
             </div>
 
+            {/* Appearance */}
+            <div className="bg-card border border-border rounded-xl p-6">
+                <h2 className="text-white font-semibold mb-5">Appearance</h2>
+                <div className="space-y-4">
+                    <div>
+                        <label
+                            className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2">Theme</label>
+                        <div className="flex gap-2">
+                            {(['dark', 'light'] as const).map(t => (
+                                <button
+                                    key={t}
+                                    type="button"
+                                    onClick={() => setForm(p => ({...p, theme: t}))}
+                                    className={`flex-1 py-2.5 rounded-lg text-sm font-medium capitalize transition-all border ${
+                                        form.theme === t
+                                            ? 'bg-primary/20 border-primary/40 text-primary'
+                                            : 'bg-background border-border text-muted-foreground hover:text-white'
+                                    }`}
+                                >
+                                    {t}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Stats */}
             <div className="bg-card border border-border rounded-xl p-6">
                 <h2 className="text-white font-semibold mb-4">Statistics</h2>

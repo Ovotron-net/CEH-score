@@ -42,13 +42,24 @@ export async function GET(
             percentage: totalVotes > 0 ? Math.round((row.voteCount / totalVotes) * 100) : 0,
         }));
 
+        // Rows are ordered by optionText, so derive the poll's true timestamps
+        // from the min createdAt / max updatedAt across all option rows.
+        const createdAt = rows.reduce(
+            (min: Date, row: PollResultRow) => (row.createdAt < min ? row.createdAt : min),
+            rows[0].createdAt,
+        );
+        const updatedAt = rows.reduce(
+            (max: Date, row: PollResultRow) => (row.updatedAt > max ? row.updatedAt : max),
+            rows[0].updatedAt,
+        );
+
         return NextResponse.json({
             pollId,
             pollQuestion,
             totalVotes,
             options,
-            createdAt: rows[0].createdAt,
-            updatedAt: rows[rows.length - 1].updatedAt,
+            createdAt,
+            updatedAt,
         });
     } catch {
         return NextResponse.json({error: 'Failed to fetch poll.'}, {status: 500});
