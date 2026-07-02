@@ -15,12 +15,8 @@ jobs:
     permissions:
       contents: read
 
-    env:
-      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-
     steps:
       - name: Notify Discord of deployment status
-        if: ${{ env.DISCORD_WEBHOOK_URL != '' }}
         env:
           STATE: ${{ github.event.deployment_status.state }}
           ENVIRONMENT: ${{ github.event.deployment.environment }}
@@ -30,6 +26,7 @@ jobs:
           SHA: ${{ github.sha }}
           REPO: ${{ github.repository }}
           ACTOR: ${{ github.actor }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           case "$STATE" in
             success)  COLOR=3066993 ;;   # green
@@ -72,3 +69,4 @@ jobs:
             -H "Content-Type: application/json" \
             -d "$PAYLOAD" \
             "$DISCORD_WEBHOOK_URL"
+
