@@ -34,6 +34,7 @@ data/*.db-wal
 .next/*
 .junie/*
 mcps/
+terminals/
 
 # Test artifacts
 coverage/
