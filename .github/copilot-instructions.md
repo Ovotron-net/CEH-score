@@ -5,7 +5,7 @@
 ```bash
 npm run dev          # Start dev server (http://localhost:3000)
 npm run build        # Production build (also validates TypeScript)
-npm run lint         # ESLint via Next.js lint runner
+npm run lint         # ESLint (eslint .)
 npm run generate     # Regenerate Orval API client from openapi.yaml
 
 npm run db:generate  # Generate Drizzle migration files from schema changes
