@@ -426,12 +426,14 @@ export function CreatePollForm() {
 
 ### `vote(data)`
 
-Record a vote for a poll option. Creates the option if it doesn't exist.
+Record a vote for a poll option. Creates the option if it doesn't exist. When the poll has no options
+yet (a brand-new `pollId`), also pass `pollQuestion` so the poll can be created.
 
 ```typescript
 await pollsApi.vote({
     pollId: 'poll-123',
     optionText: 'Option A',
+    pollQuestion: 'Which option do you prefer?', // required when the poll has no options yet
     userId: 'user-456', // optional
 });
 ```

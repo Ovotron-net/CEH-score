@@ -93,6 +93,7 @@ const response = await fetch("/api/polls/module-selection/votes", {
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
     optionText: selected.value,
+    pollQuestion: "Select a module", // Required the first time this pollId is used
   }),
 });
 ```
@@ -145,6 +146,7 @@ export function PollForm() {
       const result = await pollsApi.vote({
         pollId: 'module-selection',
         optionText: selected,
+        pollQuestion: 'Select a module', // Required the first time this pollId is used
       });
 
       alert(`Thanks! You selected: ${selected}. Total votes: ${result.voteCount}`);
@@ -183,17 +185,16 @@ export function PollForm() {
 
 ### Change the Poll ID
 
-Replace `"module-selection"` with your desired poll identifier:
+Replace `"module-selection"` in the request URL with your desired poll identifier:
 
 ```javascript
-pollId: "your-poll-name"
+fetch("/api/polls/your-poll-name/votes", { /* ... */ });
 ```
 
 ### Add User Tracking (Optional)
 
 ```javascript
 body: JSON.stringify({
-  pollId: "module-selection",
   optionText: selected.value,
   userId: localStorage.getItem("userId") || "anonymous",
 })
