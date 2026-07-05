@@ -1,0 +1,74 @@
+name: Deploy Notify
+
+on:
+  deployment_status:
+
+concurrency:
+  group: deploy-notify-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  discord:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.deployment_status.state != 'in_progress' && github.event.deployment_status.state != 'queued' && github.event.deployment_status.state != 'pending' }}
+
+    permissions:
+      contents: read
+
+    env:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+    steps:
+      - name: Notify Discord of deployment status
+        if: ${{ env.DISCORD_WEBHOOK_URL != '' }}
+        env:
+          STATE: ${{ github.event.deployment_status.state }}
+          ENVIRONMENT: ${{ github.event.deployment.environment }}
+          TARGET_URL: ${{ github.event.deployment_status.target_url }}
+          DESCRIPTION: ${{ github.event.deployment_status.description }}
+          REF: ${{ github.event.deployment.ref }}
+          SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          case "$STATE" in
+            success)  COLOR=3066993 ;;   # green
+            failure)  COLOR=15158332 ;;  # red
+            error)    COLOR=15158332 ;;  # red
+            inactive) COLOR=9807270 ;;   # grey
+            *)        COLOR=15844367 ;;  # yellow
+          esac
+
+          SHORT_SHA="${SHA:0:7}"
+          TITLE="Deployment ${STATE} — ${REPO}"
+          [ -n "$TARGET_URL" ] && URL_LINE="[View deployment](${TARGET_URL})" || URL_LINE="No target URL"
+
+          PAYLOAD=$(jq -n \
+            --arg title "$TITLE" \
+            --arg desc "${DESCRIPTION:-No description provided}" \
+            --arg env "${ENVIRONMENT:-unknown}" \
+            --arg ref "${REF:-unknown}" \
+            --arg sha "$SHORT_SHA" \
+            --arg actor "$ACTOR" \
+            --arg urlline "$URL_LINE" \
+            --argjson color "$COLOR" \
+            '{
+              embeds: [{
+                title: $title,
+                description: $urlline,
+                color: $color,
+                fields: [
+                  { name: "Environment", value: $env, inline: true },
+                  { name: "Ref", value: $ref, inline: true },
+                  { name: "Commit", value: $sha, inline: true },
+                  { name: "Triggered by", value: $actor, inline: true },
+                  { name: "Status detail", value: $desc, inline: false }
+                ],
+                timestamp: (now | todateiso8601)
+              }]
+            }')
+
+          curl -sS -f -X POST \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$DISCORD_WEBHOOK_URL"
