@@ -76,3 +76,19 @@
 - `docs/POLL_API_USAGE.md`, `docs/POLL_COMPONENTS.md`, `docs/POLL_FORM_EXAMPLE.md` — poll feature contracts and
   examples.
 - No cursor/windsurf/cline or `CLAUDE.md` rule files are present.
+
+## Agent skills
+
+Configuration consumed by the engineering skills. Edit `docs/agents/*.md` directly to change any of these.
+
+### Issue tracker
+
+Issues and PRDs are tracked as **GitHub issues** in `Ovotron-net/CEH-score` (via the `gh` CLI). External PRs are **not** a triage surface. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Five canonical triage labels with default names — `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root (created lazily by `/domain-modeling` when needed). See `docs/agents/domain.md`.
