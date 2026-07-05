@@ -11,9 +11,36 @@ npm run generate     # Regenerate Orval API client from openapi.yaml
 npm run db:generate  # Generate Drizzle migration files from schema changes
 npm run db:migrate   # Apply pending migrations to the database
 npm run db:studio    # Open Drizzle Studio (DB browser UI)
+
+npm run test         # Full suite: Vitest unit run + Playwright e2e
+npm run test:watch   # Vitest in watch mode
+npm run test:coverage # Vitest with v8 coverage
+npm run test:e2e     # Playwright e2e only
+npm run test:e2e:ui  # Playwright in UI mode
 ```
 
-> There is no test runner configured. Validate changes with `npm run lint` and `npm run build`.
+> Validate changes with `npm run lint`, `npm run build`, and the relevant tests (see **Testing** below).
+
+---
+
+## Testing
+
+- **Unit tests** — Vitest + Testing Library. Files are **colocated** with source as `src/**/*.{test,spec}.{ts,tsx}`
+  (e.g. `src/lib/auth.test.ts`, `src/utils/calculations.test.ts`, `src/components/StatCard.test.tsx`). Global setup is
+  `src/test/setup.ts` (loads `@testing-library/jest-dom/vitest`); alias `@/` and config live in `vitest.config.ts`.
+- **Test environment** — defaults to `jsdom`. For server/Node logic (no DOM), add `// @vitest-environment node` as the
+  **first line** of the file — see `src/lib/auth.test.ts`. Stub env vars with `vi.stubEnv(...)` and clean up in
+  `afterEach` with `vi.unstubAllEnvs()`.
+- **E2E tests** — Playwright specs in `e2e/*.spec.ts` (`testDir: ./e2e`, excluded from Vitest). `playwright.config.ts`
+  auto-starts the dev server via `webServer` — **do not** run `npm run dev` yourself before an e2e run.
+
+### Run a single test
+
+```bash
+npx vitest run src/lib/auth.test.ts          # one unit-test file
+npx vitest run -t "accepts a valid bearer"   # unit tests matching a name
+npx playwright test e2e/smoke.spec.ts        # one e2e file
+```
 
 ---
 

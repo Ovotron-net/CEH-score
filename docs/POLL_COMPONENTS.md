@@ -206,7 +206,7 @@ className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-70
 
 Components automatically use the polls API:
 
-- **POST /api/polls/vote** — Record votes
+- **POST /api/polls/[pollId]/votes** — Record votes
 - **GET /api/polls/[pollId]** — Fetch poll stats
 
 No additional configuration needed. The API client is imported from `@/api/polls`.

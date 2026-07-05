@@ -49,15 +49,15 @@ Replace your existing script with this version that calls the poll API:
     result.style.color = "blue";
 
     try {
-      // Call the poll API
-      const response = await fetch("/api/polls/vote", {
+      // Call the poll API (pollId is the URL path segment)
+      const response = await fetch("/api/polls/module-selection/votes", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          pollId: "module-selection", // Unique poll identifier
           optionText: selected.value,
+          pollQuestion: "Select a module", // Required the first time this pollId is used
           // userId: "user-123", // Optional: add user ID if available
         }),
       });
@@ -88,11 +88,10 @@ Replace your existing script with this version that calls the poll API:
 ### 1. **Async/Await for API Call**
 
 ```javascript
-const response = await fetch("/api/polls/vote", {
+const response = await fetch("/api/polls/module-selection/votes", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    pollId: "module-selection",
     optionText: selected.value,
   }),
 });
@@ -282,12 +281,12 @@ console.log(stats); // { pollId, totalVotes, options: [...] }
     result.style.color = "blue";
 
     try {
-      const response = await fetch(`/api/polls/vote`, {
+      const response = await fetch(`/api/polls/${POLL_ID}/votes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          pollId: POLL_ID,
           optionText: selected.value,
+          pollQuestion: "Select a module", // Required only when the poll doesn't exist yet
         }),
       });
 

@@ -16,7 +16,7 @@
 - **Global providers/layout:** `src/app/layout.tsx` wraps all pages with React Query provider (
   `src/components/providers.tsx`) and shared shell (`src/components/Layout.tsx`).
 - **API pattern:** each route validates request bodies with Zod and returns JSON/HTTP status explicitly (see
-  `src/app/api/assessments/route.ts`, `src/app/api/settings/route.ts`, `src/app/api/polls/vote/route.ts`).
+  `src/app/api/assessments/route.ts`, `src/app/api/settings/route.ts`, `src/app/api/polls/[pollId]/votes/route.ts`).
 - **Derived server fields:** assessment `percentage` and `passed` are computed server-side in `POST /api/assessments`.
 - **Settings singleton model:** settings are effectively one row (`id = 1`) with upsert behavior (
   `src/app/api/settings/route.ts`).
@@ -40,7 +40,14 @@
     - `npm run db:migrate`
     - `npm run db:studio`
     - Migration files live in `drizzle/`.
-- There is currently no `test` script in `package.json`; rely on lint/build/manual route checks.
+- Testing (Vitest unit + Playwright e2e):
+    - `npm run test` (full suite: `vitest run` then Playwright e2e)
+    - `npm run test:watch` / `npm run test:coverage` (Vitest)
+    - `npm run test:e2e` / `npm run test:e2e:ui` (Playwright)
+    - Unit tests are colocated as `src/**/*.{test,spec}.{ts,tsx}` (setup in `src/test/setup.ts`); e2e specs live in
+      `e2e/`. Vitest defaults to the `jsdom` environment — add `// @vitest-environment node` for server/Node logic.
+      Playwright auto-starts the dev server via its `webServer` config.
+    - Run a single test: `npx vitest run <file>`, `npx vitest run -t "<name>"`, or `npx playwright test <file>`.
 
 ## Project-specific conventions to follow
 
@@ -61,8 +68,11 @@
 - Poll feature behavior and component contracts are documented in `docs/POLL_API_USAGE.md` and
   `docs/POLL_COMPONENTS.md` (use these before changing poll API/component props).
 
-## Existing AI guidance sources discovered
+## Existing AI guidance sources
 
-- Repository-level guidance source found: `README.md`.
-- No existing `.github/copilot-instructions.md`, `AGENT.md`, `AGENTS.md`, `CLAUDE.md`, or cursor/windsurf/cline rule
-  files were found at generation time.
+- `README.md` — project overview, scripts, architecture, and conventions.
+- `.github/copilot-instructions.md` — detailed Copilot guidance (commands, testing, architecture, conventions). Keep it
+  and this file consistent when either changes.
+- `docs/POLL_API_USAGE.md`, `docs/POLL_COMPONENTS.md`, `docs/POLL_FORM_EXAMPLE.md` — poll feature contracts and
+  examples.
+- No cursor/windsurf/cline or `CLAUDE.md` rule files are present.
