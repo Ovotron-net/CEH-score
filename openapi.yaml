@@ -6,27 +6,12 @@ info:
 tags:
   - name: assessments
   - name: settings
-<<<<<<< Updated upstream
   - name: polls
-=======
-<<<<<<< HEAD
-=======
-  - name: polls
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 
 paths:
   /api/assessments:
     get:
-<<<<<<< Updated upstream
       tags: [ assessments ]
-=======
-<<<<<<< HEAD
-      tags: [assessments]
-=======
-      tags: [ assessments ]
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
       operationId: getAssessments
       summary: List all assessments
       responses:
@@ -40,41 +25,18 @@ paths:
                   $ref: '#/components/schemas/Assessment'
 
     post:
-<<<<<<< Updated upstream
       tags: [ assessments ]
       operationId: createAssessment
       summary: Create a new assessment
       description: >
         `percentage` and `passed` are computed server-side and must not be sent
         by the client.
-=======
-<<<<<<< HEAD
-      tags: [assessments]
-      operationId: createAssessment
-      summary: Create a new assessment
-=======
-      tags: [ assessments ]
-      operationId: createAssessment
-      summary: Create a new assessment
-      description: >
-        `percentage` and `passed` are computed server-side and must not be sent
-        by the client.
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
       requestBody:
         required: true
         content:
           application/json:
             schema:
-<<<<<<< Updated upstream
               $ref: '#/components/schemas/AssessmentInput'
-=======
-<<<<<<< HEAD
-              $ref: '#/components/schemas/Assessment'
-=======
-              $ref: '#/components/schemas/AssessmentInput'
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
       responses:
         '201':
           description: Created
@@ -82,7 +44,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Assessment'
-<<<<<<< Updated upstream
         '400':
           description: Invalid request body
         '409':
@@ -90,21 +51,6 @@ paths:
 
     delete:
       tags: [ assessments ]
-=======
-<<<<<<< HEAD
-
-    delete:
-      tags: [assessments]
-=======
-        '400':
-          description: Invalid request body
-        '409':
-          description: An assessment with this ID already exists
-
-    delete:
-      tags: [ assessments ]
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
       operationId: clearAssessments
       summary: Delete all assessments
       responses:
@@ -113,15 +59,7 @@ paths:
 
   /api/assessments/{id}:
     delete:
-<<<<<<< Updated upstream
       tags: [ assessments ]
-=======
-<<<<<<< HEAD
-      tags: [assessments]
-=======
-      tags: [ assessments ]
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
       operationId: deleteAssessment
       summary: Delete an assessment by ID
       parameters:
@@ -133,28 +71,12 @@ paths:
       responses:
         '204':
           description: No Content
-<<<<<<< Updated upstream
         '400':
           description: Invalid ID
 
   /api/settings:
     get:
       tags: [ settings ]
-=======
-<<<<<<< HEAD
-
-  /api/settings:
-    get:
-      tags: [settings]
-=======
-        '400':
-          description: Invalid ID
-
-  /api/settings:
-    get:
-      tags: [ settings ]
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
       operationId: getSettings
       summary: Get user settings
       responses:
@@ -166,15 +88,7 @@ paths:
                 $ref: '#/components/schemas/UserSettings'
 
     put:
-<<<<<<< Updated upstream
       tags: [ settings ]
-=======
-<<<<<<< HEAD
-      tags: [settings]
-=======
-      tags: [ settings ]
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
       operationId: updateSettings
       summary: Update user settings
       requestBody:
@@ -190,135 +104,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserSettings'
-<<<<<<< Updated upstream
-        '400':
-          description: Invalid request body
-
-  /api/polls:
-    get:
-      tags: [ polls ]
-      operationId: getPollResults
-      summary: List poll result rows, optionally filtered by pollId
-      parameters:
-        - in: query
-          name: pollId
-          required: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PollResult'
-        '400':
-          description: Invalid pollId
-
-    post:
-      tags: [ polls ]
-      operationId: createPollResult
-      summary: Create a new poll option row
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreatePollResultRequest'
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PollResult'
-        '400':
-          description: Invalid request body
-        '409':
-          description: A poll option with this text already exists for this poll
-
-  /api/polls/{pollId}:
-    get:
-      tags: [ polls ]
-      operationId: getPollStats
-      summary: Get aggregated statistics for a poll
-      parameters:
-        - in: path
-          name: pollId
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PollStats'
-        '400':
-          description: Invalid pollId
-        '404':
-          description: Poll not found
-
-    delete:
-      tags: [ polls ]
-      operationId: deletePoll
-      summary: Delete all results for a poll
-      parameters:
-        - in: path
-          name: pollId
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: No Content
-        '400':
-          description: Invalid pollId
-
-  /api/polls/{pollId}/votes:
-    post:
-      tags: [ polls ]
-      operationId: votePoll
-      summary: Record a vote for a poll option (rate-limited)
-      parameters:
-        - in: path
-          name: pollId
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/VoteRequest'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PollResult'
-        '400':
-          description: Invalid request body or pollId
-        '429':
-          description: Too many requests
-=======
-<<<<<<< HEAD
->>>>>>> Stashed changes
-
-components:
-  schemas:
-    AssessmentInput:
-      type: object
-<<<<<<< Updated upstream
-      required: [ id, date, type, score, maxScore, timeTaken, domain, createdAt ]
-=======
-      required: [id, date, type, score, maxScore, percentage, timeTaken, domain, notes, passed, createdAt]
-=======
         '400':
           description: Invalid request body
 
@@ -440,8 +225,6 @@ components:
     AssessmentInput:
       type: object
       required: [ id, date, type, score, maxScore, timeTaken, domain, createdAt ]
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
       properties:
         id:
           type: string
@@ -450,12 +233,6 @@ components:
           format: date
         type:
           type: string
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-          enum: [practice, official, mock]
-=======
->>>>>>> Stashed changes
           enum: [ practice, official, mock ]
         score:
           type: integer
@@ -483,10 +260,6 @@ components:
         type:
           type: string
           enum: [ practice, official, mock ]
-<<<<<<< Updated upstream
-=======
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
         score:
           type: integer
         maxScore:
@@ -507,15 +280,7 @@ components:
 
     UserSettings:
       type: object
-<<<<<<< Updated upstream
       required: [ name, targetScore, examDate, theme ]
-=======
-<<<<<<< HEAD
-      required: [name, targetScore, examDate, theme]
-=======
-      required: [ name, targetScore, examDate, theme ]
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
       properties:
         name:
           type: string
@@ -525,12 +290,6 @@ components:
           type: string
         theme:
           type: string
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-          enum: [dark, light]
-=======
->>>>>>> Stashed changes
           enum: [ dark, light ]
 
     PollResult:
@@ -616,7 +375,3 @@ components:
         userId:
           type: string
           nullable: true
-<<<<<<< Updated upstream
-=======
->>>>>>> origin/claude/build
->>>>>>> Stashed changes

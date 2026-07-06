@@ -1,108 +1,13 @@
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { pollResults } from '@/db/schema';
-import { eq } from 'drizzle-orm';
-import type { InferSelectModel } from 'drizzle-orm';
-=======
->>>>>>> Stashed changes
 import {NextResponse} from 'next/server';
 import {db} from '@/db';
 import {pollResults} from '@/db/schema';
 import type {InferSelectModel} from 'drizzle-orm';
 import {eq} from 'drizzle-orm';
 import {authenticate} from '@/lib/auth';
-<<<<<<< Updated upstream
-=======
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 
 type PollResultRow = InferSelectModel<typeof pollResults>;
 
 export async function GET(
-<<<<<<< Updated upstream
-    request: Request,
-    {params}: { params: Promise<{ pollId: string }> },
-=======
-<<<<<<< HEAD
-  request: Request,
-  { params }: { params: Promise<{ pollId: string }> },
->>>>>>> Stashed changes
-) {
-    const authError = authenticate(request);
-    if (authError) return authError;
-
-    try {
-        const {pollId} = await params;
-
-        if (!pollId || pollId.length > 100) {
-            return NextResponse.json({error: 'Invalid pollId.'}, {status: 400});
-        }
-
-        const rows = await db
-            .select()
-            .from(pollResults)
-            .where(eq(pollResults.pollId, pollId))
-            .orderBy(pollResults.optionText);
-
-        if (rows.length === 0) {
-            return NextResponse.json({error: 'Poll not found.'}, {status: 404});
-        }
-
-        // Calculate statistics
-        const totalVotes = rows.reduce((sum: number, row: PollResultRow) => sum + row.voteCount, 0);
-        const pollQuestion = rows[0].pollQuestion;
-
-        const options = rows.map((row: PollResultRow) => ({
-            id: row.id,
-            optionText: row.optionText,
-            voteCount: row.voteCount,
-            percentage: totalVotes > 0 ? Math.round((row.voteCount / totalVotes) * 100) : 0,
-        }));
-
-        // Rows are ordered by optionText, so derive the poll's true timestamps
-        // from the min createdAt / max updatedAt across all option rows.
-        const createdAt = rows.reduce(
-            (min: Date, row: PollResultRow) => (row.createdAt < min ? row.createdAt : min),
-            rows[0].createdAt,
-        );
-        const updatedAt = rows.reduce(
-            (max: Date, row: PollResultRow) => (row.updatedAt > max ? row.updatedAt : max),
-            rows[0].updatedAt,
-        );
-
-        return NextResponse.json({
-            pollId,
-            pollQuestion,
-            totalVotes,
-            options,
-            createdAt,
-            updatedAt,
-        });
-    } catch {
-        return NextResponse.json({error: 'Failed to fetch poll.'}, {status: 500});
-    }
-}
-
-export async function DELETE(
-    request: Request,
-    {params}: { params: Promise<{ pollId: string }> },
-) {
-    const authError = authenticate(request);
-    if (authError) return authError;
-
-    try {
-        const {pollId} = await params;
-
-<<<<<<< Updated upstream
-=======
-    return new Response(null, { status: 204 });
-  } catch {
-    return NextResponse.json({ error: 'Failed to delete poll.' }, { status: 500 });
-  }
-=======
     request: Request,
     {params}: { params: Promise<{ pollId: string }> },
 ) {
@@ -171,7 +76,6 @@ export async function DELETE(
     try {
         const {pollId} = await params;
 
->>>>>>> Stashed changes
         if (!pollId || pollId.length > 100) {
             return NextResponse.json({error: 'Invalid pollId.'}, {status: 400});
         }
@@ -182,9 +86,5 @@ export async function DELETE(
     } catch {
         return NextResponse.json({error: 'Failed to delete poll.'}, {status: 500});
     }
-<<<<<<< Updated upstream
-=======
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 }
 

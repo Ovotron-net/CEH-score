@@ -5,21 +5,12 @@
 ```bash
 npm run dev          # Start dev server (http://localhost:3000)
 npm run build        # Production build (also validates TypeScript)
-<<<<<<< Updated upstream
 npm run lint         # ESLint (eslint .)
-=======
-<<<<<<< HEAD
-npm run lint         # ESLint via Next.js lint runner
-=======
-npm run lint         # ESLint (eslint .)
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 npm run generate     # Regenerate Orval API client from openapi.yaml
 
 npm run db:generate  # Generate Drizzle migration files from schema changes
 npm run db:migrate   # Apply pending migrations to the database
 npm run db:studio    # Open Drizzle Studio (DB browser UI)
-<<<<<<< Updated upstream
 
 npm run test         # Full suite: Vitest unit run + Playwright e2e
 npm run test:watch   # Vitest in watch mode
@@ -28,21 +19,6 @@ npm run test:e2e     # Playwright e2e only
 npm run test:e2e:ui  # Playwright in UI mode
 ```
 
-=======
-<<<<<<< HEAD
-```
-
-> There is no test runner configured. Validate changes with `npm run lint` and `npm run build`.
-=======
-
-npm run test         # Full suite: Vitest unit run + Playwright e2e
-npm run test:watch   # Vitest in watch mode
-npm run test:coverage # Vitest with v8 coverage
-npm run test:e2e     # Playwright e2e only
-npm run test:e2e:ui  # Playwright in UI mode
-```
-
->>>>>>> Stashed changes
 > Validate changes with `npm run lint`, `npm run build`, and the relevant tests (see **Testing** below).
 
 ---
@@ -65,10 +41,6 @@ npx vitest run src/lib/auth.test.ts          # one unit-test file
 npx vitest run -t "accepts a valid bearer"   # unit tests matching a name
 npx playwright test e2e/smoke.spec.ts        # one e2e file
 ```
-<<<<<<< Updated upstream
-=======
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 
 ---
 
@@ -86,22 +58,6 @@ Browser
 
 ### Key layers
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-| Layer | Path | Responsibility |
-|---|---|---|
-| Page routes | `src/app/*/page.tsx` | Render `src/views/*.tsx` page components |
-| API handlers | `src/app/api/**/route.ts` | Zod validation → Drizzle DB operations → JSON response |
-| Query hooks | `src/hooks/use*.ts` | TanStack Query wrappers; optimistic cache updates via `setQueryData` |
-| API modules | `src/api/*.ts` | Thin HTTP wrappers calling `request()` from `src/api/client.ts` |
-| Generated client | `src/api/generated/` | Orval-generated React Query hooks from `openapi.yaml`; **gitignored** |
-| DB schema | `src/db/schema.ts` | Drizzle table definitions (source of truth for DB shape) |
-| Types | `src/types/index.ts` | Shared TypeScript interfaces (`Assessment`, `UserSettings`, `CEHDomain`) |
-| Views | `src/views/*.tsx` | Page-level client components (consumed by `app/*/page.tsx`) |
-| UI components | `src/components/ui/` | shadcn/ui primitives |
-=======
->>>>>>> Stashed changes
 | Layer            | Path                      | Responsibility                                                           |
 |------------------|---------------------------|--------------------------------------------------------------------------|
 | Page routes      | `src/app/*/page.tsx`      | Render `src/views/*.tsx` page components                                 |
@@ -113,72 +69,29 @@ Browser
 | Types            | `src/types/index.ts`      | Shared TypeScript interfaces (`Assessment`, `UserSettings`, `CEHDomain`) |
 | Views            | `src/views/*.tsx`         | Page-level client components (consumed by `app/*/page.tsx`)              |
 | UI components    | `src/components/ui/`      | shadcn/ui primitives                                                     |
-<<<<<<< Updated upstream
-=======
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 
 ### Database
 
 - PostgreSQL via `drizzle-orm/node-postgres`
 - Schema tables: `assessments`, `settings`, `poll_results`
 - DB client (`src/db/index.ts`) is a **lazy singleton** using a Proxy — safe to import at module scope in route handlers
-<<<<<<< Updated upstream
 - Connection string resolution order: `DATABASE_PUBLIC_URL` → `DATABASE_URL` → individual `PG*` env vars (`PGUSER`,
   `PGPASSWORD`, `PGHOST`, `PGPORT`, `PGDATABASE`)
-=======
-<<<<<<< HEAD
-- Connection string resolution order: `DATABASE_PUBLIC_URL` → `DATABASE_URL` → individual `PG*` env vars (`PGUSER`, `PGPASSWORD`, `PGHOST`, `PGPORT`, `PGDATABASE`)
-=======
-- Connection string resolution order: `DATABASE_PUBLIC_URL` → `DATABASE_URL` → individual `PG*` env vars (`PGUSER`,
-  `PGPASSWORD`, `PGHOST`, `PGPORT`, `PGDATABASE`)
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 
 ---
 
 ## Key Conventions
 
 ### Server-computed fields
-<<<<<<< Updated upstream
 
 `percentage` and `passed` are **never sent by the client** — they are computed in `POST /api/assessments`:
 
-=======
-<<<<<<< HEAD
-`percentage` and `passed` are **never sent by the client** — they are computed in `POST /api/assessments`:
-=======
-
-`percentage` and `passed` are **never sent by the client** — they are computed in `POST /api/assessments`:
-
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 ```ts
 const percentage = Math.round((score / maxScore) * 100);
 const passed = percentage >= 70;
 ```
 
 ### Zod validation in all API routes
-<<<<<<< Updated upstream
-
-Every route handler validates `request.json()` with a Zod schema before touching the DB. Invalid input returns `400`
-with `parsed.error.flatten()`.
-=======
-<<<<<<< HEAD
-Every route handler validates `request.json()` with a Zod schema before touching the DB. Invalid input returns `400` with `parsed.error.flatten()`.
->>>>>>> Stashed changes
-
-### Path alias
-
-`@/` maps to `src/`. Use `@/db`, `@/components`, etc. in all imports within `src/`.
-
-### SSR guard in API modules
-
-Some API modules guard against server-side execution by returning a safe default for their return type:
-<<<<<<< Updated upstream
-
-=======
-=======
 
 Every route handler validates `request.json()` with a Zod schema before touching the DB. Invalid input returns `400`
 with `parsed.error.flatten()`.
@@ -191,8 +104,6 @@ with `parsed.error.flatten()`.
 
 Some API modules guard against server-side execution by returning a safe default for their return type:
 
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 ```ts
 // assessments.ts — returns empty array
 if (typeof window === 'undefined') return [];
@@ -202,33 +113,6 @@ if (typeof window === 'undefined') {
   return { name: 'Author', targetScore: 85, examDate: '', theme: 'dark' };
 }
 ```
-<<<<<<< Updated upstream
-
-Return the appropriate empty/default value for the function's return type. Add this guard to any function that may be
-called inside a `useQuery` or during SSR; mutation/event-driven functions don't need it.
-=======
-<<<<<<< HEAD
-Return the appropriate empty/default value for the function's return type. Add this guard to any function that may be called inside a `useQuery` or during SSR; mutation/event-driven functions don't need it.
->>>>>>> Stashed changes
-
-### Orval-generated client
-
-- Source of truth: `openapi.yaml`
-- Run `npm run generate` after any spec change
-- Output (`src/api/generated/`) is gitignored; do not edit generated files
-- Uses `src/api/mutator.ts` (`customFetch`) as the fetch adapter, which bridges to the same `ApiError` class used by
-  hand-written API modules
-
-### TanStack Query cache updates
-
-Mutations use `qc.setQueryData` for optimistic local updates rather than refetching — keep this pattern when adding new
-mutations.
-
-### No `pages/` directory
-<<<<<<< Updated upstream
-=======
-This project uses **Next.js App Router only** (`src/app/`). Do not use `getServerSideProps`, `getStaticProps`, or `pages/` patterns.
-=======
 
 Return the appropriate empty/default value for the function's return type. Add this guard to any function that may be
 called inside a `useQuery` or during SSR; mutation/event-driven functions don't need it.
@@ -247,7 +131,6 @@ Mutations use `qc.setQueryData` for optimistic local updates rather than refetch
 mutations.
 
 ### No `pages/` directory
->>>>>>> Stashed changes
 
 This project uses **Next.js App Router only** (`src/app/`). Do not use `getServerSideProps`, `getStaticProps`, or
 `pages/` patterns.
@@ -310,7 +193,3 @@ Before modifying poll API or poll components, read:
 
 - `docs/POLL_API_USAGE.md` — `pollsApi` function signatures and usage patterns
 - `docs/POLL_COMPONENTS.md` — component prop contracts
-<<<<<<< Updated upstream
-=======
->>>>>>> origin/claude/build
->>>>>>> Stashed changes

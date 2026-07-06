@@ -23,14 +23,7 @@ data/*.db-wal
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-<<<<<<< Updated upstream
 !.vscode/mcp.json
-=======
-<<<<<<< HEAD
-=======
-!.vscode/mcp.json
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 .idea
 .DS_Store
 *.suo
@@ -40,11 +33,6 @@ data/*.db-wal
 *.sw?
 .next/*
 .junie/*
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
 mcps/
 terminals/
 
@@ -54,7 +42,3 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
-<<<<<<< Updated upstream
-=======
->>>>>>> origin/claude/build
->>>>>>> Stashed changes

@@ -1,85 +1,3 @@
-<<<<<<< Updated upstream
-import {memo, useState} from 'react';
-import type {CEHDomain} from '../types';
-import {BookOpen, ChevronRight} from 'lucide-react';
-=======
-<<<<<<< HEAD
-import { memo, useState } from 'react';
-import type { CEHDomain } from '../types';
-import { ChevronRight, BookOpen } from 'lucide-react';
->>>>>>> Stashed changes
-
-interface DomainCardProps {
-    domain: CEHDomain;
-    assessmentCount?: number;
-    avgScore?: number;
-}
-
-const DomainCard = memo(function DomainCard({domain, assessmentCount = 0, avgScore}: DomainCardProps) {
-    const [expanded, setExpanded] = useState(false);
-
-    return (
-        <div
-            className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/20 transition-all duration-200 card-enter">
-            <div
-                className="p-5 cursor-pointer flex items-start justify-between select-none"
-                onClick={() => setExpanded(!expanded)}
-                role="button"
-                aria-expanded={expanded}
-            >
-                <div className="flex items-start gap-4 flex-1">
-                    <div
-                        className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <BookOpen className="w-5 h-5 text-primary"/>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-semibold text-sm leading-tight mb-1">{domain.name}</h3>
-                        <p className="text-muted-foreground text-xs">{domain.description}</p>
-                        <div className="flex items-center gap-3 mt-2 flex-wrap">
-                            <span className="text-xs text-accent">Weight: {domain.weight}%</span>
-                            <span className="text-xs text-muted-foreground">{domain.topics.length} topics</span>
-                            {assessmentCount > 0 &&
-                                <span className="text-xs text-purple-400">{assessmentCount} assessments</span>}
-                            {avgScore !== undefined && (
-                                <span
-                                    className={`text-xs font-medium ${avgScore >= 70 ? 'text-primary' : 'text-red-400'}`}>
-                  Avg: {avgScore}%
-                </span>
-                            )}
-                        </div>
-                    </div>
-                </div>
-                <div className="flex-shrink-0 ml-2 mt-1 transition-transform duration-250"
-                     style={{transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)'}}>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground"/>
-                </div>
-            </div>
-
-            <div className={`domain-expand-wrapper ${expanded ? 'expanded' : 'collapsed'}`}>
-                <div>
-                    <div className="border-t border-border px-5 py-4">
-                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-3">Topics</p>
-                        <div className="flex flex-wrap gap-2">
-                            {domain.topics.map((topic) => (
-                                <span
-                                    key={topic}
-                                    className="text-xs px-3 py-1.5 bg-background border border-border rounded-full text-foreground hover:border-primary/30 hover:text-primary transition-colors cursor-default"
-                                >
-                  {topic}
-                </span>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-<<<<<<< Updated upstream
-    );
-=======
-      </div>
-    </div>
-  );
-=======
 import {memo, useState} from 'react';
 import type {CEHDomain} from '../types';
 import {BookOpen, ChevronRight} from 'lucide-react';
@@ -149,8 +67,6 @@ const DomainCard = memo(function DomainCard({domain, assessmentCount = 0, avgSco
             </div>
         </div>
     );
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 });
 
 export default DomainCard;
