@@ -3,24 +3,12 @@
 // Inspired by react-hot-toast library
 import * as React from "react"
 
-<<<<<<< Updated upstream
 import type {ToastActionElement, ToastProps,} from "@/components/ui/toast"
-=======
-<<<<<<< HEAD
-import type {
-  ToastActionElement,
-  ToastProps,
-} from "@/components/ui/toast"
-=======
-import type {ToastActionElement, ToastProps,} from "@/components/ui/toast"
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
 
 type ToasterToast = ToastProps & {
-<<<<<<< Updated upstream
     id: string
     title?: React.ReactNode
     description?: React.ReactNode
@@ -28,59 +16,22 @@ type ToasterToast = ToastProps & {
 }
 
 const actionTypes = {
-=======
-<<<<<<< HEAD
-  id: string
-  title?: React.ReactNode
-  description?: React.ReactNode
-  action?: ToastActionElement
-}
-
-const actionTypes = {
-  ADD_TOAST: "ADD_TOAST",
-  UPDATE_TOAST: "UPDATE_TOAST",
-  DISMISS_TOAST: "DISMISS_TOAST",
-  REMOVE_TOAST: "REMOVE_TOAST",
-=======
-    id: string
-    title?: React.ReactNode
-    description?: React.ReactNode
-    action?: ToastActionElement
-}
-
-const actionTypes = {
->>>>>>> Stashed changes
     ADD_TOAST: "ADD_TOAST",
     UPDATE_TOAST: "UPDATE_TOAST",
     DISMISS_TOAST: "DISMISS_TOAST",
     REMOVE_TOAST: "REMOVE_TOAST",
-<<<<<<< Updated upstream
-=======
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 } as const
 
 let count = 0
 
 function genId() {
-<<<<<<< Updated upstream
     count = (count + 1) % Number.MAX_SAFE_INTEGER
     return count.toString()
-=======
-<<<<<<< HEAD
-  count = (count + 1) % Number.MAX_SAFE_INTEGER
-  return count.toString()
-=======
-    count = (count + 1) % Number.MAX_SAFE_INTEGER
-    return count.toString()
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 }
 
 type ActionType = typeof actionTypes
 
 type Action =
-<<<<<<< Updated upstream
     | {
     type: ActionType[typeof actionTypes.ADD_TOAST]
     toast: ToasterToast
@@ -100,126 +51,11 @@ type Action =
 
 interface State {
     toasts: ToasterToast[]
-=======
-<<<<<<< HEAD
-  | {
-      type: ActionType[typeof actionTypes.ADD_TOAST]
-      toast: ToasterToast
-    }
-  | {
-      type: ActionType[typeof actionTypes.UPDATE_TOAST]
-      toast: Partial<ToasterToast>
-    }
-  | {
-      type: ActionType[typeof actionTypes.DISMISS_TOAST]
-      toastId?: ToasterToast["id"]
-    }
-  | {
-      type: ActionType[typeof actionTypes.REMOVE_TOAST]
-      toastId?: ToasterToast["id"]
-    }
-
-interface State {
-  toasts: ToasterToast[]
-=======
-    | {
-    type: ActionType[typeof actionTypes.ADD_TOAST]
-    toast: ToasterToast
-}
-    | {
-    type: ActionType[typeof actionTypes.UPDATE_TOAST]
-    toast: Partial<ToasterToast>
-}
-    | {
-    type: ActionType[typeof actionTypes.DISMISS_TOAST]
-    toastId?: ToasterToast["id"]
-}
-    | {
-    type: ActionType[typeof actionTypes.REMOVE_TOAST]
-    toastId?: ToasterToast["id"]
-}
-
-interface State {
-    toasts: ToasterToast[]
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 }
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
 const addToRemoveQueue = (toastId: string) => {
-<<<<<<< Updated upstream
-    if (toastTimeouts.has(toastId)) {
-        return
-    }
-=======
-<<<<<<< HEAD
-  if (toastTimeouts.has(toastId)) {
-    return
-  }
->>>>>>> Stashed changes
-
-    const timeout = setTimeout(() => {
-        toastTimeouts.delete(toastId)
-        dispatch({
-            type: actionTypes.REMOVE_TOAST,
-            toastId: toastId,
-        })
-    }, TOAST_REMOVE_DELAY)
-
-    toastTimeouts.set(toastId, timeout)
-}
-
-export const reducer = (state: State, action: Action): State => {
-    switch (action.type) {
-        case actionTypes.ADD_TOAST:
-            return {
-                ...state,
-                toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
-            }
-
-        case actionTypes.UPDATE_TOAST:
-            return {
-                ...state,
-                toasts: state.toasts.map((t) =>
-                    t.id === action.toast.id ? {...t, ...action.toast} : t
-                ),
-            }
-
-        case actionTypes.DISMISS_TOAST: {
-            const {toastId} = action
-
-            // ! Side effects ! - This could be extracted into a dismissToast() action,
-            // but I'll keep it here for simplicity
-            if (toastId) {
-                addToRemoveQueue(toastId)
-            } else {
-                state.toasts.forEach((toast) => {
-                    addToRemoveQueue(toast.id)
-                })
-            }
-
-            return {
-                ...state,
-                toasts: state.toasts.map((t) =>
-                    t.id === toastId || toastId === undefined
-                        ? {
-                            ...t,
-                            open: false,
-                        }
-                        : t
-                ),
-            }
-        }
-<<<<<<< Updated upstream
-=======
-      }
-      return {
-        ...state,
-        toasts: state.toasts.filter((t) => t.id !== action.toastId),
-      }
-  }
-=======
     if (toastTimeouts.has(toastId)) {
         return
     }
@@ -276,7 +112,6 @@ export const reducer = (state: State, action: Action): State => {
                 ),
             }
         }
->>>>>>> Stashed changes
         case actionTypes.REMOVE_TOAST:
             if (action.toastId === undefined) {
                 return {
@@ -289,104 +124,21 @@ export const reducer = (state: State, action: Action): State => {
                 toasts: state.toasts.filter((t) => t.id !== action.toastId),
             }
     }
-<<<<<<< Updated upstream
-=======
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 }
 
 const listeners: Array<(state: State) => void> = []
 
-<<<<<<< Updated upstream
 let memoryState: State = {toasts: []}
 
 function dispatch(action: Action) {
-=======
-<<<<<<< HEAD
-let memoryState: State = { toasts: [] }
-
-function dispatch(action: Action) {
-  memoryState = reducer(memoryState, action)
-  listeners.forEach((listener) => {
-    listener(memoryState)
-  })
-=======
-let memoryState: State = {toasts: []}
-
-function dispatch(action: Action) {
->>>>>>> Stashed changes
     memoryState = reducer(memoryState, action)
     listeners.forEach((listener) => {
         listener(memoryState)
     })
-<<<<<<< Updated upstream
-=======
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 }
 
 type Toast = Omit<ToasterToast, "id">
 
-<<<<<<< Updated upstream
-function toast({...props}: Toast) {
-    const id = genId()
-
-    const update = (props: ToasterToast) =>
-        dispatch({
-            type: actionTypes.UPDATE_TOAST,
-            toast: {...props, id},
-        })
-    const dismiss = () => dispatch({type: actionTypes.DISMISS_TOAST, toastId: id})
-=======
-<<<<<<< HEAD
-function toast({ ...props }: Toast) {
-  const id = genId()
->>>>>>> Stashed changes
-
-    dispatch({
-        type: actionTypes.ADD_TOAST,
-        toast: {
-            ...props,
-            id,
-            open: true,
-            onOpenChange: (open) => {
-                if (!open) dismiss()
-            },
-        },
-    })
-
-    return {
-        id: id,
-        dismiss,
-        update,
-    }
-}
-
-function useToast() {
-    const [state, setState] = React.useState<State>(memoryState)
-
-    React.useEffect(() => {
-        listeners.push(setState)
-        return () => {
-            const index = listeners.indexOf(setState)
-            if (index > -1) {
-                listeners.splice(index, 1)
-            }
-        }
-    }, [state])
-
-    return {
-        ...state,
-        toast,
-        dismiss: (toastId?: string) => dispatch({type: actionTypes.DISMISS_TOAST, toastId}),
-    }
-}
-
-<<<<<<< Updated upstream
-export {useToast, toast}
-=======
-export { useToast, toast }
-=======
 function toast({...props}: Toast) {
     const id = genId()
 
@@ -437,8 +189,6 @@ function useToast() {
 }
 
 export {useToast, toast}
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 
 
 

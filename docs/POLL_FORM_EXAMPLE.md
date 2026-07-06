@@ -49,35 +49,15 @@ Replace your existing script with this version that calls the poll API:
     result.style.color = "blue";
 
     try {
-<<<<<<< Updated upstream
       // Call the poll API (pollId is the URL path segment)
       const response = await fetch("/api/polls/module-selection/votes", {
-=======
-<<<<<<< HEAD
-      // Call the poll API
-      const response = await fetch("/api/polls/vote", {
-=======
-      // Call the poll API (pollId is the URL path segment)
-      const response = await fetch("/api/polls/module-selection/votes", {
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-<<<<<<< Updated upstream
           optionText: selected.value,
           pollQuestion: "Select a module", // Required the first time this pollId is used
-=======
-<<<<<<< HEAD
-          pollId: "module-selection", // Unique poll identifier
-          optionText: selected.value,
-=======
-          optionText: selected.value,
-          pollQuestion: "Select a module", // Required the first time this pollId is used
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
           // userId: "user-123", // Optional: add user ID if available
         }),
       });
@@ -106,28 +86,12 @@ Replace your existing script with this version that calls the poll API:
 ## Key Changes
 
 ### 1. **Async/Await for API Call**
-<<<<<<< Updated upstream
-
-=======
-<<<<<<< HEAD
->>>>>>> Stashed changes
-```javascript
-const response = await fetch("/api/polls/module-selection/votes", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-<<<<<<< Updated upstream
-=======
-    pollId: "module-selection",
-=======
 
 ```javascript
 const response = await fetch("/api/polls/module-selection/votes", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
     optionText: selected.value,
     pollQuestion: "Select a module", // Required the first time this pollId is used
   }),
@@ -135,14 +99,7 @@ const response = await fetch("/api/polls/module-selection/votes", {
 ```
 
 ### 2. **Error Handling**
-<<<<<<< Updated upstream
 
-=======
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 ```javascript
 if (!response.ok) {
   throw new Error(`API error: ${response.status}`);
@@ -150,28 +107,14 @@ if (!response.ok) {
 ```
 
 ### 3. **Response Handling**
-<<<<<<< Updated upstream
 
-=======
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 ```javascript
 const data = await response.json();
 result.textContent = `Thanks! You selected: ${selected.value}. Total votes: ${data.voteCount}`;
 ```
 
 ### 4. **Loading State**
-<<<<<<< Updated upstream
 
-=======
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 ```javascript
 result.textContent = "Submitting your vote...";
 result.style.color = "blue";
@@ -241,32 +184,15 @@ export function PollForm() {
 ## Configuration
 
 ### Change the Poll ID
-<<<<<<< Updated upstream
 
 Replace `"module-selection"` in the request URL with your desired poll identifier:
 
-=======
-<<<<<<< HEAD
-Replace `"module-selection"` with your desired poll identifier:
-=======
-
-Replace `"module-selection"` with your desired poll identifier:
-
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 ```javascript
 fetch("/api/polls/your-poll-name/votes", { /* ... */ });
 ```
 
 ### Add User Tracking (Optional)
-<<<<<<< Updated upstream
 
-=======
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 ```javascript
 body: JSON.stringify({
   optionText: selected.value,
@@ -275,14 +201,7 @@ body: JSON.stringify({
 ```
 
 ### Get Current Poll Results
-<<<<<<< Updated upstream
 
-=======
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 ```javascript
 // After voting, fetch updated stats
 const stats = await fetch("/api/polls/module-selection").then(r => r.json());
@@ -363,28 +282,12 @@ console.log(stats); // { pollId, totalVotes, options: [...] }
     result.style.color = "blue";
 
     try {
-<<<<<<< Updated upstream
-      const response = await fetch(`/api/polls/${POLL_ID}/votes`, {
-=======
-<<<<<<< HEAD
-      const response = await fetch(`/api/polls/vote`, {
->>>>>>> Stashed changes
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          optionText: selected.value,
-<<<<<<< Updated upstream
-          pollQuestion: "Select a module", // Required only when the poll doesn't exist yet
-=======
-=======
       const response = await fetch(`/api/polls/${POLL_ID}/votes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           optionText: selected.value,
           pollQuestion: "Select a module", // Required only when the poll doesn't exist yet
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
         }),
       });
 
@@ -406,26 +309,10 @@ console.log(stats); // { pollId, totalVotes, options: [...] }
 ```
 
 This version:
-<<<<<<< Updated upstream
 
-=======
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 - ✅ Submits votes to the API
 - ✅ Shows loading state
 - ✅ Displays confirmation message
 - ✅ Loads and displays live poll results
 - ✅ Updates stats after each vote
-<<<<<<< Updated upstream
 - ✅ Handles errors gracefully.
-=======
-<<<<<<< HEAD
-- ✅ Handles errors gracefully
-
-=======
-- ✅ Handles errors gracefully.
->>>>>>> origin/claude/build
->>>>>>> Stashed changes

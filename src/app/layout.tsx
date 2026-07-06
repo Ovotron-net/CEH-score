@@ -1,38 +1,4 @@
 import type { Metadata } from 'next';
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-import './globals.css';
->>>>>>> Stashed changes
-import Providers from '@/components/providers';
-import ClientShell from '@/components/ClientShell';
-import ErrorBoundary from '@/components/ErrorBoundary';
-import ThemeApplier from '@/components/ThemeApplier';
-
-export const metadata: Metadata = {
-    title: 'CEH Tracker',
-    description: 'CEH Exam Score Analytics Dashboard',
-};
-
-export default function RootLayout({children}: { children: React.ReactNode }) {
-    return (
-        <html lang="en" className="dark">
-        <body>
-        <Providers>
-            <ThemeApplier/>
-            <ErrorBoundary>
-                <ClientShell>{children}</ClientShell>
-            </ErrorBoundary>
-        </Providers>
-<<<<<<< Updated upstream
-        </body>
-        </html>
-    );
-=======
-      </body>
-    </html>
-  );
-=======
 import Providers from '@/components/providers';
 import ClientShell from '@/components/ClientShell';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -56,6 +22,4 @@ export default function RootLayout({children}: { children: React.ReactNode }) {
         </body>
         </html>
     );
->>>>>>> origin/claude/build
->>>>>>> Stashed changes
 }
