@@ -74,6 +74,9 @@ export async function getAllResults(pollId?: string): Promise<PollResult[]> {
  * Get poll statistics and results for a specific poll
  */
 export async function getPollStats(pollId: string): Promise<PollStats> {
+    if (typeof window === 'undefined') {
+        return {pollId, pollQuestion: '', totalVotes: 0, options: [], createdAt: '', updatedAt: ''};
+    }
     return request<PollStats>(`/api/polls/${encodeURIComponent(pollId)}`, {
         method: 'GET',
     });
