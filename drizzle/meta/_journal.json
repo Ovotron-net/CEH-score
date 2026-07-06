@@ -12,19 +12,12 @@
     {
       "idx": 1,
       "version": "7",
-      "when": 1748880060000,
-      "tag": "0001_poll_results",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
       "when": 1780349904656,
       "tag": "0002_zippy_raza",
       "breakpoints": true
     },
     {
-      "idx": 3,
+      "idx": 2,
       "version": "7",
       "when": 1780623386596,
       "tag": "0003_sweet_snowbird",
