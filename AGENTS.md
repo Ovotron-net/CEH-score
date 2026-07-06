@@ -14,7 +14,7 @@
 - **Routes/UI split:** page routes are thin wrappers (for example `src/app/page.tsx`) that render view components in
   `src/views/*`.
 - **Global providers/layout:** `src/app/layout.tsx` wraps all pages with React Query provider (
-  `src/components/providers.tsx`) and shared shell (`src/components/Layout.tsx`).
+  `src/components/providers.tsx`) and shared shell (`src/components/ClientShell.tsx`).
 - **API pattern:** each route validates request bodies with Zod and returns JSON/HTTP status explicitly (see
   `src/app/api/assessments/route.ts`, `src/app/api/settings/route.ts`, `src/app/api/polls/[pollId]/votes/route.ts`).
 - **Derived server fields:** assessment `percentage` and `passed` are computed server-side in `POST /api/assessments`.
