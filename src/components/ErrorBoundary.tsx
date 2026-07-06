@@ -1,3 +1,35 @@
+<<<<<<< Updated upstream
+'use client';
+
+import {Component, type ReactNode} from 'react';
+import {AlertTriangle, RefreshCw} from 'lucide-react';
+=======
+<<<<<<< HEAD
+import { Component, type ReactNode } from 'react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+>>>>>>> Stashed changes
+
+interface Props {
+    children: ReactNode;
+}
+
+interface State {
+    hasError: boolean;
+    message: string;
+    resetKey: number;
+}
+
+export default class ErrorBoundary extends Component<Props, State> {
+    constructor(props: Props) {
+        super(props);
+        this.state = {hasError: false, message: '', resetKey: 0};
+    }
+
+<<<<<<< Updated upstream
+=======
+    return <div key={this.state.resetKey}>{this.props.children}</div>;
+  }
+=======
 'use client';
 
 import {Component, type ReactNode} from 'react';
@@ -19,6 +51,7 @@ export default class ErrorBoundary extends Component<Props, State> {
         this.state = {hasError: false, message: '', resetKey: 0};
     }
 
+>>>>>>> Stashed changes
     static getDerivedStateFromError(error: unknown): Partial<State> {
         const message = error instanceof Error ? error.message : String(error);
         return {hasError: true, message};
@@ -72,6 +105,10 @@ export default class ErrorBoundary extends Component<Props, State> {
 
         return <div key={this.state.resetKey}>{this.props.children}</div>;
     }
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
 }
 
 

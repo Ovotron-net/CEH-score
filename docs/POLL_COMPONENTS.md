@@ -25,7 +25,14 @@ export default function Page() {
 ```
 
 **Props:**
+<<<<<<< Updated upstream
 
+=======
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
 - `pollId` (string, required) — Unique poll identifier
 - `question` (string, required) — Poll question text
 - `options` (string[], required) — Array of poll options
@@ -55,14 +62,28 @@ export default function Page() {
 ```
 
 **Props:**
+<<<<<<< Updated upstream
 
+=======
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
 - `pollId` (string, required) — Poll identifier
 - `question` (string, required) — Poll question
 - `options` (string[], required) — Poll options
 - `userId` (string, optional) — User identifier
 
 **Features:**
+<<<<<<< Updated upstream
 
+=======
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
 - Radio button selection
 - Form validation
 - Loading state
@@ -89,12 +110,26 @@ export default function Page() {
 ```
 
 **Props:**
+<<<<<<< Updated upstream
 
+=======
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
 - `pollId` (string, required) — Poll identifier
 - `refreshInterval` (number, default: 5000) — Auto-refresh interval in ms
 
 **Features:**
+<<<<<<< Updated upstream
 
+=======
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
 - Live vote counts
 - Percentage calculations
 - Animated progress bars
@@ -206,7 +241,15 @@ className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-70
 
 Components automatically use the polls API:
 
+<<<<<<< Updated upstream
 - **POST /api/polls/[pollId]/votes** — Record votes
+=======
+<<<<<<< HEAD
+- **POST /api/polls/vote** — Record votes
+=======
+- **POST /api/polls/[pollId]/votes** — Record votes
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
 - **GET /api/polls/[pollId]** — Fetch poll stats
 
 No additional configuration needed. The API client is imported from `@/api/polls`.
@@ -235,7 +278,15 @@ npm run dev
 ✅ User tracking (optional)  
 ✅ Customizable layout  
 ✅ Animated progress bars  
+<<<<<<< Updated upstream
 ✅ TypeScript support
+=======
+<<<<<<< HEAD
+✅ TypeScript support  
+=======
+✅ TypeScript support
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
 
 ---
 
@@ -261,19 +312,40 @@ npm run dev
 ## Troubleshooting
 
 ### Results not updating?
+<<<<<<< Updated upstream
 
+=======
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
 - Check `refreshInterval` prop (default: 5000ms)
 - Click "Refresh" button manually
 - Check browser console for errors
 
 ### Votes not saving?
+<<<<<<< Updated upstream
 
+=======
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
 - Verify API endpoint is running
 - Check network tab in DevTools
 - Ensure `pollId` is unique
 
 ### Styling issues?
+<<<<<<< Updated upstream
 
+=======
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
 - Ensure Tailwind CSS is configured
 - Check for CSS conflicts
 - Verify className attributes

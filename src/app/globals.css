@@ -3,6 +3,186 @@
 @tailwind utilities;
 
 @layer base {
+<<<<<<< Updated upstream
+    :root {
+        --background: 222 47% 7%;
+        --foreground: 214 32% 91%;
+        --card: 222 47% 11%;
+        --card-foreground: var(--foreground);
+        --popover: var(--card);
+        --popover-foreground: var(--foreground);
+        --primary: 155 100% 50%;
+        --primary-foreground: var(--background);
+        --secondary: 222 47% 15%;
+        --secondary-foreground: var(--foreground);
+        --muted: var(--secondary);
+        --muted-foreground: 215 16% 47%;
+        --accent: var(--primary);
+        --accent-foreground: var(--background);
+        --destructive: 0 72% 51%;
+        --destructive-foreground: var(--foreground);
+        --border: 222 47% 20%;
+        --input: var(--border);
+        --ring: var(--primary);
+        --radius: 0.75rem;
+    }
+=======
+<<<<<<< HEAD
+  :root {
+    --background: 222 47% 7%;
+    --foreground: 214 32% 91%;
+    --card: 222 47% 11%;
+    --card-foreground: var(--foreground);
+    --popover: var(--card);
+    --popover-foreground: var(--foreground);
+    --primary: 155 100% 50%;
+    --primary-foreground: var(--background);
+    --secondary: 222 47% 15%;
+    --secondary-foreground: var(--foreground);
+    --muted: var(--secondary);
+    --muted-foreground: 215 16% 47%;
+    --accent: var(--primary);
+    --accent-foreground: var(--background);
+    --destructive: 0 72% 51%;
+    --destructive-foreground: var(--foreground);
+    --border: 222 47% 20%;
+    --input: var(--border);
+    --ring: var(--primary);
+    --radius: 0.75rem;
+  }
+>>>>>>> Stashed changes
+
+    .dark {
+        --background: 222 47% 7%;
+        --foreground: 214 32% 91%;
+        --card: 222 47% 11%;
+        --card-foreground: var(--foreground);
+        --popover: var(--card);
+        --popover-foreground: var(--foreground);
+        --primary: 155 100% 50%;
+        --primary-foreground: var(--background);
+        --secondary: 222 47% 15%;
+        --secondary-foreground: var(--foreground);
+        --muted: var(--secondary);
+        --muted-foreground: 215 16% 47%;
+        --accent: var(--primary);
+        --accent-foreground: var(--background);
+        --destructive: 0 72% 51%;
+        --destructive-foreground: var(--foreground);
+        --border: 222 47% 20%;
+        --input: var(--border);
+        --ring: var(--primary);
+    }
+
+    .light {
+        --background: 210 40% 98%;
+        --foreground: 222 47% 11%;
+        --card: 0 0% 100%;
+        --card-foreground: var(--foreground);
+        --popover: var(--card);
+        --popover-foreground: var(--foreground);
+        --primary: 155 90% 34%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 214 32% 91%;
+        --secondary-foreground: var(--foreground);
+        --muted: var(--secondary);
+        --muted-foreground: 215 16% 40%;
+        --accent: var(--primary);
+        --accent-foreground: 0 0% 100%;
+        --destructive: 0 72% 51%;
+        --destructive-foreground: 0 0% 100%;
+        --border: 214 32% 85%;
+        --input: var(--border);
+        --ring: var(--primary);
+    }
+}
+
+:root.light {
+    color-scheme: light;
+}
+
+:root {
+    color-scheme: dark;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: hsl(var(--card));
+}
+
+::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary));
+}
+
+.cyber-glow {
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
+}
+
+.cyber-glow-blue {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+}
+
+.glass-card {
+    background: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid hsl(var(--border));
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.page-enter {
+    animation: fadeInUp 0.25s ease-out both;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-enter {
+    animation: fadeIn 0.2s ease-out both;
+}
+
+<<<<<<< Updated upstream
+=======
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { width: 32px; height: 32px; border: 2px solid rgba(0, 255, 136, 0.15); border-top-color: #00ff88; border-radius: 50%; animation: spin 0.7s linear infinite; }
+=======
     :root {
         --background: 222 47% 7%;
         --foreground: 214 32% 91%;
@@ -152,6 +332,7 @@ body {
     animation: fadeIn 0.2s ease-out both;
 }
 
+>>>>>>> Stashed changes
 .domain-expand-wrapper {
     display: grid;
     transition: grid-template-rows 250ms ease, opacity 200ms ease;
@@ -185,3 +366,7 @@ body {
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
 }
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes

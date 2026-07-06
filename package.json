@@ -3,10 +3,19 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
   "engines": {
     "node": ">=22.18.0",
     "npm": ">=10"
   },
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -15,12 +24,22 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+    "lint": "next lint"
+=======
+>>>>>>> Stashed changes
     "lint": "eslint .",
     "test": "vitest run && npm run test:e2e",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "npx playwright test",
     "test:e2e:ui": "npx playwright test --ui"
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -37,12 +56,23 @@
     "lucide-react": "^1.7.0",
     "next": "^15.3.3",
     "pg": "^8.21.0",
+<<<<<<< Updated upstream
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+=======
+<<<<<<< HEAD
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+=======
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
     "recharts": "^3.8.1",
     "tailwind-merge": "^3.5.0",
     "zod": "^4.4.3"
   },
+<<<<<<< Updated upstream
   "overrides": {
     "next": {
       "postcss": "8.5.10"
@@ -52,16 +82,44 @@
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@next/eslint-plugin-next": "^16.2.6",
+=======
+<<<<<<< HEAD
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@next/eslint-plugin-next": "^16.2.6",
+=======
+  "overrides": {
+    "next": {
+      "postcss": "8.5.10"
+    },
+    "esbuild": "^0.25.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@next/eslint-plugin-next": "^16.2.6",
+>>>>>>> Stashed changes
     "@playwright/test": "^1.61.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
     "@types/node": "^24.12.0",
     "@types/pg": "^8.20.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+<<<<<<< Updated upstream
     "@vitejs/plugin-react": "^6.0.3",
     "@vitest/coverage-v8": "^4.1.9",
+=======
+<<<<<<< HEAD
+=======
+    "@vitejs/plugin-react": "^6.0.3",
+    "@vitest/coverage-v8": "^4.1.9",
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
     "autoprefixer": "^10.4.27",
     "cross-env": "^10.1.0",
     "drizzle-kit": "^0.31.10",
@@ -70,6 +128,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
+<<<<<<< Updated upstream
     "jsdom": "^29.1.1",
     "orval": "^8.19.0",
     "playwright": "^1.61.1",
@@ -79,5 +138,25 @@
     "typescript": "5.8.2",
     "typescript-eslint": "^8.57.0",
     "vitest": "^4.1.9"
+=======
+<<<<<<< HEAD
+    "orval": "^8.14.0",
+    "postcss": "^8.5.13",
+    "tailwindcss": "^3.4.19",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.57.0"
+=======
+    "jsdom": "^29.1.1",
+    "orval": "^8.19.0",
+    "playwright": "^1.61.1",
+    "postcss": "^8.5.13",
+    "tailwindcss": "^3.4.19",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "5.8.2",
+    "typescript-eslint": "^8.57.0",
+    "vitest": "^4.1.9"
+>>>>>>> origin/claude/build
+>>>>>>> Stashed changes
   }
 }
