@@ -1,5 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
+  "//": "schema URL is untrusted but safe - it's the official shadcn/ui schema",
   "style": "default",
   "rsc": true,
   "tsx": true,
