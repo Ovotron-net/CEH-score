@@ -1,5 +1,6 @@
 import {Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
 import type {Assessment} from '@/types';
+import ChartDataTable from './ChartDataTable';
 
 interface ScoreDistributionProps {
     assessments: Assessment[];
@@ -28,16 +29,28 @@ export default function ScoreDistribution({assessments}: ScoreDistributionProps)
     });
 
     const getColor = (range: string) => {
-        if (range.startsWith('9')) return 'hsl(var(--primary))';
-        if (range.startsWith('8')) return 'hsl(var(--accent))';
-        if (range.startsWith('7')) return '#ffd700';
-        if (range.startsWith('6')) return '#ff8800';
-        return '#ff4444';
+        if (range.startsWith('9')) return 'hsl(var(--success))';
+        if (range.startsWith('8')) return 'hsl(var(--info))';
+        if (range.startsWith('7')) return 'hsl(var(--warning))';
+        if (range.startsWith('6')) return 'hsl(var(--warning))';
+        return 'hsl(var(--destructive))';
     };
 
+    if (assessments.length === 0) {
+        return <p className="h-[220px] flex items-center justify-center text-sm text-muted-foreground">No score distribution data yet.</p>;
+    }
+
     return (
-        <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={bins} margin={{top: 5, right: 10, left: -20, bottom: 5}}>
+        <>
+            <ChartDataTable
+                summary={`${assessments.length} assessments across ${bins.length} score ranges.`}
+                caption="Score distribution data"
+                columns={['Score range', 'Assessments']}
+                rows={bins.map(({range, count}) => [range, count])}
+            />
+            <div aria-hidden="true">
+                <ResponsiveContainer width="100%" height={220}>
+                    <BarChart accessibilityLayer={false} data={bins} margin={{top: 5, right: 10, left: -20, bottom: 5}}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))"/>
                 <XAxis dataKey="range" tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 10}} axisLine={false}
                        tickLine={false}/>
@@ -56,7 +69,9 @@ export default function ScoreDistribution({assessments}: ScoreDistributionProps)
                         <Cell key={index} fill={getColor(entry.range)}/>
                     ))}
                 </Bar>
-            </BarChart>
-        </ResponsiveContainer>
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+        </>
     );
 }

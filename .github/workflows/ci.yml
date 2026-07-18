@@ -30,7 +30,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci 
+        run: npm ci --include=dev
 
       - name: Lint
         run: npm run lint
@@ -40,3 +40,12 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser and accessibility tests
+        run: npm run test:e2e
+
+      - name: Production smoke test
+        run: npm run test:e2e:production

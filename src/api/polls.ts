@@ -6,7 +6,7 @@ export interface PollResult {
     pollQuestion: string;
     optionText: string;
     voteCount: number;
-    userId: string | null;
+    userId?: string | null;
     createdAt: string;
     updatedAt: string;
 }

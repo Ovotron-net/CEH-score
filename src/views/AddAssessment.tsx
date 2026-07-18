@@ -1,9 +1,9 @@
 'use client';
 
-import React, {useMemo, useState} from 'react';
+import React, {useState} from 'react';
 import {useRouter} from 'next/navigation';
 import type {Assessment} from '../types';
-import {useAssessments} from '../hooks/useAssessments';
+import {useAddAssessment} from '../hooks/useAssessments';
 import {CEH_DOMAINS, FULL_EXAM} from '../data/cehDomains';
 import {calculatePercentage, isPassed} from '../utils/calculations';
 import {AlertCircle, CheckCircle, Save, XCircle} from 'lucide-react';
@@ -13,13 +13,14 @@ import {Input} from '@/components/ui/input';
 import {Textarea} from '@/components/ui/textarea';
 import {Label} from '@/components/ui/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
+import {formatLocalDateInput} from '../utils/dates';
 
 export default function AddAssessment() {
     const router = useRouter();
-    const {addAssessment} = useAssessments();
+    const addMutation = useAddAssessment();
 
     const [form, setForm] = useState({
-        date: new Date().toISOString().split('T')[0],
+        date: formatLocalDateInput(),
         type: 'practice' as Assessment['type'],
         score: '',
         maxScore: '125',
@@ -36,19 +37,22 @@ export default function AddAssessment() {
     const percentage = form.score && maxScore > 0 ? calculatePercentage(score, maxScore) : 0;
     const passed = isPassed(percentage);
 
-    const scoreError = useMemo(() => {
-        const m = parseInt(form.maxScore);
-        if (!form.maxScore || isNaN(m) || m < 1) return 'Max score must be at least 1';
-        if (!form.score) return null;
-        const s = parseInt(form.score);
-        if (isNaN(s) || s < 0) return 'Score must be a positive number';
-        if (s > m) return `Score cannot exceed max score (${m})`;
-        return null;
-    }, [form.score, form.maxScore]);
+    const parsedMaxScore = parseInt(form.maxScore);
+    const maxScoreError = !form.maxScore || isNaN(parsedMaxScore) || parsedMaxScore < 1
+        ? 'Max score must be at least 1'
+        : null;
+    const parsedScore = parseInt(form.score);
+    const scoreError = !form.score
+        ? null
+        : isNaN(parsedScore) || parsedScore < 0
+            ? 'Score must be zero or greater'
+            : !maxScoreError && parsedScore > parsedMaxScore
+                ? `Score cannot exceed max score (${parsedMaxScore})`
+                : null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!form.score || !form.maxScore || !form.timeTaken || scoreError) return;
+        if (!form.score || !form.maxScore || !form.timeTaken || scoreError || maxScoreError) return;
 
         const assessment: Assessment = {
             id: `assessment-${Date.now()}`,
@@ -67,7 +71,7 @@ export default function AddAssessment() {
         setIsSubmitting(true);
         setSubmitError(null);
         try {
-            await addAssessment(assessment);
+            await addMutation.mutateAsync(assessment);
             router.push('/assessments');
         } catch {
             setSubmitError('Failed to save assessment. Please try again.');
@@ -78,7 +82,7 @@ export default function AddAssessment() {
     const domainOptions = [FULL_EXAM, ...CEH_DOMAINS.map(d => d.name)];
 
     return (
-        <div className="mx-auto max-w-2xl p-6">
+        <div className="mx-auto max-w-2xl p-4 sm:p-6">
             <div className="mb-8">
                 <h1 className="text-2xl font-bold">Add Assessment</h1>
                 <p className="text-muted-foreground text-sm mt-1">Record a new CEH practice or exam result</p>
@@ -89,7 +93,7 @@ export default function AddAssessment() {
                     <Card className={
                         passed ? 'bg-primary/5 border-primary/20' : 'bg-red-500/5 border-red-500/20'
                     }>
-                        <CardContent className="flex items-center justify-between p-4">
+                    <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <div className="flex items-center gap-2">
                                     {passed ? <CheckCircle className="h-5 w-5 text-primary"/> :
@@ -101,7 +105,7 @@ export default function AddAssessment() {
                                 </div>
                                 <p className="mt-1 text-sm text-muted-foreground">{score}/{maxScore} correct answers</p>
                             </div>
-                            <div className="text-right">
+                            <div className="sm:text-right">
                                 <p className="text-xs text-muted-foreground">Pass threshold: 70%</p>
                                 {passed ? (
                                     <p className="mt-0.5 text-sm font-medium text-primary">
@@ -123,7 +127,7 @@ export default function AddAssessment() {
                         <CardDescription>Fill out the exam result fields below.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-5">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="assessment-date"
                                        className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">Date</Label>
@@ -135,13 +139,13 @@ export default function AddAssessment() {
                                 />
                             </div>
                             <div>
-                                <Label
-                                    className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">Type</Label>
+                                <Label htmlFor="assessment-type"
+                                     className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">Type</Label>
                                 <Select
                                     value={form.type}
                                     onValueChange={value => setForm(p => ({...p, type: value as Assessment['type']}))}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger id="assessment-type" className="min-h-11">
                                         <SelectValue placeholder="Select type"/>
                                     </SelectTrigger>
                                     <SelectContent>
@@ -153,7 +157,7 @@ export default function AddAssessment() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="assessment-score"
                                        className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">Score</Label>
@@ -165,13 +169,15 @@ export default function AddAssessment() {
                                     value={form.score}
                                     onChange={e => setForm(p => ({...p, score: e.target.value}))}
                                     placeholder="e.g. 98"
-                                    required
+                                     required
+                                     aria-invalid={Boolean(scoreError)}
+                                     aria-describedby={scoreError ? 'assessment-score-error' : undefined}
                                     className={
                                         scoreError ? 'border-destructive focus-visible:ring-destructive' : undefined
                                     }
                                 />
                                 {scoreError && (
-                                    <p className="mt-1.5 flex items-center gap-1 text-xs text-destructive">
+                                    <p id="assessment-score-error" role="alert" className="mt-1.5 flex items-center gap-1 text-xs text-destructive">
                                         <AlertCircle className="h-3 w-3 flex-shrink-0"/>
                                         {scoreError}
                                     </p>
@@ -186,20 +192,29 @@ export default function AddAssessment() {
                                     type="number"
                                     min="1"
                                     max="200"
-                                    value={form.maxScore}
-                                    onChange={e => setForm(p => ({...p, maxScore: e.target.value}))}
-                                />
+                                     value={form.maxScore}
+                                     onChange={e => setForm(p => ({...p, maxScore: e.target.value}))}
+                                     aria-invalid={Boolean(maxScoreError)}
+                                     aria-describedby={maxScoreError ? 'assessment-max-score-error' : undefined}
+                                     className={maxScoreError ? 'border-destructive focus-visible:ring-destructive' : undefined}
+                                 />
+                                 {maxScoreError && (
+                                     <p id="assessment-max-score-error" role="alert" className="mt-1.5 flex items-center gap-1 text-xs text-destructive">
+                                         <AlertCircle className="h-3 w-3 flex-shrink-0"/>
+                                         {maxScoreError}
+                                     </p>
+                                 )}
                             </div>
                         </div>
 
                         <div>
-                            <Label
-                                className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">Domain</Label>
+                            <Label htmlFor="assessment-domain"
+                                 className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">Domain</Label>
                             <Select
                                 value={form.domain}
                                 onValueChange={value => setForm(p => ({...p, domain: value}))}
                             >
-                                <SelectTrigger>
+                                <SelectTrigger id="assessment-domain" className="min-h-11">
                                     <SelectValue placeholder="Select domain"/>
                                 </SelectTrigger>
                                 <SelectContent>
@@ -242,26 +257,29 @@ export default function AddAssessment() {
                     </CardContent>
                 </Card>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col-reverse gap-3 sm:flex-row">
                     <Button
                         type="button"
                         onClick={() => router.back()}
                         variant="outline"
-                        className="flex-1"
+                        className="min-h-11 flex-1"
                     >
                         Cancel
                     </Button>
                     <Button
                         type="submit"
-                        disabled={isSubmitting || !!scoreError}
-                        className="flex-1"
+                        disabled={isSubmitting || addMutation.isPending || !!scoreError || !!maxScoreError}
+                        className="min-h-11 flex-1"
                     >
                         <Save className="h-4 w-4"/>
-                        {isSubmitting ? 'Saving…' : 'Save Assessment'}
+                        {isSubmitting || addMutation.isPending ? 'Saving...' : 'Save Assessment'}
                     </Button>
                 </div>
                 {submitError && (
-                    <p className="text-center text-sm text-destructive">{submitError}</p>
+                    <p role="alert" className="text-center text-sm text-destructive">{submitError}</p>
+                )}
+                {(isSubmitting || addMutation.isPending) && (
+                    <p role="status" className="sr-only">Saving assessment</p>
                 )}
             </form>
         </div>

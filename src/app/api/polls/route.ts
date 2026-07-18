@@ -2,8 +2,9 @@ import {NextResponse} from 'next/server';
 import {z} from 'zod';
 import {db} from '@/db';
 import {pollResults} from '@/db/schema';
-import {eq} from 'drizzle-orm';
+import {getPollResults} from '@/data/pollRepository';
 import {authenticate} from '@/lib/auth';
+import {enforceRateLimit} from '@/lib/rate-limit';
 
 const PollResultSchema = z.object({
     pollId: z.string().min(1).max(100),
@@ -25,16 +26,10 @@ export async function GET(request: Request) {
             if (pollId.length > 100) {
                 return NextResponse.json({error: 'Invalid pollId.'}, {status: 400});
             }
-            const rows = await db
-                .select()
-                .from(pollResults)
-                .where(eq(pollResults.pollId, pollId))
-                .orderBy(pollResults.createdAt);
-            return NextResponse.json(rows);
+            return NextResponse.json(await getPollResults(pollId));
         }
 
-        const rows = await db.select().from(pollResults).orderBy(pollResults.createdAt);
-        return NextResponse.json(rows);
+        return NextResponse.json(await getPollResults());
     } catch {
         return NextResponse.json({error: 'Failed to fetch poll results.'}, {status: 500});
     }
@@ -43,6 +38,9 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     const authError = authenticate(request);
     if (authError) return authError;
+
+    const limited = enforceRateLimit(request, 'polls:create', 20, 60_000);
+    if (limited) return limited;
 
     const body = await request.json().catch(() => null);
     const parsed = PollResultSchema.safeParse(body);

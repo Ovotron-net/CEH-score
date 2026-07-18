@@ -3,6 +3,9 @@
  * Limits requests per key within a time window.
  */
 
+import {NextResponse} from 'next/server';
+import {logSecurityEvent} from './security-log';
+
 interface RateLimitEntry {
     count: number;
     resetAt: number;
@@ -58,4 +61,33 @@ export function isAllowed(key: string, maxRequests: number, windowMs: number): b
     }
 
     return false;
+}
+
+/**
+ * Extract the client IP from the X-Forwarded-For header (first hop), falling
+ * back to 'unknown' when unavailable.
+ */
+export function getClientIp(request: Request): string {
+    return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+}
+
+/**
+ * Enforce an IP-scoped rate limit for a request. Returns a 429 response (and
+ * logs the event) when the limit is exceeded, or null when the request is allowed.
+ */
+export function enforceRateLimit(
+    request: Request,
+    bucket: string,
+    maxRequests: number,
+    windowMs: number,
+): NextResponse | null {
+    const ip = getClientIp(request);
+    if (!isAllowed(`${bucket}:${ip}`, maxRequests, windowMs)) {
+        logSecurityEvent('rate_limit_exceeded', {ip, bucket});
+        return NextResponse.json(
+            {error: 'Too many requests. Please try again later.'},
+            {status: 429},
+        );
+    }
+    return null;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import {Component, type ReactNode} from 'react';
+import {Component, createRef, type ReactNode} from 'react';
 import {AlertTriangle, RefreshCw} from 'lucide-react';
 
 interface Props {
@@ -14,6 +14,8 @@ interface State {
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
+    private readonly fallbackHeadingRef = createRef<HTMLHeadingElement>();
+
     constructor(props: Props) {
         super(props);
         this.state = {hasError: false, message: '', resetKey: 0};
@@ -32,16 +34,26 @@ export default class ErrorBoundary extends Component<Props, State> {
         this.setState(s => ({hasError: false, message: '', resetKey: s.resetKey + 1}));
     };
 
+    componentDidMount() {
+        if (this.state.hasError) this.fallbackHeadingRef.current?.focus();
+    }
+
+    componentDidUpdate(_: Props, previousState: State) {
+        if (!previousState.hasError && this.state.hasError) {
+            this.fallbackHeadingRef.current?.focus();
+        }
+    }
+
     render() {
         if (this.state.hasError) {
             return (
-                <div className="min-h-screen bg-background flex items-center justify-center p-6">
-                    <div className="bg-card border border-red-500/20 rounded-2xl p-8 max-w-md w-full text-center">
+                <main className="min-h-dvh bg-background flex items-center justify-center p-4 sm:p-6">
+                    <div role="alert" className="bg-card border border-destructive/20 rounded-2xl p-6 sm:p-8 max-w-md w-full text-center">
                         <div
-                            className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <AlertTriangle className="w-8 h-8 text-red-400"/>
+                            className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <AlertTriangle className="w-8 h-8 text-destructive"/>
                         </div>
-                        <h2 className="text-white text-xl font-semibold mb-2">Something went wrong</h2>
+                        <h1 ref={this.fallbackHeadingRef} tabIndex={-1} className="text-foreground text-xl font-semibold mb-2">Something went wrong</h1>
                         {this.state.message && (
                             <p className="text-muted-foreground text-sm font-mono bg-background rounded-lg px-3 py-2 mb-4 break-all">
                                 {this.state.message}
@@ -50,23 +62,25 @@ export default class ErrorBoundary extends Component<Props, State> {
                         <p className="text-muted-foreground text-sm mb-6">
                             An unexpected error occurred. You can try navigating back or reload the page.
                         </p>
-                        <div className="flex gap-3 justify-center">
+                        <div className="flex flex-col gap-3 justify-center sm:flex-row">
                             <button
+                                type="button"
                                 onClick={this.handleReset}
-                                className="flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary rounded-lg text-sm font-medium transition-all"
+                                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                             >
                                 Try again
                             </button>
                             <button
+                                type="button"
                                 onClick={this.handleReload}
-                                className="flex items-center gap-2 px-4 py-2 bg-border/50 hover:bg-border border border-border text-muted-foreground rounded-lg text-sm font-medium transition-all"
+                                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-border bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                             >
                                 <RefreshCw className="w-4 h-4"/>
                                 Reload
                             </button>
                         </div>
                     </div>
-                </div>
+                </main>
             );
         }
 

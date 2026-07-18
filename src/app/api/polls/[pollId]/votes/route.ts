@@ -4,7 +4,7 @@ import {eq, sql} from 'drizzle-orm';
 import {db} from '@/db';
 import {pollResults} from '@/db/schema';
 import {authenticate} from '@/lib/auth';
-import {isAllowed} from '@/lib/rate-limit';
+import {enforceRateLimit} from '@/lib/rate-limit';
 
 const VoteBodySchema = z.object({
     optionText: z.string().min(1).max(500),
@@ -37,14 +37,8 @@ export async function POST(
         }
 
         // Rate limit: max 5 votes per IP per poll per 60 seconds
-        const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-        const rateLimitKey = `vote:${ip}:${pollId}`;
-        if (!isAllowed(rateLimitKey, 5, 60_000)) {
-            return NextResponse.json(
-                {error: 'Too many requests. Please try again later.'},
-                {status: 429},
-            );
-        }
+        const limited = enforceRateLimit(request, `vote:${pollId}`, 5, 60_000);
+        if (limited) return limited;
 
         const {optionText, pollQuestion, userId} = parsed.data;
 

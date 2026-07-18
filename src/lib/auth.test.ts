@@ -30,4 +30,21 @@ describe('authenticate', () => {
 
         expect(authenticate(request)).toBeNull();
     });
+
+    it('denies requests in production when API_SECRET is unset (fail-closed)', () => {
+        vi.stubEnv('API_SECRET', '');
+        vi.stubEnv('NODE_ENV', 'production');
+        vi.stubEnv('ALLOW_OPEN_API', '');
+        const request = new Request('http://localhost/api/assessments');
+        const response = authenticate(request);
+        expect(response?.status).toBe(503);
+    });
+
+    it('allows open mode in production when ALLOW_OPEN_API=true', () => {
+        vi.stubEnv('API_SECRET', '');
+        vi.stubEnv('NODE_ENV', 'production');
+        vi.stubEnv('ALLOW_OPEN_API', 'true');
+        const request = new Request('http://localhost/api/assessments');
+        expect(authenticate(request)).toBeNull();
+    });
 });

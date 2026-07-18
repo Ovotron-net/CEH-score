@@ -3,6 +3,7 @@ import {eq} from 'drizzle-orm';
 import {db} from '@/db';
 import {assessments} from '@/db/schema';
 import {authenticate} from '@/lib/auth';
+import {enforceRateLimit} from '@/lib/rate-limit';
 
 export async function DELETE(
     request: Request,
@@ -10,6 +11,9 @@ export async function DELETE(
 ) {
     const authError = authenticate(request);
     if (authError) return authError;
+
+    const limited = enforceRateLimit(request, 'assessments:delete', 30, 60_000);
+    if (limited) return limited;
 
     const {id} = await params;
     if (!id || id.length > 100) {

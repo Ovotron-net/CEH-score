@@ -15,14 +15,15 @@ import {
     Trophy,
     X
 } from 'lucide-react';
+import {preloadAnalyticsCharts, preloadPollAnalyticsChart} from '@/components/charts/lazy';
 
 const navItems = [
     {to: '/', icon: LayoutDashboard, label: 'Dashboard'},
     {to: '/assessments', icon: ClipboardList, label: 'Assessments'},
     {to: '/add', icon: PlusCircle, label: 'Add Assessment'},
-    {to: '/analytics', icon: BarChart3, label: 'Analytics'},
+    {to: '/analytics', icon: BarChart3, label: 'Analytics', preload: preloadAnalyticsCharts},
     {to: '/leaderboard', icon: Trophy, label: 'Leaderboard'},
-    {to: '/polls', icon: PieChart, label: 'Polls'},
+    {to: '/polls', icon: PieChart, label: 'Polls', preload: preloadPollAnalyticsChart},
     {to: '/topics', icon: BookOpen, label: 'CEH Topics'},
     {to: '/settings', icon: Settings, label: 'Settings'},
 ];
@@ -30,23 +31,34 @@ const navItems = [
 interface SidebarProps {
     isOpen?: boolean;
     onClose?: () => void;
+    onNavigate?: () => void;
+    mode?: 'desktop' | 'mobile';
 }
 
-const Sidebar = forwardRef<HTMLElement, SidebarProps>(function Sidebar({isOpen = false, onClose}, ref) {
+const Sidebar = forwardRef<HTMLElement, SidebarProps>(function Sidebar({
+    isOpen = false,
+    onClose,
+    onNavigate,
+    mode = 'desktop',
+}, ref) {
     const pathname = usePathname() ?? '';
     const handleNavClick = useCallback(() => {
-        onClose?.();
-    }, [onClose]);
+        onNavigate?.();
+    }, [onNavigate]);
+    const isMobile = mode === 'mobile';
 
     return (
         <aside
             ref={ref}
+            id={isMobile ? 'mobile-navigation' : undefined}
+            inert={isMobile && !isOpen}
+            aria-hidden={isMobile && !isOpen ? true : undefined}
             className={[
-                'fixed top-0 left-0 z-30 h-screen',
                 'w-64 bg-card border-r border-border flex flex-col',
-                'transition-transform duration-300 ease-in-out',
-                'lg:sticky lg:translate-x-0 lg:flex-shrink-0',
-                isOpen ? 'translate-x-0' : '-translate-x-full',
+                isMobile
+                    ? 'fixed top-0 left-0 z-30 h-screen transition-transform duration-300 ease-in-out lg:hidden'
+                    : 'hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-shrink-0',
+                isMobile && (isOpen ? 'translate-x-0' : '-translate-x-full'),
             ].join(' ')}
         >
             <div className="p-6 border-b border-border flex items-center justify-between">
@@ -56,31 +68,38 @@ const Sidebar = forwardRef<HTMLElement, SidebarProps>(function Sidebar({isOpen =
                         <Shield className="w-5 h-5 text-primary"/>
                     </div>
                     <div>
-                        <h1 className="text-white font-bold text-base leading-tight">CEH Tracker</h1>
+                        <div className="text-foreground font-bold text-base leading-tight">CEH Tracker</div>
                         <p className="text-muted-foreground text-xs">Score Analytics</p>
                     </div>
                 </div>
-                <button
-                    onClick={onClose}
-                    className="lg:hidden text-muted-foreground hover:text-white transition-colors p-1"
-                    aria-label="Close navigation"
-                >
-                    <X className="w-4 h-4"/>
-                </button>
+                {isMobile ? (
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="inline-flex min-h-11 min-w-11 items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                        aria-label="Close navigation"
+                    >
+                        <X className="w-4 h-4"/>
+                    </button>
+                ) : null}
             </div>
 
-            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                {navItems.map(({to, icon: Icon, label}) => {
-                    const isActive = to === '/' ? pathname === '/' : pathname.startsWith(to);
+            <nav aria-label="Primary navigation" className="flex-1 p-4 space-y-1 overflow-y-auto">
+                {navItems.map(({to, icon: Icon, label, preload}) => {
+                    const isActive = pathname === to || (to !== '/' && pathname.startsWith(`${to}/`));
                     return (
                         <Link
                             key={to}
                             href={to}
                             onClick={handleNavClick}
+                            onFocus={preload ? () => void preload() : undefined}
+                            onPointerEnter={preload ? () => void preload() : undefined}
+                            onTouchStart={preload ? () => void preload() : undefined}
+                            aria-current={isActive ? 'page' : undefined}
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium ${
                                 isActive
                                     ? 'bg-primary/10 text-primary border border-primary/20'
-                                    : 'text-muted-foreground hover:text-white hover:bg-secondary'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                             }`}
                         >
                             <Icon className="w-4 h-4 flex-shrink-0"/>

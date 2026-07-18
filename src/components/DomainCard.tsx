@@ -1,4 +1,4 @@
-import {memo, useState} from 'react';
+import {memo, useId, useState} from 'react';
 import type {CEHDomain} from '../types';
 import {BookOpen, ChevronRight} from 'lucide-react';
 
@@ -10,15 +10,17 @@ interface DomainCardProps {
 
 const DomainCard = memo(function DomainCard({domain, assessmentCount = 0, avgScore}: DomainCardProps) {
     const [expanded, setExpanded] = useState(false);
+    const topicsId = useId();
 
     return (
         <div
             className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/20 transition-all duration-200 card-enter">
-            <div
-                className="p-5 cursor-pointer flex items-start justify-between select-none"
+            <button
+                type="button"
+                className="w-full p-5 cursor-pointer flex items-start justify-between select-none text-left bg-transparent"
                 onClick={() => setExpanded(!expanded)}
-                role="button"
                 aria-expanded={expanded}
+                aria-controls={topicsId}
             >
                 <div className="flex items-start gap-4 flex-1">
                     <div
@@ -26,16 +28,16 @@ const DomainCard = memo(function DomainCard({domain, assessmentCount = 0, avgSco
                         <BookOpen className="w-5 h-5 text-primary"/>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-semibold text-sm leading-tight mb-1">{domain.name}</h3>
+                        <h2 className="text-foreground font-semibold text-sm leading-tight mb-1">{domain.name}</h2>
                         <p className="text-muted-foreground text-xs">{domain.description}</p>
                         <div className="flex items-center gap-3 mt-2 flex-wrap">
                             <span className="text-xs text-accent">Weight: {domain.weight}%</span>
                             <span className="text-xs text-muted-foreground">{domain.topics.length} topics</span>
                             {assessmentCount > 0 &&
-                                <span className="text-xs text-purple-400">{assessmentCount} assessments</span>}
+                                <span className="text-xs text-accent">{assessmentCount} assessments</span>}
                             {avgScore !== undefined && (
                                 <span
-                                    className={`text-xs font-medium ${avgScore >= 70 ? 'text-primary' : 'text-red-400'}`}>
+                                    className={`text-xs font-medium ${avgScore >= 70 ? 'text-primary' : 'text-destructive'}`}>
                   Avg: {avgScore}%
                 </span>
                             )}
@@ -46,25 +48,27 @@ const DomainCard = memo(function DomainCard({domain, assessmentCount = 0, avgSco
                      style={{transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)'}}>
                     <ChevronRight className="w-4 h-4 text-muted-foreground"/>
                 </div>
-            </div>
+            </button>
 
-            <div className={`domain-expand-wrapper ${expanded ? 'expanded' : 'collapsed'}`}>
-                <div>
-                    <div className="border-t border-border px-5 py-4">
-                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-3">Topics</p>
-                        <div className="flex flex-wrap gap-2">
-                            {domain.topics.map((topic) => (
-                                <span
-                                    key={topic}
-                                    className="text-xs px-3 py-1.5 bg-background border border-border rounded-full text-foreground hover:border-primary/30 hover:text-primary transition-colors cursor-default"
-                                >
-                  {topic}
-                </span>
-                            ))}
+            {expanded && (
+                <div id={topicsId} className="domain-expand-wrapper expanded">
+                    <div>
+                        <div className="border-t border-border px-5 py-4">
+                            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-3">Topics</p>
+                            <div className="flex flex-wrap gap-2">
+                                {domain.topics.map((topic) => (
+                                    <span
+                                        key={topic}
+                                        className="text-xs px-3 py-1.5 bg-background border border-border rounded-full text-foreground hover:border-primary/30 hover:text-primary transition-colors cursor-default"
+                                    >
+                   {topic}
+                 </span>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 });

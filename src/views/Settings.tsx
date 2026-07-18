@@ -2,75 +2,77 @@
 
 import {useEffect, useState} from 'react';
 import {AlertTriangle, Save, Settings as SettingsIcon, Trash2} from 'lucide-react';
-import {useSettings} from '../hooks/useSettings';
-import {useAssessments} from '../hooks/useAssessments';
+import {reconcileTheme} from '../api/settings';
+import {useSettingsQuery, useUpdateSettings} from '../hooks/useSettings';
+import {useAssessmentQuery, useClearAssessments} from '../hooks/useAssessments';
 import type {UserSettings} from '../types';
+
+const focusStyles = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
 function SettingsForm({
     settings,
     updateSettings,
-    assessments,
-    onClearData,
+    assessmentsCount,
+    assessmentSize,
+    clearAssessments,
+    isClearPending,
 }: {
     settings: UserSettings;
-    updateSettings: (u: Partial<UserSettings>) => Promise<unknown>;
-    assessments: unknown[];
-    onClearData: () => void;
+    updateSettings: (settings: UserSettings) => Promise<unknown>;
+    assessmentsCount: number;
+    assessmentSize: string;
+    clearAssessments: () => Promise<unknown>;
+    isClearPending: boolean;
 }) {
     const [form, setForm] = useState(settings);
     const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
     const [confirmClear, setConfirmClear] = useState(false);
-
-    useEffect(() => {
-        setForm(settings);
-    }, [settings]);
+    const [clearState, setClearState] = useState<'idle' | 'clearing' | 'error'>('idle');
+    const clearPending = isClearPending || clearState === 'clearing';
 
     const handleSave = async () => {
         setSaveState('saving');
         try {
             await updateSettings(form);
             setSaveState('saved');
-            setTimeout(() => setSaveState('idle'), 2000);
         } catch {
             setSaveState('error');
-            setTimeout(() => setSaveState('idle'), 3000);
+        }
+    };
+
+    const handleClear = async () => {
+        setClearState('clearing');
+        try {
+            await clearAssessments();
+            setClearState('idle');
+            setConfirmClear(false);
+        } catch {
+            setClearState('error');
         }
     };
 
     return (
         <div className="space-y-6">
-            {/* Profile */}
-            <div className="bg-card border border-border rounded-xl p-6">
-                <h2 className="text-white font-semibold mb-5">Profile</h2>
-                <div className="space-y-4">
-                    <div>
-                        <label
-                            htmlFor="settings-name"
-                            className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2"
-                        >
-                            Your Name
-                        </label>
-                        <input
-                            id="settings-name"
-                            name="name"
-                            type="text"
-                            value={form.name}
-                            onChange={e => setForm(p => ({...p, name: e.target.value}))}
-                            className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-white text-sm focus:border-primary/50 outline-none transition-colors"
-                        />
-                    </div>
-                </div>
-            </div>
+            <section className="bg-card border border-border rounded-xl p-6">
+                <h2 className="text-foreground font-semibold mb-5">Profile</h2>
+                <label htmlFor="settings-name" className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2">
+                    Your Name
+                </label>
+                <input
+                    id="settings-name"
+                    name="name"
+                    type="text"
+                    value={form.name}
+                    onChange={event => setForm(previous => ({...previous, name: event.target.value}))}
+                    className={`min-h-11 w-full bg-background border border-input rounded-lg px-3 py-2.5 text-foreground text-sm transition-colors ${focusStyles}`}
+                />
+            </section>
 
-            {/* Exam Goals */}
-            <div className="bg-card border border-border rounded-xl p-6">
-                <h2 className="text-white font-semibold mb-5">Exam Goals</h2>
+            <section className="bg-card border border-border rounded-xl p-6">
+                <h2 className="text-foreground font-semibold mb-5">Exam Goals</h2>
                 <div className="space-y-4">
                     <div>
-                        <label
-                            htmlFor="settings-target-score"
-                            className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2"
-                        >
+                        <label htmlFor="settings-target-score" className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2">
                             Target Score ({form.targetScore}%)
                         </label>
                         <input
@@ -80,8 +82,8 @@ function SettingsForm({
                             min="70"
                             max="100"
                             value={form.targetScore}
-                            onChange={e => setForm(p => ({...p, targetScore: parseInt(e.target.value, 10)}))}
-                            className="w-full accent-primary"
+                            onChange={event => setForm(previous => ({...previous, targetScore: parseInt(event.target.value, 10)}))}
+                            className={`min-h-11 w-full accent-primary ${focusStyles}`}
                         />
                         <div className="flex justify-between text-muted-foreground text-xs mt-1">
                             <span>70% (Min pass)</span>
@@ -90,10 +92,7 @@ function SettingsForm({
                         </div>
                     </div>
                     <div>
-                        <label
-                            htmlFor="settings-exam-date"
-                            className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2"
-                        >
+                        <label htmlFor="settings-exam-date" className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2">
                             Exam Date
                         </label>
                         <input
@@ -101,101 +100,112 @@ function SettingsForm({
                             name="examDate"
                             type="date"
                             value={form.examDate}
-                            onChange={e => setForm(p => ({...p, examDate: e.target.value}))}
-                            className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-white text-sm focus:border-primary/50 outline-none transition-colors"
+                            onChange={event => setForm(previous => ({...previous, examDate: event.target.value}))}
+                            className={`min-h-11 w-full bg-background border border-input rounded-lg px-3 py-2.5 text-foreground text-sm transition-colors ${focusStyles}`}
                         />
                     </div>
                 </div>
-            </div>
+            </section>
 
-            {/* Appearance */}
-            <div className="bg-card border border-border rounded-xl p-6">
-                <h2 className="text-white font-semibold mb-5">Appearance</h2>
-                <div className="space-y-4">
-                    <div>
-                        <label
-                            className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2">Theme</label>
-                        <div className="flex gap-2">
-                            {(['dark', 'light'] as const).map(t => (
-                                <button
-                                    key={t}
-                                    type="button"
-                                    onClick={() => setForm(p => ({...p, theme: t}))}
-                                    className={`flex-1 py-2.5 rounded-lg text-sm font-medium capitalize transition-all border ${
-                                        form.theme === t
-                                            ? 'bg-primary/20 border-primary/40 text-primary'
-                                            : 'bg-background border-border text-muted-foreground hover:text-white'
-                                    }`}
-                                >
-                                    {t}
-                                </button>
-                            ))}
-                        </div>
+            <section className="bg-card border border-border rounded-xl p-6">
+                <h2 className="text-foreground font-semibold mb-5">Appearance</h2>
+                <fieldset>
+                    <legend className="text-muted-foreground text-xs font-medium uppercase tracking-wider block mb-2">Theme</legend>
+                    <div className="flex gap-2">
+                        {(['dark', 'light'] as const).map(theme => (
+                            <button
+                                key={theme}
+                                type="button"
+                                aria-pressed={form.theme === theme}
+                                onClick={() => setForm(previous => ({...previous, theme}))}
+                                className={`min-h-11 flex-1 rounded-lg text-sm font-medium capitalize transition-all border ${focusStyles} ${
+                                    form.theme === theme
+                                        ? 'bg-primary/20 border-primary/40 text-primary'
+                                        : 'bg-background border-border text-muted-foreground hover:text-foreground'
+                                }`}
+                            >
+                                {theme === 'dark' ? 'Dark' : 'Light'}
+                            </button>
+                        ))}
                     </div>
-                </div>
-            </div>
+                </fieldset>
+            </section>
 
-            {/* Stats */}
-            <div className="bg-card border border-border rounded-xl p-6">
-                <h2 className="text-white font-semibold mb-4">Statistics</h2>
+            <section className="bg-card border border-border rounded-xl p-6">
+                <h2 className="text-foreground font-semibold mb-4">Statistics</h2>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="bg-background rounded-lg p-3">
                         <p className="text-muted-foreground text-xs">Total Assessments</p>
-                        <p className="text-white font-bold text-xl mt-1">{assessments.length}</p>
+                        <p className="text-foreground font-bold text-xl mt-1">{assessmentsCount}</p>
                     </div>
                     <div className="bg-background rounded-lg p-3">
                         <p className="text-muted-foreground text-xs">Data Size</p>
-                        <p className="text-white font-bold text-xl mt-1">{(JSON.stringify(assessments).length / 1024).toFixed(1)}KB</p>
+                        <p className="text-foreground font-bold text-xl mt-1">{assessmentSize}KB</p>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            {/* Actions */}
             <div className="space-y-3">
-                <div className="flex gap-3">
+                <div data-testid="settings-actions" className="flex flex-col sm:flex-row gap-3">
                     <button
+                        type="button"
                         onClick={handleSave}
                         disabled={saveState === 'saving'}
-                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                        className={`min-h-11 flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${focusStyles} ${
                             saveState === 'saved'
-                                ? 'bg-primary/20 border border-primary/40 text-primary'
+                                ? 'bg-success/20 border border-success/40 text-success'
                                 : saveState === 'error'
-                                    ? 'bg-red-500/10 border border-red-500/30 text-red-400'
+                                    ? 'bg-destructive/10 border border-destructive/30 text-destructive'
                                     : 'bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary'
                         }`}
                     >
-                        <Save className="w-4 h-4"/>
-                        {saveState === 'saving' ? 'Saving…' : saveState === 'saved' ? 'Saved!' : saveState === 'error' ? 'Save Failed' : 'Save Settings'}
+                        <Save className="w-4 h-4" aria-hidden="true"/>
+                        {saveState === 'saving' ? 'Saving...' : 'Save Settings'}
                     </button>
                     <button
-                        onClick={() => setConfirmClear(true)}
-                        className="flex items-center justify-center gap-2 px-4 py-3 border border-red-500/30 text-red-400 rounded-lg text-sm font-medium hover:bg-red-500/10 transition-all"
+                        type="button"
+                        disabled={clearPending}
+                        onClick={() => {
+                            setClearState('idle');
+                            setConfirmClear(true);
+                        }}
+                        className={`min-h-11 flex items-center justify-center gap-2 px-4 py-3 border border-destructive/30 text-destructive rounded-lg text-sm font-medium hover:bg-destructive/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${focusStyles}`}
                     >
-                        <Trash2 className="w-4 h-4"/>
+                        <Trash2 className="w-4 h-4" aria-hidden="true"/>
                         Clear Data
                     </button>
                 </div>
 
+                {saveState === 'saving' && <p role="status" className="text-muted-foreground text-sm">Saving settings.</p>}
+                {saveState === 'saved' && <p role="status" className="text-success text-sm">Settings saved.</p>}
+                {saveState === 'error' && <p role="alert" className="text-destructive text-sm">Could not save settings. Try again.</p>}
+
                 {confirmClear && (
-                    <div className="flex items-start gap-3 p-4 bg-red-500/5 border border-red-500/20 rounded-xl">
-                        <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"/>
+                    <div className="flex items-start gap-3 p-4 bg-destructive/5 border border-destructive/20 rounded-xl">
+                        <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" aria-hidden="true"/>
                         <div className="flex-1">
-                            <p className="text-red-400 text-sm font-medium">Delete
-                                all {assessments.length} assessment{assessments.length !== 1 ? 's' : ''}?</p>
+                            <p className="text-destructive text-sm font-medium">
+                                Delete all {assessmentsCount} assessment{assessmentsCount !== 1 ? 's' : ''}?
+                            </p>
                             <p className="text-muted-foreground text-xs mt-0.5">This cannot be undone.</p>
-                            <div className="flex gap-2 mt-3">
+                            {clearState === 'clearing' && <p role="status" className="text-muted-foreground text-sm mt-2">Clearing assessment data.</p>}
+                            {clearState === 'error' && (
+                                <p role="alert" className="text-destructive text-sm mt-2">Could not clear assessment data. Try again.</p>
+                            )}
+                            <div className="flex flex-col sm:flex-row gap-2 mt-3">
                                 <button
-                                    onClick={() => {
-                                        onClearData();
-                                        setConfirmClear(false);
-                                    }}
-                                    className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-400 rounded-lg text-xs font-medium transition-all"
+                                    type="button"
+                                    onClick={handleClear}
+                                    disabled={clearPending}
+                                    className={`min-h-11 px-3 py-2 bg-destructive/20 hover:bg-destructive/30 border border-destructive/40 text-destructive rounded-lg text-xs font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${focusStyles}`}
                                 >
                                     Yes, delete all
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={() => setConfirmClear(false)}
-                                    className="px-3 py-1.5 bg-border/50 hover:bg-border border border-border text-muted-foreground rounded-lg text-xs font-medium transition-all"
+                                    disabled={clearPending}
+                                    className={`min-h-11 px-3 py-2 bg-muted/50 hover:bg-muted border border-border text-muted-foreground rounded-lg text-xs font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${focusStyles}`}
                                 >
                                     Cancel
                                 </button>
@@ -209,35 +219,47 @@ function SettingsForm({
 }
 
 export default function Settings() {
-    const {settings, isLoading, isError, updateSettings} = useSettings();
-    const {assessments, clearAll} = useAssessments();
+    const settingsQuery = useSettingsQuery();
+    const updateMutation = useUpdateSettings();
+    const assessmentsQuery = useAssessmentQuery();
+    const clearMutation = useClearAssessments();
+    const assessments = assessmentsQuery.data ?? [];
+    const assessmentSize = (JSON.stringify(assessments).length / 1024).toFixed(1);
+    const settingsTheme = settingsQuery.data?.theme;
+
+    useEffect(() => {
+        if (settingsTheme) reconcileTheme(settingsTheme);
+    }, [settingsTheme]);
 
     return (
-        <div className="p-6 max-w-2xl mx-auto page-enter">
+        <div className="p-4 sm:p-6 max-w-2xl mx-auto page-enter">
             <div className="mb-8">
-                <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                    <SettingsIcon className="w-7 h-7 text-muted-foreground"/>
+                <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+                    <SettingsIcon className="w-7 h-7 text-muted-foreground" aria-hidden="true"/>
                     Settings
                 </h1>
                 <p className="text-muted-foreground text-sm mt-1">Configure your CEH tracker</p>
             </div>
 
-            {isError && (
-                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
-                    Could not load settings from server — changes cannot be saved. Check your connection.
+            {settingsQuery.isError && (
+                <div role="alert" className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-sm">
+                    Could not load settings from server. Changes cannot be saved. Check your connection.
                 </div>
             )}
 
-            {isLoading ? (
-                <p className="text-muted-foreground text-sm">Loading…</p>
-            ) : (
+            {settingsQuery.isLoading ? (
+                <p role="status" className="text-muted-foreground text-sm">Loading...</p>
+            ) : settingsQuery.data ? (
                 <SettingsForm
-                    settings={settings}
-                    updateSettings={updateSettings}
-                    assessments={assessments}
-                    onClearData={clearAll}
+                    key={JSON.stringify(settingsQuery.data)}
+                    settings={settingsQuery.data}
+                    updateSettings={updateMutation.mutateAsync}
+                    assessmentsCount={assessments.length}
+                    assessmentSize={assessmentSize}
+                    clearAssessments={clearMutation.mutateAsync}
+                    isClearPending={clearMutation.isPending}
                 />
-            )}
+            ) : null}
         </div>
     );
 }

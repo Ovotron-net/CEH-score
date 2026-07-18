@@ -2,6 +2,7 @@ import {memo, useState} from 'react';
 import type {Assessment} from '@/types';
 import {CheckCircle, Clock, Target, Trash2, XCircle} from 'lucide-react';
 import {format} from 'date-fns';
+import {parseLocalDate} from '@/utils/dates';
 
 interface AssessmentCardProps {
     assessment: Assessment;
@@ -9,21 +10,21 @@ interface AssessmentCardProps {
 }
 
 const typeColors = {
-    practice: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-    mock: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-    official: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+    practice: 'bg-info/10 text-info border-info/20',
+    mock: 'bg-secondary text-foreground border-border',
+    official: 'bg-warning/10 text-warning border-warning/20',
 };
 
 const AssessmentCard = memo(function AssessmentCard({assessment, onDelete}: AssessmentCardProps) {
     const [confirmDelete, setConfirmDelete] = useState(false);
 
     const scoreColor = assessment.percentage >= 85
-        ? 'text-primary'
+        ? 'text-success'
         : assessment.percentage >= 70
-            ? 'text-accent'
+            ? 'text-info'
             : assessment.percentage >= 60
-                ? 'text-yellow-400'
-                : 'text-red-400';
+                ? 'text-warning'
+                : 'text-destructive';
 
     const handleDeleteClick = () => {
         if (confirmDelete) {
@@ -36,7 +37,7 @@ const AssessmentCard = memo(function AssessmentCard({assessment, onDelete}: Asse
     return (
         <div
             className="bg-card border border-border rounded-xl p-5 hover:bg-secondary transition-all duration-200 card-enter">
-            <div className="flex items-start justify-between mb-3">
+            <div className="mb-3 flex flex-col items-start justify-between gap-3 sm:flex-row">
                 <div className="flex items-center gap-3">
                     <div className={`text-2xl font-bold ${scoreColor}`}>
                         {assessment.percentage}%
@@ -44,41 +45,44 @@ const AssessmentCard = memo(function AssessmentCard({assessment, onDelete}: Asse
                     <div>
                         <div className="flex items-center gap-2">
                             {assessment.passed
-                                ? <CheckCircle className="w-4 h-4 text-primary"/>
-                                : <XCircle className="w-4 h-4 text-red-400"/>
+                                ? <CheckCircle className="w-4 h-4 text-success"/>
+                                : <XCircle className="w-4 h-4 text-destructive"/>
                             }
                             <span
-                                className={`text-xs font-medium ${assessment.passed ? 'text-primary' : 'text-red-400'}`}>
+                                className={`text-xs font-medium ${assessment.passed ? 'text-success' : 'text-destructive'}`}>
                 {assessment.passed ? 'PASSED' : 'FAILED'}
               </span>
                         </div>
                         <p className="text-muted-foreground text-xs">{assessment.score}/{assessment.maxScore} correct</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex flex-wrap items-center gap-2 sm:flex-shrink-0">
           <span className={`text-xs px-2 py-1 rounded border ${typeColors[assessment.type]} capitalize`}>
             {assessment.type}
           </span>
                     {onDelete && (
                         confirmDelete ? (
-                            <div className="flex items-center gap-1">
+                            <div className="flex flex-wrap items-center gap-1">
                                 <button
+                                    type="button"
                                     onClick={handleDeleteClick}
-                                    className="text-xs px-2 py-1 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 rounded transition-all"
+                                    className="min-h-11 rounded border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive transition-colors hover:bg-destructive/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                                 >
                                     Delete
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={() => setConfirmDelete(false)}
-                                    className="text-xs px-2 py-1 bg-border/50 hover:bg-border border border-border text-muted-foreground rounded transition-all"
+                                    className="min-h-11 rounded border border-border bg-secondary px-3 py-2 text-xs text-secondary-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                                 >
                                     Cancel
                                 </button>
                             </div>
                         ) : (
                             <button
+                                type="button"
                                 onClick={handleDeleteClick}
-                                className="text-muted-foreground hover:text-red-400 transition-colors p-1"
+                                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                                 aria-label="Delete assessment"
                             >
                                 <Trash2 className="w-4 h-4"/>
@@ -88,8 +92,8 @@ const AssessmentCard = memo(function AssessmentCard({assessment, onDelete}: Asse
                 </div>
             </div>
 
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span>{format(new Date(assessment.date), 'MMM d, yyyy')}</span>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+                <span>{format(parseLocalDate(assessment.date), 'MMM d, yyyy')}</span>
                 <span className="flex items-center gap-1">
           <Clock className="w-3 h-3"/>{assessment.timeTaken}m
         </span>
@@ -112,8 +116,8 @@ const AssessmentCard = memo(function AssessmentCard({assessment, onDelete}: Asse
                     style={{
                         width: `${assessment.percentage}%`,
                         background: assessment.percentage >= 70
-                            ? 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))'
-                            : 'linear-gradient(90deg, #ff4444, #ff8800)',
+                            ? 'linear-gradient(90deg, hsl(var(--success)), hsl(var(--info)))'
+                            : 'linear-gradient(90deg, hsl(var(--destructive)), hsl(var(--warning)))',
                     }}
                 />
             </div>

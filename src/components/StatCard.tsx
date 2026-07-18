@@ -12,34 +12,29 @@ interface StatCardProps {
 
 const colorMap = {
     green: {
-        text: 'text-primary',
-        bg: 'bg-primary/10',
-        border: 'border-primary/20',
-        glow: 'shadow-[0_0_20px_rgba(0,255,136,0.1)]'
+        text: 'text-success',
+        bg: 'bg-success/10',
+        border: 'border-success/20',
     },
     blue: {
-        text: 'text-accent',
-        bg: 'bg-accent/10',
-        border: 'border-accent/20',
-        glow: 'shadow-[0_0_20px_rgba(0,212,255,0.1)]'
+        text: 'text-info',
+        bg: 'bg-info/10',
+        border: 'border-info/20',
     },
     yellow: {
-        text: 'text-yellow-400',
-        bg: 'bg-yellow-400/10',
-        border: 'border-yellow-400/20',
-        glow: 'shadow-[0_0_20px_rgba(250,204,21,0.1)]'
+        text: 'text-warning',
+        bg: 'bg-warning/10',
+        border: 'border-warning/20',
     },
     red: {
-        text: 'text-red-400',
-        bg: 'bg-red-400/10',
-        border: 'border-red-400/20',
-        glow: 'shadow-[0_0_20px_rgba(248,113,113,0.1)]'
+        text: 'text-destructive',
+        bg: 'bg-destructive/10',
+        border: 'border-destructive/20',
     },
     purple: {
-        text: 'text-purple-400',
-        bg: 'bg-purple-400/10',
-        border: 'border-purple-400/20',
-        glow: 'shadow-[0_0_20px_rgba(167,139,250,0.1)]'
+        text: 'text-foreground',
+        bg: 'bg-secondary',
+        border: 'border-border',
     },
 };
 
@@ -47,14 +42,14 @@ const StatCard = memo(function StatCard({title, value, subtitle, icon: Icon, col
     const c = colorMap[color];
     return (
         <div
-            className={`bg-card border border-border rounded-xl p-6 transition-all duration-300 ${c.glow} hover:scale-[1.02] card-enter`}>
+            className="bg-card border border-border rounded-xl p-6 transition-all duration-300 hover:scale-[1.02] card-enter">
             <div className="flex items-start justify-between">
                 <div className="flex-1">
                     <p className="text-muted-foreground text-sm font-medium mb-1">{title}</p>
                     <p className={`text-3xl font-bold ${c.text}`}>{value}</p>
                     {subtitle && <p className="text-muted-foreground text-xs mt-1">{subtitle}</p>}
                     {trend !== undefined && (
-                        <p className={`text-xs mt-1 ${trend >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                        <p className={`text-xs mt-1 ${trend >= 0 ? 'text-success' : 'text-destructive'}`}>
                             {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}% from last
                         </p>
                     )}

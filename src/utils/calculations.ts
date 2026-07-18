@@ -1,4 +1,5 @@
 import type {Assessment} from '../types';
+import {formatLocalDateInput, parseLocalDate} from './dates';
 
 export function calculatePercentage(score: number, maxScore: number): number {
     if (maxScore === 0) return 0;
@@ -17,12 +18,19 @@ export function getAverageScore(assessments: Assessment[]): number {
 
 export function getBestScore(assessments: Assessment[]): number {
     if (assessments.length === 0) return 0;
-    return Math.max(...assessments.map(a => a.percentage));
+    let bestScore = Number.NEGATIVE_INFINITY;
+    for (const assessment of assessments) {
+        bestScore = Math.max(bestScore, assessment.percentage);
+    }
+    return bestScore;
 }
 
 export function getPassRate(assessments: Assessment[]): number {
     if (assessments.length === 0) return 0;
-    const passed = assessments.filter(a => a.passed).length;
+    let passed = 0;
+    for (const assessment of assessments) {
+        if (assessment.passed) passed += 1;
+    }
     return Math.round((passed / assessments.length) * 100);
 }
 
@@ -54,17 +62,29 @@ export function formatScore(score: number): string {
 }
 
 export function calculateStats(assessments: Assessment[]) {
-    const averageScore = getAverageScore(assessments);
-    const bestScore = getBestScore(assessments);
     const totalAssessments = assessments.length;
+    let scoreTotal = 0;
+    let bestScore = Number.NEGATIVE_INFINITY;
+    const studyDays = new Set<string>();
 
-    const uniqueDays = [...new Set(assessments.map((assessment) => assessment.date))]
-        .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    for (const assessment of assessments) {
+        const percentage = assessment.percentage;
+        scoreTotal += percentage;
+        bestScore = Math.max(bestScore, percentage);
+        studyDays.add(assessment.date);
+    }
+
+    const uniqueDays = [...studyDays]
+        .sort((a, b) => parseLocalDate(b).getTime() - parseLocalDate(a).getTime());
+    const averageScore = totalAssessments === 0
+        ? 0
+        : Math.round((scoreTotal / totalAssessments) * 10) / 10;
+    if (totalAssessments === 0) bestScore = 0;
 
     let studyStreak = 0;
     if (uniqueDays.length > 0) {
-        const cursor = new Date(uniqueDays[0]);
-        while (uniqueDays.includes(cursor.toISOString().slice(0, 10))) {
+        const cursor = parseLocalDate(uniqueDays[0]);
+        while (studyDays.has(formatLocalDateInput(cursor))) {
             studyStreak += 1;
             cursor.setDate(cursor.getDate() - 1);
         }

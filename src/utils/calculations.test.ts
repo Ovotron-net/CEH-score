@@ -73,18 +73,64 @@ describe('assessment aggregates', () => {
 });
 
 describe('calculateStats', () => {
-    it('counts consecutive study days as a streak', () => {
-        const today = new Date().toISOString().slice(0, 10);
-        const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
-
+    it('preserves aggregate and consecutive-day streak behavior', () => {
         const stats = calculateStats([
-            makeAssessment({date: today}),
-            makeAssessment({id: 'a-2', date: yesterday}),
+            makeAssessment({id: 'a-1', date: '2026-07-18', percentage: 80}),
+            makeAssessment({id: 'a-2', date: '2026-07-17', percentage: 60}),
+            makeAssessment({id: 'a-3', date: '2026-07-17', percentage: 90}),
+            makeAssessment({id: 'a-4', date: '2026-07-15', percentage: 70}),
         ]);
 
-        expect(stats.totalAssessments).toBe(2);
-        expect(stats.studyStreak).toBe(2);
-        expect(stats.bestScore).toBe(72);
+        expect(stats).toEqual({
+            averageScore: 75,
+            bestScore: 90,
+            totalAssessments: 4,
+            studyStreak: 2,
+        });
+    });
+
+    it('calculates aggregate fields in one pass', () => {
+        let percentageReads = 0;
+        const assessments = [70, 80, 90].map((percentage, index) => {
+            const assessment = makeAssessment({id: `a-${index + 1}`});
+            Object.defineProperty(assessment, 'percentage', {
+                enumerable: true,
+                get() {
+                    percentageReads += 1;
+                    return percentage;
+                },
+            });
+            return assessment;
+        });
+
+        calculateStats(assessments);
+
+        expect(percentageReads).toBe(assessments.length);
+    });
+
+    it('preserves the best score when all percentages are negative', () => {
+        const stats = calculateStats([
+            makeAssessment({id: 'a-1', percentage: -20}),
+            makeAssessment({id: 'a-2', percentage: -10}),
+        ]);
+
+        expect(stats.bestScore).toBe(-10);
+    });
+
+    it('calculates consecutive local calendar days east of UTC', () => {
+        const originalTimezone = process.env.TZ;
+        process.env.TZ = 'Asia/Tokyo';
+
+        try {
+            const stats = calculateStats([
+                makeAssessment({id: 'a-1', date: '2026-07-17'}),
+                makeAssessment({id: 'a-2', date: '2026-07-18'}),
+            ]);
+
+            expect(stats.studyStreak).toBe(2);
+        } finally {
+            process.env.TZ = originalTimezone;
+        }
     });
 });
 

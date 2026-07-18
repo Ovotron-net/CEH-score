@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Env files
+.env
+.env.*
+!.env.example
+
 # Generated API clients (run `npm run generate` to recreate)
 src/api/generated
 

@@ -1,6 +1,7 @@
 import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
+import reactPlugin from 'eslint-plugin-react'
 import tseslint from 'typescript-eslint'
 import {defineConfig, globalIgnores} from 'eslint/config'
 import nextPlugin from '@next/eslint-plugin-next'
@@ -15,6 +16,8 @@ export default defineConfig([
             tseslint.configs.recommended,
             reactHooks.configs.flat.recommended,
         ],
+        plugins: {react: reactPlugin},
+        rules: {'react/no-danger': 'error'},
         languageOptions: {
             ecmaVersion: 2020,
             globals: {

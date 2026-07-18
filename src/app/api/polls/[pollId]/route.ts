@@ -1,11 +1,10 @@
 import {NextResponse} from 'next/server';
 import {db} from '@/db';
 import {pollResults} from '@/db/schema';
-import type {InferSelectModel} from 'drizzle-orm';
 import {eq} from 'drizzle-orm';
+import {getPollStats} from '@/data/pollRepository';
 import {authenticate} from '@/lib/auth';
-
-type PollResultRow = InferSelectModel<typeof pollResults>;
+import {enforceRateLimit} from '@/lib/rate-limit';
 
 export async function GET(
     request: Request,
@@ -21,46 +20,12 @@ export async function GET(
             return NextResponse.json({error: 'Invalid pollId.'}, {status: 400});
         }
 
-        const rows = await db
-            .select()
-            .from(pollResults)
-            .where(eq(pollResults.pollId, pollId))
-            .orderBy(pollResults.optionText);
+        const stats = await getPollStats(pollId);
 
-        if (rows.length === 0) {
+        if (!stats) {
             return NextResponse.json({error: 'Poll not found.'}, {status: 404});
         }
-
-        // Calculate statistics
-        const totalVotes = rows.reduce((sum: number, row: PollResultRow) => sum + row.voteCount, 0);
-        const pollQuestion = rows[0].pollQuestion;
-
-        const options = rows.map((row: PollResultRow) => ({
-            id: row.id,
-            optionText: row.optionText,
-            voteCount: row.voteCount,
-            percentage: totalVotes > 0 ? Math.round((row.voteCount / totalVotes) * 100) : 0,
-        }));
-
-        // Rows are ordered by optionText, so derive the poll's true timestamps
-        // from the min createdAt / max updatedAt across all option rows.
-        const createdAt = rows.reduce(
-            (min: Date, row: PollResultRow) => (row.createdAt < min ? row.createdAt : min),
-            rows[0].createdAt,
-        );
-        const updatedAt = rows.reduce(
-            (max: Date, row: PollResultRow) => (row.updatedAt > max ? row.updatedAt : max),
-            rows[0].updatedAt,
-        );
-
-        return NextResponse.json({
-            pollId,
-            pollQuestion,
-            totalVotes,
-            options,
-            createdAt,
-            updatedAt,
-        });
+        return NextResponse.json(stats);
     } catch {
         return NextResponse.json({error: 'Failed to fetch poll.'}, {status: 500});
     }
@@ -72,6 +37,9 @@ export async function DELETE(
 ) {
     const authError = authenticate(request);
     if (authError) return authError;
+
+    const limited = enforceRateLimit(request, 'polls:delete', 20, 60_000);
+    if (limited) return limited;
 
     try {
         const {pollId} = await params;

@@ -60,13 +60,13 @@ export function PollForm({pollId, question, options, userId, onSuccess}: PollFor
     const loading = voteMutation.isPending;
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" aria-label={question} aria-busy={loading}>
             <fieldset className="space-y-3" disabled={loading}>
-                <legend className="text-base font-semibold text-white mb-4">{question}</legend>
+                <legend className="text-base font-semibold text-foreground mb-4">{question}</legend>
                 {options.map((option) => (
                     <label
                         key={option}
-                        className={`flex items-center gap-3 cursor-pointer p-3 rounded-lg border transition-colors ${
+                        className={`flex min-h-11 items-center gap-3 cursor-pointer p-3 rounded-lg border transition-colors ${
                             selected === option
                                 ? 'border-cyber-green/60 bg-cyber-green/10'
                                 : 'border-border bg-background/40 hover:border-border hover:bg-secondary/40'
@@ -89,13 +89,18 @@ export function PollForm({pollId, question, options, userId, onSuccess}: PollFor
             <button
                 type="submit"
                 disabled={loading || !selected}
-                className="w-full px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full min-h-11 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
                 {loading ? 'Submitting...' : 'Submit Vote'}
             </button>
 
-            {error ? <p className="text-destructive text-sm">{error}</p> : null}
-            {success ? <p className="text-primary text-sm">Vote submitted successfully</p> : null}
+            {loading ? (
+                <p role="status" aria-live="polite" className="text-muted-foreground text-sm">Submitting vote...</p>
+            ) : null}
+            {error ? <p role="alert" className="text-destructive text-sm">{error}</p> : null}
+            {success ? (
+                <p role="status" aria-live="polite" className="text-success text-sm">Vote submitted successfully</p>
+            ) : null}
         </form>
     );
 }
