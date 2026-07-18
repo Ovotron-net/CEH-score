@@ -26,6 +26,21 @@ for (const theme of ['dark', 'light'] as const) {
             await page.goto(path);
             await expect(page.getByRole('heading', {name: heading, level: 1})).toBeVisible();
             await expect(page.getByRole('main')).toHaveCount(1);
+            if (path === '/') {
+                const readiness = page.getByRole('region', {name: 'Readiness overview'});
+                await expect(readiness.getByText('75.2%')).toBeVisible();
+                await expect(readiness.getByText('Almost Ready')).toBeVisible();
+                await expect(readiness.getByText('1 day')).toBeVisible();
+                await expect(readiness.getByText('1 of 20')).toBeVisible();
+                await page.waitForLoadState('networkidle');
+
+                const canvas = readiness.locator('[data-readiness-canvas]');
+                if (await canvas.count() > 0) {
+                    await expect(canvas).toHaveAttribute('aria-hidden', 'true');
+                } else {
+                    await expect(readiness.locator('[data-readiness-fallback]')).toBeVisible();
+                }
+            }
             await page.evaluate(requestedTheme => {
                 document.documentElement.classList.remove('dark', 'light');
                 document.documentElement.classList.add(requestedTheme);

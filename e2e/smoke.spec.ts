@@ -1,4 +1,4 @@
-import {expect, test} from '@playwright/test';
+import {expect, type Locator, type Page, test} from '@playwright/test';
 
 const pages = [
     {path: '/', heading: 'Dashboard', title: 'Dashboard | CEH Tracker'},
@@ -49,6 +49,44 @@ function pollStats(pollId: string) {
         createdAt: '1970-01-01T00:00:00.000Z',
         updatedAt: '1970-01-01T00:00:00.000Z',
     };
+}
+
+function collectBrowserErrors(page: Page) {
+    const errors: string[] = [];
+    page.on('console', message => {
+        if (message.type() === 'error') errors.push(`console: ${message.text()}`);
+    });
+    page.on('pageerror', error => errors.push(`page: ${error.message}`));
+    return errors;
+}
+
+function isWebGlUnavailableError(error: string) {
+    return /THREE\.WebGLRenderer: Error creating WebGL context/i.test(error);
+}
+
+function unexpectedBrowserErrors(
+    errors: string[],
+    {allowHeadlessWebGlUnavailable = false}: {allowHeadlessWebGlUnavailable?: boolean} = {},
+) {
+    // Headless Chromium may expose canvas APIs without a usable WebGL context.
+    return errors.filter(error => !allowHeadlessWebGlUnavailable || !isWebGlUnavailableError(error));
+}
+
+async function expectReadinessMetrics(page: Page) {
+    const readiness = page.getByRole('region', {name: 'Readiness overview'});
+    await expect(readiness.getByRole('heading', {name: 'Dashboard', level: 1})).toBeVisible();
+    await expect(readiness.getByText('75.2%')).toBeVisible();
+    await expect(readiness.getByText('Almost Ready')).toBeVisible();
+    await expect(readiness.getByText('1 day')).toBeVisible();
+    await expect(readiness.getByText('1 of 20')).toBeVisible();
+    await expect(readiness.getByRole('link', {name: 'View analytics'})).toBeVisible();
+    return readiness;
+}
+
+async function expectReadinessTerminal(readiness: Locator) {
+    const boundary = readiness.locator('[data-readiness-status]');
+    await expect(boundary).toHaveAttribute('data-readiness-status', /^(ready|unavailable)$/);
+    return boundary;
 }
 
 // Initial data is server-hydrated; these stubs cover browser refreshes and mutations.
@@ -115,6 +153,7 @@ for (const {path, heading, title} of pages) {
 }
 
 test('dashboard uses server-hydrated assessments without an initial browser GET', async ({page}) => {
+    const browserErrors = collectBrowserErrors(page);
     let browserAssessmentGets = 0;
     page.on('request', request => {
         if (request.method() === 'GET' && new URL(request.url()).pathname === '/api/assessments') {
@@ -123,8 +162,42 @@ test('dashboard uses server-hydrated assessments without an initial browser GET'
     });
 
     await page.goto('/');
-    await expect(page.getByRole('heading', {name: 'Dashboard', level: 1})).toBeVisible();
+    const readiness = await expectReadinessMetrics(page);
+    await expectReadinessTerminal(readiness);
+    await expect(readiness.locator('[data-readiness-canvas]:visible, [data-readiness-fallback]:visible')).toHaveCount(1);
     expect(browserAssessmentGets).toBe(0);
+    expect(unexpectedBrowserErrors(browserErrors, {allowHeadlessWebGlUnavailable: true})).toEqual([]);
+});
+
+test('dashboard remains complete when WebGL is unavailable', async ({page}) => {
+    const browserErrors = collectBrowserErrors(page);
+    await page.addInitScript(() => {
+        const original = HTMLCanvasElement.prototype.getContext;
+        HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, type, ...args) {
+            if (type === 'webgl' || type === 'webgl2' || type === 'experimental-webgl') return null;
+            return Reflect.apply(original, this, [type, ...args]);
+        } as typeof original;
+    });
+
+    await page.goto('/');
+    const readiness = await expectReadinessMetrics(page);
+    const boundary = await expectReadinessTerminal(readiness);
+    await expect(boundary).toHaveAttribute('data-readiness-status', 'unavailable');
+    await expect.poll(() => browserErrors.some(isWebGlUnavailableError)).toBe(true);
+    await expect(readiness.locator('[data-readiness-fallback]')).toBeVisible();
+    await expect(page.getByRole('main').getByRole('alert')).toHaveCount(0);
+    expect(unexpectedBrowserErrors(browserErrors, {allowHeadlessWebGlUnavailable: true})).toEqual([]);
+});
+
+test('dashboard readiness visual respects reduced motion', async ({page}) => {
+    const browserErrors = collectBrowserErrors(page);
+    await page.emulateMedia({reducedMotion: 'reduce'});
+    await page.goto('/');
+
+    const readiness = await expectReadinessMetrics(page);
+    await expectReadinessTerminal(readiness);
+    await expect(readiness.locator('[data-readiness-canvas]:visible, [data-readiness-fallback]:visible')).toHaveCount(1);
+    expect(unexpectedBrowserErrors(browserErrors, {allowHeadlessWebGlUnavailable: true})).toEqual([]);
 });
 
 test('sidebar navigation reaches assessments', async ({page}) => {
@@ -205,6 +278,19 @@ test.describe('mobile layout', () => {
     });
 });
 
+test.describe('mobile readiness hero', () => {
+    test.use({viewport: {width: 375, height: 812}});
+
+    test('collapses without horizontal overflow', async ({page}) => {
+        await page.goto('/');
+        await expect(page.getByRole('region', {name: 'Readiness overview'})).toBeVisible();
+        await expect.poll(() => page.evaluate(() => ({
+            clientWidth: document.documentElement.clientWidth,
+            scrollWidth: document.documentElement.scrollWidth,
+        }))).toEqual({clientWidth: 375, scrollWidth: 375});
+    });
+});
+
 test('assessment and settings fields have accessible labels', async ({page}) => {
     await page.goto('/add');
     for (const label of ['Date', 'Type', 'Score', 'Max Score', 'Domain', 'Time Taken (minutes)', 'Notes (optional)']) {
@@ -239,8 +325,11 @@ test('@production built app hydrates fixture data and performs a real assessment
     });
 
     await page.goto('/');
-    await expect(page.getByText('Current Average').locator('..').getByText('75.2')).toBeVisible();
-    await expect(page.getByText('Total Assessments').locator('..').getByText('3')).toBeVisible();
+    await expectReadinessMetrics(page);
+    await expect(page.getByText('Current Average', {exact: true}).locator('..').getByText('75.2', {exact: true}))
+        .toBeVisible();
+    await expect(page.getByText('Total Assessments', {exact: true}).locator('..').getByText('3', {exact: true}))
+        .toBeVisible();
     expect(browserAssessmentGets).toBe(0);
 
     await page.getByRole('link', {name: 'Add Assessment'}).first().click();

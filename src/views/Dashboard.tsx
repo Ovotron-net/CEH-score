@@ -2,7 +2,7 @@
 
 import {useMemo} from 'react';
 import Link from 'next/link';
-import {Activity, BookOpen, Clock, Shield, Target, TrendingUp, Trophy, Zap} from 'lucide-react';
+import {Activity, BookOpen, Clock, Target, TrendingUp, Trophy, Zap} from 'lucide-react';
 import {useAssessmentQuery} from '../hooks/useAssessments';
 import {calculateStats, formatScore} from '../utils/calculations';
 import {formatLocalDateDisplay} from '../utils/dates';
@@ -15,19 +15,7 @@ export default function Dashboard() {
     const recentAssessments = assessments.slice(0, 5);
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8 page-enter">
-            <div className="mb-8">
-                <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-                        <Shield className="w-6 h-6 text-primary"/>
-                    </div>
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
-                        <p className="text-muted-foreground mt-1">Track your CEH exam preparation progress</p>
-                    </div>
-                </div>
-            </div>
-
+        <>
             {isLoading ? (
                 <div role="status" aria-label="Loading dashboard" className="space-y-6 py-4">
                     <span className="sr-only">Loading dashboard</span>
@@ -153,7 +141,7 @@ export default function Dashboard() {
             </div>
                 </>
             )}
-        </div>
+        </>
     );
 }
 

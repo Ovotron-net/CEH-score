@@ -53,6 +53,35 @@ describe('HydratedPage', () => {
         ]));
     });
 
+    it('dehydrates supplied initial data without invoking its query function', async () => {
+        const queryFn = vi.fn(async () => ['unexpected']);
+        const initialData = [{id: 'assessment-1'}];
+
+        const boundary = await HydratedPage({
+            queries: [{queryKey: ['assessments'], queryFn, initialData}],
+            children: null,
+        });
+
+        expect(queryFn).not.toHaveBeenCalled();
+        expect(boundary.props.state.queries).toEqual([
+            expect.objectContaining({
+                queryKey: ['assessments'],
+                state: expect.objectContaining({data: initialData}),
+            }),
+        ]);
+    });
+
+    it('does not invoke queryFn when initialData is explicitly undefined', async () => {
+        const queryFn = vi.fn(async () => 'unexpected');
+
+        await HydratedPage({
+            queries: [{queryKey: ['optional'], queryFn, initialData: undefined}],
+            children: null,
+        });
+
+        expect(queryFn).not.toHaveBeenCalled();
+    });
+
     it('propagates query failures to the route error boundary', async () => {
         const error = new Error('database unavailable');
 

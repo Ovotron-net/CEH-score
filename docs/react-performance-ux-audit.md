@@ -1,6 +1,6 @@
 # React Performance and UX Audit
 
-Audit date: 2026-07-18. Scope: the current Next.js browser application and API. Statuses mean **Implemented** (changed by the optimization work), **Already compliant** (the existing design already satisfies the rule), or **Inapplicable** (the rule's triggering feature is absent or intentionally out of scope).
+Audit date: 2026-07-18. Scope: the current Next.js browser application and API. Statuses mean **Implemented** (changed by the optimization work), **Already compliant** (the existing design already satisfies the rule), or **Inapplicable** (the rule's triggering feature is absent or intentionally out of scope). Readiness feature details are in the [design specification](superpowers/specs/2026-07-18-webgl-readiness-shield-design.md) and [measured verification](webgl-readiness-shield-verification.md).
 
 ## Vercel React Best Practices
 
@@ -23,7 +23,7 @@ All 70 rule IDs from the Vercel React Best Practices inventory are represented e
 | --- | --- | --- |
 | `bundle-barrel-imports` | Implemented | Hooks import app API modules directly; chart modules are loaded from direct paths in `src/components/charts/lazy.tsx`. |
 | `bundle-analyzable-paths` | Already compliant | Route imports and all dynamic chart import paths are static string literals in `src/app/**/page.tsx` and `src/components/charts/lazy.tsx`. |
-| `bundle-dynamic-imports` | Implemented | Recharts views use `next/dynamic` in `src/components/charts/lazy.tsx`. |
+| `bundle-dynamic-imports` | Implemented | Recharts views use `next/dynamic` in `src/components/charts/lazy.tsx`; the readiness shield and Three.js scene use a separate boundary mounted after load through an idle callback or timer fallback in `ReadinessHero.tsx`. |
 | `bundle-defer-third-party` | Inapplicable | No analytics, tag manager, chat, or other client-side third-party script is installed. |
 | `bundle-conditional` | Implemented | Domain topic chips mount only when expanded in `src/components/DomainCard.tsx`. |
 | `bundle-preload` | Implemented | Analytics chunks preload on link focus, pointer enter, and touch start in `src/components/Sidebar.tsx`. |
@@ -48,8 +48,8 @@ All 70 rule IDs from the Vercel React Best Practices inventory are represented e
 | Rule | Status | Evidence |
 | --- | --- | --- |
 | `client-swr-dedup` | Already compliant | TanStack Query provides equivalent keyed deduplication through contracts in `src/hooks/use*.ts`. |
-| `client-event-listeners` | Already compliant | The drawer installs one conditional keydown listener and removes it in `src/components/ClientShell.tsx`. |
-| `client-passive-event-listeners` | Inapplicable | No wheel, touchmove, or scroll listener is registered. |
+| `client-event-listeners` | Already compliant | The drawer removes its conditional keydown listener; readiness cleanup removes its one-time load listener, pointer/context-loss/visibility listeners, timers, and observers. |
+| `client-passive-event-listeners` | Already compliant | The readiness scene marks pointer listeners passive; no wheel, touchmove, or scroll listener is registered. |
 | `client-localstorage-schema` | Inapplicable | Persistent theme state uses the `ceh-theme` cookie; the application does not use localStorage. |
 
 ### Re-render Optimization
@@ -105,16 +105,16 @@ All 70 rule IDs from the Vercel React Best Practices inventory are represented e
 | `js-set-map-lookups` | Implemented | Streak and domain membership use `Set`/`Map` in `src/utils/calculations.ts` and `src/utils/domainStats.ts`. |
 | `js-tosorted-immutable` | Implemented | Rankings and charts clone query arrays before sorting in `src/views/Leaderboard.tsx` and `src/components/charts/ScoreTrend.tsx`. |
 | `js-flatmap-filter` | Implemented | Measured domain chart rows use one `flatMap` in `src/views/Analytics.tsx`. |
-| `js-request-idle-callback` | Inapplicable | No noncritical CPU-heavy browser task needs idle scheduling. |
+| `js-request-idle-callback` | Implemented | `DeferredReadinessShield` waits for window load, then schedules Three.js mounting with `requestIdleCallback({timeout: 500})` or a 50 ms timer fallback and cancels pending work on cleanup. |
 
 ### Advanced Patterns
 
 | Rule | Status | Evidence |
 | --- | --- | --- |
 | `advanced-effect-event-deps` | Inapplicable | The codebase does not use `useEffectEvent`. |
-| `advanced-event-handler-refs` | Inapplicable | No long-lived external subscription needs a changing React event handler. |
+| `advanced-event-handler-refs` | Implemented | `ReadinessShieldScene` keeps changing ready/unavailable callbacks in refs so its one-time external lifecycle does not resubscribe. |
 | `advanced-init-once` | Already compliant | Providers initialize the browser QueryClient once in `src/components/providers.tsx`. |
-| `advanced-use-latest` | Inapplicable | No stable callback passed to an external lifecycle reads changing props. |
+| `advanced-use-latest` | Implemented | `ReadinessShieldScene` reads current visual parameters and lifecycle callbacks from refs inside the stable frame and observer callbacks. |
 
 ## Critical and High UI/UX Rules
 
@@ -134,7 +134,7 @@ The tables cover the critical/high web rules and explicitly dispose of adjacent 
 | `heading-hierarchy` | Implemented | Route metadata/heading tests and page views enforce one route `h1`; see `src/app/metadata.test.ts`. |
 | `color-not-only` | Implemented | Pass/fail, errors, selected states, and chart values include text/shape semantics; see `src/views/Assessments.tsx` and chart data tables. |
 | `dynamic-type` | Already compliant | Responsive layouts wrap content and avoid fixed-height text containers across `src/views/`; browser zoom is not disabled. |
-| `reduced-motion` | Implemented | `prefers-reduced-motion` removes nonessential animation/transition behavior in `src/app/globals.css`. |
+| `reduced-motion` | Implemented | The readiness scene renders one assembled frame with no persistent loop; hidden/offscreen static changes queue one refresh that draws only when visible again. |
 | `voiceover-sr` | Implemented | Landmarks, status/alert regions, chart summaries, and semantic tables define screen-reader order in `src/components/` and `src/views/`. |
 | `escape-routes` | Implemented | Mobile navigation and Radix dialogs close with Escape and expose close/cancel controls in `src/components/ClientShell.tsx` and `ui/dialog.tsx`. |
 | `keyboard-shortcuts` | Inapplicable | The app has no custom shortcuts or drag-and-drop interaction that could override system keys. |
@@ -170,18 +170,18 @@ The tables cover the critical/high web rules and explicitly dispose of adjacent 
 | `font-loading` | Already compliant | `src/app/globals.css` uses the system font stack, so no web-font blocking occurs. |
 | `font-preload` | Inapplicable | No web font is downloaded. |
 | `critical-css` | Already compliant | Next.js bundles the root stylesheet imported by `src/app/layout.tsx`. |
-| `lazy-loading` | Implemented | Heavy Recharts modules are route/component split in `src/components/charts/lazy.tsx`. |
-| `UX: bundle-splitting` | Implemented | Next route splitting plus dynamic chart chunks keeps Recharts out of unrelated initial routes. |
+| `lazy-loading` | Implemented | Heavy Recharts modules are route/component split; the decorative Three.js scene remains behind its static fallback until window load and an idle callback or timer. |
+| `UX: bundle-splitting` | Implemented | Next route splitting and the deferred readiness dynamic boundary keep Three.js out of unrelated route requests and initial Dashboard work. |
 | `third-party-scripts` | Inapplicable | No third-party browser scripts are present. |
 | `reduce-reflows` | Already compliant | State changes are class-based; no repeated interleaved DOM measurement/write loop exists. |
-| `content-jumping` | Implemented | Chart and page skeletons reserve dimensions in `src/components/charts/ChartSkeleton.tsx` and loading views. |
-| `lazy-load-below-fold` | Inapplicable | There is no below-fold image/media content. |
+| `content-jumping` | Implemented | Chart skeletons and the readiness fallback reserve final dimensions; final Lighthouse CLS was 0.0002275643333300318. |
+| `lazy-load-below-fold` | Implemented | The above-fold readiness canvas is deferred until after load/idle, and `IntersectionObserver` stops rendering whenever it moves below the viewport. |
 | `virtualize-lists` | Inapplicable | Current personal datasets are small; `.render-row` containment is used and pagination/virtualization is a documented non-goal. |
-| `main-thread-budget` | Implemented | Aggregates use one-pass utilities and filtering is deferred; see `src/utils/` and search views. |
-| `progressive-loading` | Implemented | Dashboard/analytics/chart loading uses dimension-preserving skeletons and named status regions. |
+| `main-thread-budget` | Implemented | Three.js initialization is deferred until after load/idle; one bounded `THREE.Points` draw call moves particles in the vertex shader, while pointer interaction updates one strength uniform rather than particle data. Final TBT was 548.5 ms versus 1,299.5 ms with immediate WebGL. |
+| `progressive-loading` | Implemented | The readiness fallback preserves dimensions and semantic content before idle, through `loading`, and for terminal `unavailable`; it is hidden only after the first successful frame reports `ready`. |
 | `input-latency` | Implemented | Search rendering uses `useDeferredValue` in assessment/topic views. |
 | `tap-feedback-speed` | Already compliant | CSS interaction states are immediate and local mutations expose pending state synchronously. |
-| `debounce-throttle` | Inapplicable | There are no scroll/resize handlers; deferred rendering, not network search, handles text input frequency. |
+| `debounce-throttle` | Already compliant | `ResizeObserver` drives bounded readiness canvas sizing without a window resize stream; text search uses deferred rendering rather than network requests. |
 | `offline-support` | Inapplicable | Offline/PWA operation is outside this database-backed dashboard's scope; failures show recovery UI. |
 | `network-fallback` | Implemented | Query errors retain the page shell and show inline retry paths throughout `src/views/`. |
 
@@ -262,21 +262,21 @@ Results captured from this worktree on 2026-07-18:
 | Check | Result |
 | --- | --- |
 | `npm run lint` | Passed. |
-| `npx tsc --noEmit` | Passed. |
-| `npx vitest run` | Passed: 40 files, 172 tests. |
+| `npx tsc --noEmit --incremental false` | Passed without creating a `.tsbuildinfo` file. |
+| `npx vitest run` | Passed: 44 files, 211 tests. |
 | `npm run build` | Passed with Next.js 15.5.18. |
-| `npm run test:e2e` | Passed: 43 Chromium tests, including axe checks for every route in both themes. |
-| `npm run test:e2e:production` | Passed: built-production hydration and real assessment mutation. |
+| `npm run test:e2e` | Passed: 46 Chromium tests, including axe checks for every route in both themes. |
+| `npm run test:e2e:production` | Passed: 1 built-production hydration and real assessment mutation test. |
 | OpenAPI YAML parse | Passed with the installed `yaml` parser. |
 
 Latest production route output:
 
 | Route | Size | First Load JS |
 | --- | ---: | ---: |
-| `/` | 4.31 kB | 126 kB |
+| `/` | 7.67 kB | 130 kB |
 | `/_not-found` | 152 B | 103 kB |
-| `/add` | 43.3 kB | 156 kB |
-| `/analytics` | 5.4 kB | 121 kB |
+| `/add` | 43.4 kB | 156 kB |
+| `/analytics` | 5.41 kB | 122 kB |
 | `/api/assessments` | 152 B | 103 kB |
 | `/api/assessments/[id]` | 152 B | 103 kB |
 | `/api/health` | 152 B | 103 kB |
@@ -284,11 +284,11 @@ Latest production route output:
 | `/api/polls/[pollId]` | 152 B | 103 kB |
 | `/api/polls/[pollId]/votes` | 152 B | 103 kB |
 | `/api/settings` | 152 B | 103 kB |
-| `/assessments` | 5.17 kB | 125 kB |
-| `/leaderboard` | 10 kB | 129 kB |
+| `/assessments` | 5.24 kB | 125 kB |
+| `/leaderboard` | 10 kB | 130 kB |
 | `/polls` | 5.41 kB | 125 kB |
 | `/polls/analytics` | 7.47 kB | 127 kB |
 | `/settings` | 4.65 kB | 121 kB |
-| `/topics` | 5.68 kB | 122 kB |
+| `/topics` | 5.69 kB | 122 kB |
 
-Shared first-load JavaScript is 102 kB.
+Shared first-load JavaScript is 103 kB. Final Lighthouse measured performance 72, accessibility 100, FCP 750.824 ms, LCP 4,220.236 ms, CLS 0.0002275643333300318, and TBT 548.5 ms. Because the reports are separate single runs and no true pre-feature baseline exists, the cautious conclusion is **no material feature-specific LCP regression observed**. The approved absolute LCP target below 2,500 ms was not met. Bundle sizes, exact comparisons, and runtime/status measurements are recorded in [WebGL Readiness Shield Verification](webgl-readiness-shield-verification.md).

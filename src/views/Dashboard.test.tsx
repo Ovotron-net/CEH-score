@@ -3,9 +3,15 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import type {Assessment} from '@/types';
 import Dashboard from './Dashboard';
 
-const {useAssessmentQuery} = vi.hoisted(() => ({useAssessmentQuery: vi.fn()}));
+const {useAssessmentQuery, readinessHero} = vi.hoisted(() => ({
+    useAssessmentQuery: vi.fn(),
+    readinessHero: vi.fn(() => <div>Readiness hero</div>),
+}));
 
 vi.mock('../hooks/useAssessments', () => ({useAssessmentQuery}));
+vi.mock('../components/readiness/ReadinessHero', () => ({
+    default: readinessHero,
+}));
 vi.mock('next/link', () => ({
     default: ({children, href, ...props}: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
         <a href={String(href)} {...props}>{children}</a>
@@ -16,7 +22,7 @@ vi.mock('../components/charts/lazy', () => ({
     DomainRadar: () => <div>Domain radar</div>,
 }));
 
-function assessment(id: string, date: string): Assessment {
+function assessment(id: string, date: string, domain = `Domain ${id}`): Assessment {
     return {
         id,
         date,
@@ -25,7 +31,7 @@ function assessment(id: string, date: string): Assessment {
         maxScore: 125,
         percentage: 80,
         timeTaken: 90,
-        domain: `Domain ${id}`,
+        domain,
         notes: '',
         passed: true,
         createdAt: `${date}T12:00:00.000Z`,
@@ -98,5 +104,19 @@ describe('Dashboard', () => {
         render(<Dashboard/>);
 
         expect(screen.getByRole('link', {name: 'View All'})).toHaveClass('min-h-11');
+    });
+
+    it('leaves the readiness hero and outer page wrapper to the server route', () => {
+        useAssessmentQuery.mockReturnValue({
+            data: [assessment('1', '2026-07-18', 'Cryptography')],
+            isLoading: false,
+            isError: false,
+            refetch: vi.fn(),
+        });
+
+        const {container} = render(<Dashboard/>);
+
+        expect(readinessHero).not.toHaveBeenCalled();
+        expect(container.querySelector('.page-enter')).not.toBeInTheDocument();
     });
 });

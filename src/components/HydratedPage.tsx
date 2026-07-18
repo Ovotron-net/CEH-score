@@ -5,6 +5,7 @@ import {assertRepositoryHydrationAllowed} from '@/lib/uiDeployment';
 export interface HydratedQuery {
     queryKey: QueryKey;
     queryFn: () => Promise<unknown>;
+    initialData?: unknown;
 }
 
 interface HydratedPageProps {
@@ -16,7 +17,14 @@ export default async function HydratedPage({queries, children}: HydratedPageProp
     assertRepositoryHydrationAllowed();
     const queryClient = makeQueryClient();
 
-    await Promise.all(queries.map((query) => queryClient.fetchQuery(query)));
+    await Promise.all(queries.map((query) => {
+        if ('initialData' in query) {
+            queryClient.setQueryData(query.queryKey, query.initialData);
+            return Promise.resolve();
+        }
+
+        return queryClient.fetchQuery(query);
+    }));
 
     return <HydrationBoundary state={dehydrate(queryClient)}>{children}</HydrationBoundary>;
 }
