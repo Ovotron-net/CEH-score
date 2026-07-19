@@ -17,7 +17,7 @@ Requires Node `>= 22.18.0`, npm `>= 10`.
 - **Regenerate API client:** `npm run generate` (Orval, after editing `openapi.yaml`)
 - **DB:** `npm run db:generate` (new migration from schema) · `npm run db:migrate` (apply) · `npm run db:studio`
 
-CI (`.github/workflows/ci.yml`) runs only lint, `npx vitest run`, and build — **not** `db:migrate` or Playwright e2e. Migration and e2e regressions are not caught by CI; validate them locally.
+CI (`.github/workflows/ci.yml`) runs lint, `npx vitest run`, build, `npm run test:e2e`, and `npm run test:e2e:production`. It does **not** run `db:migrate`, so validate migrations locally.
 
 `.npmrc` intentionally uses `include=dev`. Do not switch to `omit=dev`/`production=true` — it sets `NODE_ENV=production` and breaks tests and the build.
 
