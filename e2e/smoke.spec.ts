@@ -216,6 +216,51 @@ test('client navigation moves focus to the destination heading', async ({page}) 
     await expect(heading).toBeFocused();
 });
 
+test('delayed non-dashboard RSC navigation never mounts the dashboard fallback', async ({page}) => {
+    let delayedRscRequest = false;
+    let navigationStarted = false;
+
+    await page.route('**/assessments**', async route => {
+        const request = route.request();
+        if (request.headers().rsc !== '1') {
+            await route.continue();
+            return;
+        }
+        if (!navigationStarted) {
+            await route.abort();
+            return;
+        }
+
+        delayedRscRequest = true;
+        await route.continue({
+            headers: {...request.headers(), 'x-e2e-rsc-delay': '2000'},
+        });
+    });
+    await page.goto('/');
+    await page.evaluate(() => {
+        document.documentElement.dataset.routeLoadingObserved = 'false';
+        new MutationObserver(() => {
+            if (document.querySelector('[data-route-loading]')) {
+                document.documentElement.dataset.routeLoadingObserved = 'true';
+            }
+        }).observe(document.body, {childList: true, subtree: true});
+    });
+
+    navigationStarted = true;
+    const navigation = page.getByRole('link', {name: 'Assessments'}).first().click();
+    await expect.poll(() => delayedRscRequest).toBe(true);
+    await page.waitForTimeout(1000);
+    await expect(page.getByRole('heading', {name: 'Assessments', level: 1})).toHaveCount(0);
+    await expect(page.locator('[data-route-loading]')).toHaveCount(0);
+    await expect(page.locator('html')).toHaveAttribute('data-route-loading-observed', 'false');
+    await navigation;
+
+    const heading = page.getByRole('heading', {name: 'Assessments', level: 1});
+    await expect(heading).toBeVisible();
+    await expect(heading).toBeFocused();
+    await expect(page.locator('html')).toHaveAttribute('data-route-loading-observed', 'false');
+});
+
 test('reduced motion removes active animations and makes transitions effectively instant', async ({page}) => {
     await page.emulateMedia({reducedMotion: 'reduce'});
     await page.setViewportSize({width: 375, height: 812});

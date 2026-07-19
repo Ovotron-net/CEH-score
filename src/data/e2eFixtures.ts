@@ -94,6 +94,15 @@ const pollRows: readonly PollFixtureRow[] = [
 
 export const e2eAssessmentAdapter = {
     async selectAll() {
+        if (process.env.E2E_FIXTURES === 'true') {
+            const {headers} = await import('next/headers');
+            const requestedDelay = Number((await headers()).get('x-e2e-rsc-delay'));
+            const delayMs = Number.isFinite(requestedDelay)
+                ? Math.min(Math.max(requestedDelay, 0), 5_000)
+                : 0;
+            if (delayMs > 0) await new Promise(resolve => setTimeout(resolve, delayMs));
+        }
+
         return assessmentRows.map((row) => ({...row}));
     },
 };

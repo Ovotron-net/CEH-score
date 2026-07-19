@@ -200,7 +200,8 @@ export default function ReadinessShieldScene({
         let renderedWidth = 0;
         let renderedHeight = 0;
         let renderedPixelRatio = 0;
-        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let reducedMotion = reducedMotionQuery.matches;
         let pointerStrength = 0;
         let pointerTargetStrength = 0;
 
@@ -276,6 +277,25 @@ export default function ReadinessShieldScene({
             previousTime = null;
             frameId = requestAnimationFrame(renderFrame);
         };
+        const onReducedMotionChange = (event: MediaQueryListEvent) => {
+            if (reducedMotion === event.matches) return;
+            reducedMotion = event.matches;
+            if (!reducedMotion) {
+                staticRefreshPending = false;
+                start();
+                return;
+            }
+
+            stop();
+            activeTime = Math.max(activeTime, 1600);
+            uniforms.uAssembly.value = 1;
+            uniforms.uPointer.value.set(0, 0);
+            pointerStrength = 0;
+            pointerTargetStrength = 0;
+            uniforms.uPointerStrength.value = 0;
+            updateParameterUniforms(parametersRef.current);
+            renderStaticFrame();
+        };
         const resize = () => {
             const {width, height} = container.getBoundingClientRect();
             if (width <= 0 || height <= 0) return;
@@ -335,6 +355,7 @@ export default function ReadinessShieldScene({
         canvas.addEventListener('pointerleave', onPointerLeave, {passive: true});
         canvas.addEventListener('webglcontextlost', onContextLost);
         document.addEventListener('visibilitychange', onVisibilityChange);
+        reducedMotionQuery.addEventListener('change', onReducedMotionChange);
 
         updateTheme();
         resize();
@@ -358,6 +379,7 @@ export default function ReadinessShieldScene({
             canvas.removeEventListener('pointerleave', onPointerLeave);
             canvas.removeEventListener('webglcontextlost', onContextLost);
             document.removeEventListener('visibilitychange', onVisibilityChange);
+            reducedMotionQuery.removeEventListener('change', onReducedMotionChange);
             geometry.dispose();
             material.dispose();
             renderer.dispose();

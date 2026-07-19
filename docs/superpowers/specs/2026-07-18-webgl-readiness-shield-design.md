@@ -21,7 +21,7 @@ The existing Tailwind, Radix, semantic-token, and Lucide system remains the only
 ### Included
 
 - Replace the compact dashboard title block with an asymmetric Split Core hero.
-- Add a direct Three.js particle renderer as an isolated, dynamically imported client component.
+- Keep the semantic readiness hero server-owned, stream it behind a Dashboard-local Suspense fallback, and add a direct Three.js particle renderer through an isolated, dynamically imported client visual.
 - Drive shield behavior from the existing current average, study streak, and assessed-domain coverage.
 - Support dark theme, light theme, reduced motion, mobile, WebGL failure, empty data, and loading states.
 - Add focused unit, component, accessibility, browser, and performance verification.
@@ -41,7 +41,7 @@ The hero uses the approved Split Core composition.
 
 - Desktop uses a two-column grid. The left side contains the existing `Dashboard` page heading, a short functional summary, the real current average, its existing readiness label, and one contextual action. The right side contains the particle shield.
 - The headline remains `Dashboard` to preserve route identity and heading behavior.
-- The summary is no longer than 20 words and explains that assessment progress shapes the shield.
+- The populated summary is exactly `Progress shapes your readiness shield.`
 - If assessments exist, the action links to Analytics. If no assessments exist, it links to Add Assessment.
 - Mobile below 768px collapses to one column, keeps copy first, and uses a shorter reserved canvas region below it.
 - Existing stat cards, charts, recent assessments, and quick actions remain below the hero.
@@ -86,18 +86,21 @@ Add `three` as the only new runtime dependency. Use direct Three.js rather than 
 
 ### Component boundaries
 
-- `ReadinessHero` owns semantic copy, real data labels, actions, loading, empty, and fallback presentation.
-- `ReadinessShield` is a dynamically imported client-only boundary that reserves the canvas region.
+- `ReadinessHeroLoading` is the Dashboard-local Suspense fallback. It preserves the route heading, named loading state, page spacing, and reserved visual dimensions while repository work is pending.
+- `ReadinessHero` is server-owned and owns fulfilled semantic copy, real data labels, actions, empty state, and fallback presentation outside hydration.
+- `ReadinessVisual` is the isolated client boundary that owns deferred loading and the reserved visual region.
+- `ReadinessShield` is the dynamically imported client-only visual leaf.
 - `ReadinessShieldScene` owns Three.js setup, geometry, shader material, uniforms, resize handling, pointer handling, visibility control, frame scheduling, and disposal.
 - A pure mapping function converts dashboard statistics into bounded visual parameters and is tested independently.
 
 The scene uses one `THREE.Points` draw call. One buffer contains seed positions and another contains shield target positions. A custom vertex shader interpolates between swarm and shield states and applies bounded noise, orbit, and pointer displacement. The fragment shader renders soft circular points without loading textures or image assets.
 
-The scene does not touch application data fetching. It receives serializable numeric props from the dashboard view.
+The scene does not touch application data fetching. The server-owned hero derives serializable numeric parameters and passes them through the isolated client visual boundary.
 
 ## Lifecycle And Performance
 
-- Dynamically import the Three.js leaf with server rendering disabled. Semantic hero content renders immediately.
+- Wrap only asynchronous Dashboard content in Suspense so `ReadinessHeroLoading` can stream immediately while the repository read is pending; reveal the fulfilled server `ReadinessHero` and hydrated Dashboard together. Keep this boundary page-local so delayed navigation to another route cannot mount the Dashboard fallback.
+- Dynamically import the Three.js leaf from the isolated `ReadinessVisual` client boundary with server rendering disabled.
 - Reserve desktop and mobile canvas dimensions in CSS to prevent layout shift.
 - Use tiered particle budgets based on viewport size and conservative device capability signals. Target approximately 12,000-18,000 points on capable desktop devices and 3,000-6,000 on mobile.
 - Cap renderer pixel ratio at 1.5 on desktop and 1.25 on mobile.
@@ -106,9 +109,9 @@ The scene does not touch application data fetching. It receives serializable num
 - Use `IntersectionObserver` and `document.visibilityState` to pause rendering when the hero is offscreen or the tab is hidden.
 - Remove observers and listeners, cancel the animation frame, dispose geometry and material, and dispose the renderer during cleanup.
 - Do not add Motion or GSAP. Three.js owns the hero frame loop and no other library competes for it.
-- Preserve dashboard LCP by rendering meaningful text and the static placeholder before the WebGL chunk finishes loading.
+- Preserve dashboard LCP by server-rendering meaningful text and the static placeholder before hydration or the WebGL chunk finishes loading.
 
-The feature targets INP below 200ms, CLS below 0.1, and no material regression to the existing page LCP. Final verification records the added client chunk size and a Lighthouse comparison.
+The feature targets field INP below 200ms, CLS below 0.1, and an absolute LCP below 2.5 seconds. Final verification records the added client chunk size, repeated live Lighthouse measurements, and a controlled Event Timing interaction-latency/INP proxy that is not a field INP measurement; controlled variants are diagnostic because no true pre-feature baseline exists.
 
 ## Themes
 
@@ -133,7 +136,7 @@ The renderer derives its point, edge, and background-adjacent colors from the ex
 
 ### Loading
 
-The semantic hero and reserved visual region render immediately. The visual region shows the existing Lucide Shield icon in a static token-based composition until the WebGL chunk and scene are ready. There is no spinner.
+The Dashboard-local Suspense fallback immediately renders the route heading, a named loading summary, and the reserved visual region. The visual region shows the existing Lucide Shield icon in a static token-based composition. Once repository work completes, the final semantic hero and Dashboard replace the fallback together; its visual region keeps the same reservation until the WebGL chunk and scene are ready. There is no spinner.
 
 ### Empty data
 
@@ -166,12 +169,13 @@ Handle `webglcontextlost` by stopping the frame loop and showing the static fall
 - Verify simulated WebGL failure leaves the dashboard usable.
 - Verify there are no accessibility violations, uncaught exceptions, or console errors during normal initialization.
 - Verify navigation focus behavior and the existing single-main landmark contract remain unchanged.
+- Verify a delayed non-Dashboard RSC navigation never mounts the Dashboard-local Suspense fallback.
 
 ### Performance checks
 
 - Run the production build and record the dashboard route chunk impact.
-- Run Lighthouse before and after the feature on desktop and mobile profiles.
-- Confirm CLS remains below 0.1 and INP remains below 200ms.
+- Run repeated live Lighthouse measurements and use controlled variants only as diagnostics when no true pre-feature baseline exists.
+- Confirm CLS remains below 0.1 and use controlled Event Timing below 200ms as an explicit lab proxy until field INP is available.
 - Confirm the renderer pauses offscreen and while the document is hidden.
 
 ## Acceptance Criteria

@@ -1,84 +1,69 @@
 # WebGL Readiness Shield Verification
 
-Observed on 2026-07-18 with Node.js 26.5.0, npm 11.13.0, Next.js 15.5.18, Vitest 4.1.9, Playwright 1.61.1, and Three.js 0.185.1.
+Final verification was completed on 2026-07-20 against the exact current worktree and production build with Next.js 15.5.18, Lighthouse 13.4.0, Headless Chrome 150.0.0.0 (browser build 150.0.7871.128), and mobile DevTools throttling (150 ms RTT, 1,638.4 Kbps, and 4x CPU slowdown).
+
+## Current Architecture
+
+The Dashboard hero is server-owned and streams behind a page-local Suspense boundary. `src/app/page.tsx` immediately renders `ReadinessHeroLoading` while `DashboardContent` is suspended on its repository work. The fallback preserves the Dashboard `h1`, a named loading status, page spacing, and the reserved readiness visual dimensions. Once ready, the boundary atomically reveals the complete `ReadinessHero` and hydrated Dashboard; it is not a global route fallback and cannot appear over another route.
+
+Inside `DashboardContent`, `assertRepositoryHydrationAllowed()` runs before the repository read, assessments are read once, and readiness statistics are derived for the semantic `ReadinessHero`. The same array is passed to `HydratedPage` as `initialData`; the Dashboard query keeps that snapshot for the route lifetime with `staleTime: Infinity` and no focus refetch. Unit and development E2E coverage confirmed the guard blocks before a read and hydration performs no initial browser `GET /api/assessments`.
+
+`src/components/readiness/ReadinessHero.tsx` owns the heading, summary, textual readiness values, and action. `src/components/readiness/ReadinessVisual.tsx` is the isolated client boundary: it renders a static fallback through window load and idle time, then dynamically imports `ReadinessShield`. `ReadinessShieldScene` remains the imperative Three.js leaf. The application adds no telemetry, analytics script, or readiness telemetry request.
 
 ## Automated Checks
 
 | Check | Observed result |
 | --- | --- |
-| `npm run lint` | Passed with exit code 0. |
-| `npx tsc --noEmit --incremental false` | Passed with exit code 0; no `.tsbuildinfo` file was found afterward. |
-| `npx vitest run` | Passed: 44 test files and 211 tests. |
-| `npm run build` | Passed with exit code 0. Dashboard output: 7.67 kB route size and 130 kB first-load JavaScript; shared first-load JavaScript: 103 kB. |
-| `npm run test:e2e` | Passed: 46 Chromium tests. |
-| `npm run test:e2e:production` | Passed: 1 production Chromium test. |
+| `npm run lint` | Passed. |
+| `npx tsc --noEmit --incremental false` | Passed; no `.tsbuildinfo` was created. |
+| `npx vitest run` | Passed: 47 test files and 225 tests. |
+| `npm run build` | Passed. Dashboard: 4.78 kB route size and 127 kB first-load JavaScript; shared first-load JavaScript: 103 kB. |
+| `npm run test:e2e` | Passed: 48 development Chromium tests. |
+| `npm run test:e2e:production` | Passed: 2 production Chromium tests. |
+
+## Lighthouse Evidence
+
+Three fresh live production audits used separate Chrome profiles and saved their JSON reports under the approved temp directory:
+
+| Run | Report | LCP | Earliest readiness request | After LCP |
+| --- | --- | ---: | ---: | ---: |
+| 1 | `C:\Users\terti\AppData\Local\Temp\opencode\post-suspense-live-1.json` | 2,192.689 ms | 2,716.228 ms | 523.539 ms |
+| 2 | `C:\Users\terti\AppData\Local\Temp\opencode\post-suspense-live-2.json` | 2,159.242 ms | 2,714.697 ms | 555.455 ms |
+| 3 | `C:\Users\terti\AppData\Local\Temp\opencode\post-suspense-live-3.json` | 2,188.337 ms | 2,756.466 ms | 568.129 ms |
+
+| Metric | Median |
+| --- | ---: |
+| Performance score | 87 |
+| Accessibility score | 100 |
+| First Contentful Paint | 1,557.913 ms |
+| Largest Contentful Paint | 2,188.337 ms |
+| Total Blocking Time | 451.398 ms |
+| Cumulative Layout Shift | 0 |
+
+The median LCP passed the absolute 2,500 ms target by 311.663 ms; all three LCPs passed, every accessibility score was 100, and every CLS was below 0.1. In all runs the LCP element was the fulfilled server-owned `Progress shapes your readiness shield.` paragraph. The first readiness artifact request started after LCP in every trace.
+
+The 451.398 ms median TBT remains a residual main-thread risk under 4x CPU slowdown; passing LCP and CLS does not make TBT a pass. No true pre-feature baseline exists. Earlier controlled variants were diagnostics, not baselines, so this evidence does not support a causal before/after performance claim.
 
 ## Bundle Isolation
 
-`npm ls three` resolved one valid dependency: `three@0.185.1`.
-
-The final `.next/react-loadable-manifest.json` maps `ReadinessHero.tsx -> ReadinessShield` to these production artifacts:
+`npm ls three --depth=0` resolves one valid runtime dependency, `three@0.185.1`. The exact `.next/react-loadable-manifest.json` entry for `ReadinessVisual.tsx -> ReadinessShield` is:
 
 | Artifact | Raw bytes | Gzip bytes |
 | --- | ---: | ---: |
-| `static/chunks/b536a0f1.7c1c391c6165df5f.js` | 348,162 | 83,330 |
-| `static/chunks/bd904a5c.b2708ebc3e63dc81.js` | 191,371 | 50,550 |
-| `static/chunks/4719.5672a6950f6030b2.js` | 7,239 | 3,098 |
-| **Dynamic group total** | **546,772** | **136,978** |
+| `static/chunks/b536a0f1.4493c535fb7041a7.js` | 348,163 | 83,331 |
+| `static/chunks/bd904a5c.c7927f4f7c08bb14.js` | 191,372 | 50,551 |
+| `static/chunks/4719.c0180fae8db1de12.js` | 7,491 | 3,165 |
+| **Dynamic group total** | **547,026** | **137,047** |
 
-The byte counts came from the final emitted files. Gzip counts came from Node `zlib.gzipSync` over those exact artifacts.
+Raw sizes came from the emitted files; gzip sizes came from `zlib.gzipSync` over those exact files. None appears in any `.next/app-build-manifest.json` route entry. Fresh production browser contexts requested all three only on `/` and none on `/assessments`, `/add`, `/analytics`, `/leaderboard`, `/polls`, `/polls/analytics`, `/settings`, or `/topics`. With `requestIdleCallback` held, the Dashboard requested zero readiness artifacts; releasing it requested the exact group above.
 
-The Dashboard keeps the static fallback through window load, then mounts the dynamic boundary through `requestIdleCallback` with a 500 ms timeout or a 50 ms timer fallback when the idle API is unavailable. A production browser made zero readiness requests before the held idle callback and requested all three files after it ran. Fresh browser contexts requested none on `/analytics`, `/settings`, `/add`, `/polls`, or `/polls/analytics`. None of the three filenames appeared in `.next/app-build-manifest.json` route entries.
-
-With JavaScript disabled, the server-rendered Dashboard showed `Dashboard`, `75.2%`, `Almost Ready`, `1 day`, `1 of 20`, and `View analytics`. The semantic readiness content therefore did not depend on loading the dynamic group.
-
-## Lighthouse
-
-All four reports were produced by Lighthouse 13.4.0 against `http://127.0.0.1:3100/` with Headless Chrome 149.0.0.0:
-
-| Variant | Report | Fetch time |
-| --- | --- | --- |
-| Immediate WebGL | `C:\Users\terti\AppData\Local\Temp\opencode\ceh-readiness-lighthouse-remote-corrected.json` | `2026-07-18T12:17:53.801Z` |
-| Fallback only | `C:\Users\terti\AppData\Local\Temp\opencode\ceh-readiness-lighthouse-fallback-only.json` | `2026-07-18T12:31:48.432Z` |
-| Prior deferred WebGL | `C:\Users\terti\AppData\Local\Temp\opencode\ceh-readiness-lighthouse-deferred.json` | `2026-07-18T12:55:52.997Z` |
-| Final deferred WebGL | `C:\Users\terti\AppData\Local\Temp\opencode\ceh-readiness-lighthouse-final.json` | `2026-07-18T13:41:17.510Z` |
-
-Final report values:
-
-| Metric | Final value |
-| --- | ---: |
-| Performance score | 72 |
-| Accessibility score | 100 |
-| First Contentful Paint | 750.824 ms |
-| Largest Contentful Paint | 4,220.236 ms |
-| Cumulative Layout Shift | 0.0002275643333300318 |
-| Total Blocking Time | 548.5 ms |
-
-Exact single-run comparisons:
-
-| Metric | Immediate WebGL | Fallback only | Prior deferred | Final deferred | Final vs immediate | Final vs fallback | Final vs prior deferred |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Performance score | 59 | 82 | 78 | 72 | +13 | -10 | -6 |
-| Accessibility score | 100 | 100 | 100 | 100 | 0 | 0 | 0 |
-| First Contentful Paint | 810 ms | 752.684 ms | 761.268 ms | 750.824 ms | -59.176 ms | -1.860 ms | -10.444 ms |
-| Largest Contentful Paint | 4,597 ms | 3,665.026 ms | 3,654.402 ms | 4,220.236 ms | -376.764 ms | +555.210 ms | +565.834 ms |
-| Cumulative Layout Shift | 0 | 0 | 0 | 0.0002275643333300318 | +0.0002275643333300318 | +0.0002275643333300318 | +0.0002275643333300318 |
-| Total Blocking Time | 1,299.5 ms | 338 ms | 462.5 ms | 548.5 ms | -751 ms | +210.5 ms | +86 ms |
-
-For timing metrics, a negative comparison is faster. These are separate single runs, and fallback-only is not a true pre-feature baseline. The final LCP point estimate is 555.210 ms slower than fallback-only but 376.764 ms faster than immediate WebGL; the data is insufficient to attribute that variance to the feature. The cautious conclusion is: **no material feature-specific LCP regression observed**. This wording is not a claim that the fallback comparison improved or that statistical equivalence was established.
-
-The approved absolute LCP target of less than 2,500 ms is not met. Final LCP is 4,220.236 ms, which is 1,720.236 ms over the target.
-
-The pre-feature baseline report remains absent at `C:\Users\terti\AppData\Local\Temp\opencode\ceh-readiness-baseline.json` after its earlier Windows Chrome `EPERM` failure. The fallback-only report is a controlled feature variant, not a pre-feature baseline, so no pre-feature performance comparison is available.
-
-## Runtime Checks
+## Runtime Evidence
 
 | Check | Observed result |
 | --- | --- |
-| Deferred load and status | Before the held idle callback, the fallback was visible, no status node was mounted, and no readiness chunk was requested. After idle, status changed `loading -> ready`, all three chunks loaded, and the fallback wrapper was hidden. |
-| Reduced motion | The fixture-backed production canvas made exactly 1 WebGL draw. Over the next 400 ms it added 0 RAF schedules and 0 draws, with 0 pending RAF callbacks. |
-| Static visibility | A theme refresh while the reduced-motion canvas was offscreen added 0 draws. Returning onscreen added exactly 1 queued static draw and no persistent RAF. The hidden-document equivalent is covered by the passing scene unit test. |
-| Animated offscreen pause | Draw count remained 26 for 400 ms while offscreen and the instrumented cancellation count was 1. Returning onscreen resumed draws to 43; the scene unit test verifies repeated resume signals leave at most one scene frame pending. |
-| Pointer strength | Unit tests verify pointer force starts at 0, ignores touch, eases toward full strength after mouse input, and decays below 0.001 after pointer leave; the shader multiplies pointer force by the scalar strength uniform. |
-| Unavailable status | Context loss produced `loading -> ready -> unavailable`; renderer construction failure ended at `unavailable`. Both cases exposed the fallback and removed the canvas, and context loss left `75.2%` visible. A retained ready callback cannot leave terminal `unavailable`. |
-| Resource lifecycle | The passing scene unit test asserted 1 point cloud and disposal of geometry, material, renderer, `ResizeObserver`, `IntersectionObserver`, and theme observer on unmount. |
+| Page-local Suspense | While Dashboard repository work is pending, only the Dashboard boundary renders `ReadinessHeroLoading`; the fulfilled stream replaces it with the server-owned semantic hero and hydrated content. A development E2E held a non-Dashboard `/assessments` RSC navigation for 2 seconds and observed no `[data-route-loading]` mount at any point before or after navigation. |
+| Server and hydration boundary | The fulfilled server-owned hero contains the semantic copy, values, and action; the client visual is decorative and isolated. The route guard runs before the one repository read, and `initialData` preserves one stable route snapshot without an initial browser assessment GET. |
+| Accessibility | Full-page Dashboard axe analysis reported zero violations in both dark and light themes; Lighthouse accessibility was 100 in all three runs. |
+| Reduced-motion changes | The scene listens for media-query `change`: enabling reduced motion stops animation, snaps assembly and pointer state, and draws one visible static frame or coalesces one offscreen refresh; disabling it resumes at most one frame loop without de-assembling. Listener cleanup and parameter refresh behavior are covered. |
+| Failure and lifecycle | WebGL construction/context loss retains the fallback and semantic values. Tests verify bounded visibility refresh plus geometry, material, renderer, observer, listener, timer, and animation cleanup. |
+| Interaction latency | The built-production controlled Event Timing run measured 24-40 ms interactions, maximum 40 ms, below the 200 ms target. This is a lab interaction-latency/INP proxy, explicitly not a field INP measurement. |

@@ -15,7 +15,8 @@ const routes = [
 
 for (const theme of ['dark', 'light'] as const) {
     for (const {path, heading} of routes) {
-        test(`${path} has no serious accessibility violations in ${theme} theme`, async ({context, page}) => {
+        const policy = path === '/' ? 'no accessibility violations' : 'no serious accessibility violations';
+        test(`${path} has ${policy} in ${theme} theme`, async ({context, page}) => {
             await page.emulateMedia({reducedMotion: 'reduce'});
             await context.addCookies([{
                 name: 'ceh-theme',
@@ -48,17 +49,20 @@ for (const theme of ['dark', 'light'] as const) {
             }, theme);
 
             const results = await new AxeBuilder({page}).analyze();
-            const blockingViolations = results.violations.filter(
-                violation => violation.impact === 'critical' || violation.impact === 'serious',
-            );
-            const details = blockingViolations.map(violation => ({
+            // Dashboard readiness has no accepted axe exceptions; the broader route policy remains severity-based.
+            const policyViolations = path === '/'
+                ? results.violations
+                : results.violations.filter(
+                    violation => violation.impact === 'critical' || violation.impact === 'serious',
+                );
+            const details = policyViolations.map(violation => ({
                 id: violation.id,
                 impact: violation.impact,
                 help: violation.help,
                 targets: violation.nodes.flatMap(node => node.target),
             }));
 
-            expect(blockingViolations, JSON.stringify(details, null, 2)).toEqual([]);
+            expect(policyViolations, JSON.stringify(details, null, 2)).toEqual([]);
         });
     }
 }

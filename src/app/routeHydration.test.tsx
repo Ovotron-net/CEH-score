@@ -1,7 +1,9 @@
 // @vitest-environment node
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {Suspense, type ReactElement} from 'react';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {pollDefinitions} from '@/data/polls';
 import {allPollResultsKey, assessmentQueryKey, pollStatsKey, settingsQueryKey} from '@/data/queryKeys';
+import DashboardPage from './page';
 
 const {assessments, repositories} = vi.hoisted(() => {
     const assessments = [{
@@ -37,6 +39,7 @@ vi.mock('@/data/pollRepository', () => ({
 }));
 vi.mock('@/components/HydratedPage', () => ({default: 'hydrated-page'}));
 vi.mock('@/components/readiness/ReadinessHero', () => ({default: 'readiness-hero'}));
+vi.mock('@/components/readiness/ReadinessHeroLoading', () => ({default: 'readiness-hero-loading'}));
 vi.mock('@/views/Dashboard', () => ({default: 'dashboard-view'}));
 vi.mock('@/views/Analytics', () => ({default: 'analytics-view'}));
 vi.mock('@/views/Assessments', () => ({default: 'assessments-view'}));
@@ -46,8 +49,70 @@ vi.mock('@/views/Settings', () => ({default: 'settings-view'}));
 vi.mock('@/views/PollAnalytics', () => ({default: 'poll-analytics-view'}));
 vi.mock('@/views/AddAssessment', () => ({default: 'add-assessment-view'}));
 
+type DashboardContentElement = ReactElement<{
+    className: string;
+    children: [
+        ReactElement<{
+            state: string;
+            averageScore: number;
+            studyStreak: number;
+            coveredDomains: number;
+            totalDomains: number;
+        }>,
+        ReactElement<{
+            queries: Array<{
+                queryKey: readonly unknown[];
+                queryFn: typeof repositories.getAssessments;
+                initialData: readonly unknown[];
+            }>;
+            children: ReactElement;
+        }>,
+    ];
+}>;
+
+async function renderDashboardContent() {
+    const boundary = DashboardPage();
+    expect(boundary).not.toBeInstanceOf(Promise);
+    expect(boundary.type).toBe(Suspense);
+    expect(boundary.props.fallback).toMatchObject({type: 'readiness-hero-loading'});
+
+    const content = boundary.props.children as ReactElement;
+    expect(content.type).toEqual(expect.any(Function));
+    return await (content.type as (props: unknown) => Promise<DashboardContentElement>)(content.props);
+}
+
 describe('route hydration', () => {
     beforeEach(() => vi.clearAllMocks());
+    afterEach(() => vi.unstubAllEnvs());
+
+    it.each([
+        {
+            name: 'API_SECRET is set',
+            env: {ALLOW_OPEN_API: 'true', API_SECRET: 'secret-key'},
+            error: 'Repository hydration requires API_SECRET to be unset',
+        },
+        {
+            name: 'open API mode is not explicit',
+            env: {ALLOW_OPEN_API: '', API_SECRET: ''},
+            error: 'Repository hydration requires ALLOW_OPEN_API=true',
+        },
+    ])('blocks the dashboard repository read in production when $name', async ({env, error}) => {
+        vi.stubEnv('NODE_ENV', 'production');
+        vi.stubEnv('ALLOW_OPEN_API', env.ALLOW_OPEN_API);
+        vi.stubEnv('API_SECRET', env.API_SECRET);
+        await expect(renderDashboardContent()).rejects.toThrow(error);
+
+        expect(repositories.getAssessments).not.toHaveBeenCalled();
+    });
+
+    it('reads dashboard assessments exactly once in the allowed production mode', async () => {
+        vi.stubEnv('NODE_ENV', 'production');
+        vi.stubEnv('ALLOW_OPEN_API', 'true');
+        vi.stubEnv('API_SECRET', '');
+        await renderDashboardContent();
+
+        expect(repositories.getAssessments).toHaveBeenCalledOnce();
+    });
 
     it('hydrates non-dashboard assessment routes with their shared key', async () => {
         const routes = await Promise.all([
@@ -67,9 +132,7 @@ describe('route hydration', () => {
     });
 
     it('fetches dashboard assessments once and composes its server hero before hydration with the same data', async () => {
-        const route = await import('./page');
-
-        const page = await route.default();
+        const page = await renderDashboardContent();
         const [hero, hydratedPage] = page.props.children;
 
         expect(repositories.getAssessments).toHaveBeenCalledOnce();
@@ -95,9 +158,7 @@ describe('route hydration', () => {
 
     it('renders the dashboard hero empty state from a successful empty server read', async () => {
         repositories.getAssessments.mockResolvedValueOnce([]);
-        const route = await import('./page');
-
-        const page = await route.default();
+        const page = await renderDashboardContent();
         const [hero, hydratedPage] = page.props.children;
 
         expect(repositories.getAssessments).toHaveBeenCalledOnce();

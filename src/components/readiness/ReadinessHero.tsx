@@ -3,7 +3,7 @@ import {formatScore, getReadinessLevel} from '../../utils/calculations';
 import {mapReadinessVisualParameters} from '../../utils/readinessVisual';
 import ReadinessVisual from './ReadinessVisual';
 
-export type ReadinessHeroState = 'loading' | 'unavailable' | 'empty' | 'ready';
+export type ReadinessHeroState = 'empty' | 'ready';
 
 export interface ReadinessHeroProps {
     state: ReadinessHeroState;
@@ -28,13 +28,9 @@ export default function ReadinessHero({
         totalDomains,
         hasAssessments: isReady,
     });
-    const summary = state === 'loading'
-        ? 'Loading your preparation overview.'
-        : state === 'unavailable'
-            ? 'Preparation data is unavailable.'
-            : state === 'empty'
-                ? 'Add an assessment to begin mapping your preparation.'
-                : 'Progress shapes your readiness shield.';
+    const summary = state === 'empty'
+        ? 'Add an assessment to begin mapping your preparation.'
+        : 'Progress shapes your readiness shield.';
 
     return (
         <section
@@ -75,14 +71,12 @@ export default function ReadinessHero({
                         </dl>
                     ) : null}
 
-                    {state === 'ready' || state === 'empty' ? (
-                        <Link
-                            href={state === 'ready' ? '/analytics' : '/add'}
-                            className="mt-7 inline-flex min-h-11 w-fit items-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition-transform duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                        >
-                            {state === 'ready' ? 'View analytics' : 'Add assessment'}
-                        </Link>
-                    ) : null}
+                    <Link
+                        href={state === 'ready' ? '/analytics' : '/add'}
+                        className="mt-7 inline-flex min-h-11 w-fit items-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition-transform duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    >
+                        {state === 'ready' ? 'View analytics' : 'Add assessment'}
+                    </Link>
                 </div>
 
                 <div

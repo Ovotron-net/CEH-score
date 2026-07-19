@@ -2,8 +2,8 @@ import {defineConfig, devices} from '@playwright/test';
 
 export default defineConfig({
     testDir: './e2e',
-    testMatch: 'smoke.spec.ts',
-    grep: /@production/,
+    testMatch: ['smoke.spec.ts', 'interaction-latency.spec.ts'],
+    grep: /@production|@interaction-latency/,
     fullyParallel: false,
     forbidOnly: true,
     retries: 0,

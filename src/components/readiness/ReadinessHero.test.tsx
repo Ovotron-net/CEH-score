@@ -54,27 +54,6 @@ describe('ReadinessHero', () => {
         expect(screen.getByRole('link', {name: 'Add assessment'})).toHaveAttribute('href', '/add');
     });
 
-    it('keeps loading and unavailable states semantic without false metrics', () => {
-        const {rerender} = render(<ReadinessHero
-            state="loading"
-            averageScore={0}
-            studyStreak={0}
-            coveredDomains={0}
-            totalDomains={20}
-        />);
-        expect(screen.getByText('Loading your preparation overview.')).toBeVisible();
-
-        rerender(<ReadinessHero
-            state="unavailable"
-            averageScore={0}
-            studyStreak={0}
-            coveredDomains={0}
-            totalDomains={20}
-        />);
-        expect(screen.getByText('Preparation data is unavailable.')).toBeVisible();
-        expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    });
-
     it('keeps the particle visual decorative', () => {
         const {container} = render(<ReadinessHero
             state="ready"

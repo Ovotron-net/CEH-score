@@ -1,19 +1,22 @@
-import type { Metadata } from 'next';
+import {Suspense} from 'react';
+import type {Metadata} from 'next';
 import HydratedPage from '@/components/HydratedPage';
-import { getAssessments } from '@/data/assessmentRepository';
-import { assessmentQueryKey } from '@/data/queryKeys';
-import Dashboard from '@/views/Dashboard';
 import ReadinessHero from '@/components/readiness/ReadinessHero';
-import { calculateStats } from '@/utils/calculations';
-import { calculateDomainCoverage } from '@/utils/readinessVisual';
-import { SpeedInsights } from '@vercel/speed-insights/next';
+import ReadinessHeroLoading from '@/components/readiness/ReadinessHeroLoading';
+import {getAssessments} from '@/data/assessmentRepository';
+import {assessmentQueryKey} from '@/data/queryKeys';
+import {assertRepositoryHydrationAllowed} from '@/lib/uiDeployment';
+import {calculateStats} from '@/utils/calculations';
+import {calculateDomainCoverage} from '@/utils/readinessVisual';
+import Dashboard from '@/views/Dashboard';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
     title: 'Dashboard | CEH Tracker',
 };
 
-export default async function DashboardPage() {
+async function DashboardContent() {
+    assertRepositoryHydrationAllowed();
     const assessments = await getAssessments();
     const stats = calculateStats(assessments);
     const domainCoverage = calculateDomainCoverage(assessments);
@@ -27,14 +30,23 @@ export default async function DashboardPage() {
                 coveredDomains={domainCoverage.covered}
                 totalDomains={domainCoverage.total}
             />
-            <HydratedPage queries={[{
-                queryKey: assessmentQueryKey,
-                queryFn: getAssessments,
-                initialData: assessments,
-            }]}>
-                <Dashboard />
+            <HydratedPage
+                queries={[{
+                    queryKey: assessmentQueryKey,
+                    queryFn: getAssessments,
+                    initialData: assessments,
+                }]}
+            >
+                <Dashboard/>
             </HydratedPage>
-            <SpeedInsights />
         </div>
+    );
+}
+
+export default function DashboardPage() {
+    return (
+        <Suspense fallback={<ReadinessHeroLoading/>}>
+            <DashboardContent/>
+        </Suspense>
     );
 }

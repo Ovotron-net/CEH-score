@@ -1,6 +1,6 @@
 # React Performance and UX Audit
 
-Audit date: 2026-07-18. Scope: the current Next.js browser application and API. Statuses mean **Implemented** (changed by the optimization work), **Already compliant** (the existing design already satisfies the rule), or **Inapplicable** (the rule's triggering feature is absent or intentionally out of scope). Readiness feature details are in the [design specification](superpowers/specs/2026-07-18-webgl-readiness-shield-design.md) and [measured verification](webgl-readiness-shield-verification.md).
+Audit started 2026-07-18; final readiness verification was captured 2026-07-20. Scope: the current Next.js browser application and API. Statuses mean **Implemented** (changed by the optimization work), **Already compliant** (the existing design already satisfies the rule), or **Inapplicable** (the rule's triggering feature is absent or intentionally out of scope). Readiness feature details are in the [design specification](superpowers/specs/2026-07-18-webgl-readiness-shield-design.md) and [measured verification](webgl-readiness-shield-verification.md).
 
 ## Vercel React Best Practices
 
@@ -15,7 +15,7 @@ All 70 rule IDs from the Vercel React Best Practices inventory are represented e
 | `async-parallel` | Implemented | `src/components/HydratedPage.tsx` starts independent route queries together with `Promise.all`. |
 | `async-dependencies` | Inapplicable | Route prefetches are independent; there is no partial-dependency promise graph. |
 | `async-api-routes` | Already compliant | API handlers perform only the required authenticated operation and avoid sequential independent I/O in `src/app/api/**/route.ts`. |
-| `async-suspense-boundaries` | Inapplicable | Required page reads intentionally resolve before dehydration so failures reach `src/app/error.tsx`; no optional streaming region exists. |
+| `async-suspense-boundaries` | Implemented | `src/app/page.tsx` wraps only the asynchronous Dashboard content in Suspense. `ReadinessHeroLoading` immediately preserves the route heading, named loading status, spacing, and readiness dimensions; the final server hero and hydrated Dashboard reveal together without making the fallback global to other routes. |
 
 ### Bundle Size
 
@@ -23,7 +23,7 @@ All 70 rule IDs from the Vercel React Best Practices inventory are represented e
 | --- | --- | --- |
 | `bundle-barrel-imports` | Implemented | Hooks import app API modules directly; chart modules are loaded from direct paths in `src/components/charts/lazy.tsx`. |
 | `bundle-analyzable-paths` | Already compliant | Route imports and all dynamic chart import paths are static string literals in `src/app/**/page.tsx` and `src/components/charts/lazy.tsx`. |
-| `bundle-dynamic-imports` | Implemented | Recharts views use `next/dynamic` in `src/components/charts/lazy.tsx`; the readiness shield and Three.js scene use a separate boundary mounted after load through an idle callback or timer fallback in `ReadinessHero.tsx`. |
+| `bundle-dynamic-imports` | Implemented | Recharts views use `next/dynamic` in `src/components/charts/lazy.tsx`; `src/components/readiness/ReadinessVisual.tsx` is the isolated client boundary that mounts `ReadinessShield` after load through an idle callback or timer fallback. |
 | `bundle-defer-third-party` | Inapplicable | No analytics, tag manager, chat, or other client-side third-party script is installed. |
 | `bundle-conditional` | Implemented | Domain topic chips mount only when expanded in `src/components/DomainCard.tsx`. |
 | `bundle-preload` | Implemented | Analytics chunks preload on link focus, pointer enter, and touch start in `src/components/Sidebar.tsx`. |
@@ -35,7 +35,7 @@ All 70 rule IDs from the Vercel React Best Practices inventory are represented e
 | `server-auth-actions` | Inapplicable | There are no Server Actions; API routes call `authenticate` in `src/app/api/**/route.ts`. |
 | `server-cache-react` | Inapplicable | Each required repository read occurs once per route render; request-local React cache deduplication would add no reuse. |
 | `server-cache-lru` | Inapplicable | Mutable personal data must not be cached across requests; React Query browser freshness is configured in `src/lib/queryClient.ts`. |
-| `server-dedup-props` | Already compliant | Each page hydrates one shared query payload rather than duplicating records through multiple props; see `src/components/HydratedPage.tsx`. |
+| `server-dedup-props` | Already compliant | `src/app/page.tsx` runs the production route guard before reading assessments once, renders the server-owned semantic `ReadinessHero`, and passes that same array to `HydratedPage` as `initialData`. The Dashboard query preserves this snapshot with infinite staleness and no focus refetch. |
 | `server-hoist-static-io` | Already compliant | Static CEH and poll definitions are module constants in `src/data/cehDomains.ts` and `src/data/polls.ts`. |
 | `server-no-shared-module-state` | Implemented | `makeQueryClient()` creates a request-local cache in `src/components/HydratedPage.tsx`. |
 | `server-serialization` | Implemented | Repositories return serializable DTOs and poll projections omit user identifiers; see `src/data/*Repository.ts`. |
@@ -105,7 +105,7 @@ All 70 rule IDs from the Vercel React Best Practices inventory are represented e
 | `js-set-map-lookups` | Implemented | Streak and domain membership use `Set`/`Map` in `src/utils/calculations.ts` and `src/utils/domainStats.ts`. |
 | `js-tosorted-immutable` | Implemented | Rankings and charts clone query arrays before sorting in `src/views/Leaderboard.tsx` and `src/components/charts/ScoreTrend.tsx`. |
 | `js-flatmap-filter` | Implemented | Measured domain chart rows use one `flatMap` in `src/views/Analytics.tsx`. |
-| `js-request-idle-callback` | Implemented | `DeferredReadinessShield` waits for window load, then schedules Three.js mounting with `requestIdleCallback({timeout: 500})` or a 50 ms timer fallback and cancels pending work on cleanup. |
+| `js-request-idle-callback` | Implemented | `src/components/readiness/ReadinessVisual.tsx` waits for window load, then schedules Three.js mounting with `requestIdleCallback({timeout: 500})` or a 50 ms timer fallback and cancels pending work on cleanup. |
 
 ### Advanced Patterns
 
@@ -134,7 +134,7 @@ The tables cover the critical/high web rules and explicitly dispose of adjacent 
 | `heading-hierarchy` | Implemented | Route metadata/heading tests and page views enforce one route `h1`; see `src/app/metadata.test.ts`. |
 | `color-not-only` | Implemented | Pass/fail, errors, selected states, and chart values include text/shape semantics; see `src/views/Assessments.tsx` and chart data tables. |
 | `dynamic-type` | Already compliant | Responsive layouts wrap content and avoid fixed-height text containers across `src/views/`; browser zoom is not disabled. |
-| `reduced-motion` | Implemented | The readiness scene renders one assembled frame with no persistent loop; hidden/offscreen static changes queue one refresh that draws only when visible again. |
+| `reduced-motion` | Implemented | Runtime media-query changes are handled: enabling reduced motion stops animation, snaps to one assembled static frame, and coalesces offscreen refresh; disabling it resumes at most one loop without de-assembling. |
 | `voiceover-sr` | Implemented | Landmarks, status/alert regions, chart summaries, and semantic tables define screen-reader order in `src/components/` and `src/views/`. |
 | `escape-routes` | Implemented | Mobile navigation and Radix dialogs close with Escape and expose close/cancel controls in `src/components/ClientShell.tsx` and `ui/dialog.tsx`. |
 | `keyboard-shortcuts` | Inapplicable | The app has no custom shortcuts or drag-and-drop interaction that could override system keys. |
@@ -174,12 +174,12 @@ The tables cover the critical/high web rules and explicitly dispose of adjacent 
 | `UX: bundle-splitting` | Implemented | Next route splitting and the deferred readiness dynamic boundary keep Three.js out of unrelated route requests and initial Dashboard work. |
 | `third-party-scripts` | Inapplicable | No third-party browser scripts are present. |
 | `reduce-reflows` | Already compliant | State changes are class-based; no repeated interleaved DOM measurement/write loop exists. |
-| `content-jumping` | Implemented | Chart skeletons and the readiness fallback reserve final dimensions; final Lighthouse CLS was 0.0002275643333300318. |
+| `content-jumping` | Implemented | Chart skeletons and the readiness fallback reserve final dimensions; the final three-run Lighthouse median CLS was 0. |
 | `lazy-load-below-fold` | Implemented | The above-fold readiness canvas is deferred until after load/idle, and `IntersectionObserver` stops rendering whenever it moves below the viewport. |
 | `virtualize-lists` | Inapplicable | Current personal datasets are small; `.render-row` containment is used and pagination/virtualization is a documented non-goal. |
-| `main-thread-budget` | Implemented | Three.js initialization is deferred until after load/idle; one bounded `THREE.Points` draw call moves particles in the vertex shader, while pointer interaction updates one strength uniform rather than particle data. Final TBT was 548.5 ms versus 1,299.5 ms with immediate WebGL. |
+| `main-thread-budget` | Implemented | Three.js initialization is deferred until after load/idle; one bounded `THREE.Points` draw call moves particles in the vertex shader. Final median TBT was 451.398 ms under 4x CPU slowdown, so remaining main-thread work is still a residual risk rather than a budget pass. |
 | `progressive-loading` | Implemented | The readiness fallback preserves dimensions and semantic content before idle, through `loading`, and for terminal `unavailable`; it is hidden only after the first successful frame reports `ready`. |
-| `input-latency` | Implemented | Search rendering uses `useDeferredValue` in assessment/topic views. |
+| `input-latency` | Implemented | Search rendering uses `useDeferredValue` in assessment/topic views. Built-production Event Timing measured a 40 ms maximum in the controlled navigation run; this is a lab interaction-latency/INP proxy, not field INP. |
 | `tap-feedback-speed` | Already compliant | CSS interaction states are immediate and local mutations expose pending state synchronously. |
 | `debounce-throttle` | Already compliant | `ResizeObserver` drives bounded readiness canvas sizing without a window resize stream; text search uses deferred rendering rather than network requests. |
 | `offline-support` | Inapplicable | Offline/PWA operation is outside this database-backed dashboard's scope; failures show recovery UI. |
@@ -257,26 +257,26 @@ The tables cover the critical/high web rules and explicitly dispose of adjacent 
 
 ## Verification
 
-Results captured from this worktree on 2026-07-18:
+Results captured from the exact current worktree on 2026-07-20:
 
 | Check | Result |
 | --- | --- |
 | `npm run lint` | Passed. |
 | `npx tsc --noEmit --incremental false` | Passed without creating a `.tsbuildinfo` file. |
-| `npx vitest run` | Passed: 44 files, 211 tests. |
+| `npx vitest run` | Passed: 47 files, 225 tests. |
 | `npm run build` | Passed with Next.js 15.5.18. |
-| `npm run test:e2e` | Passed: 46 Chromium tests, including axe checks for every route in both themes. |
-| `npm run test:e2e:production` | Passed: 1 built-production hydration and real assessment mutation test. |
+| `npm run test:e2e` | Passed: 48 Chromium tests, including full Dashboard axe checks with zero violations in both themes and the delayed non-Dashboard navigation isolation check. |
+| `npm run test:e2e:production` | Passed: 2 tests: controlled Event Timing and built-production hydration/real assessment mutation. |
 | OpenAPI YAML parse | Passed with the installed `yaml` parser. |
 
 Latest production route output:
 
 | Route | Size | First Load JS |
 | --- | ---: | ---: |
-| `/` | 7.67 kB | 130 kB |
+| `/` | 4.78 kB | 127 kB |
 | `/_not-found` | 152 B | 103 kB |
-| `/add` | 43.4 kB | 156 kB |
-| `/analytics` | 5.41 kB | 122 kB |
+| `/add` | 43.3 kB | 156 kB |
+| `/analytics` | 5.42 kB | 122 kB |
 | `/api/assessments` | 152 B | 103 kB |
 | `/api/assessments/[id]` | 152 B | 103 kB |
 | `/api/health` | 152 B | 103 kB |
@@ -284,11 +284,13 @@ Latest production route output:
 | `/api/polls/[pollId]` | 152 B | 103 kB |
 | `/api/polls/[pollId]/votes` | 152 B | 103 kB |
 | `/api/settings` | 152 B | 103 kB |
-| `/assessments` | 5.24 kB | 125 kB |
+| `/assessments` | 5.18 kB | 125 kB |
 | `/leaderboard` | 10 kB | 130 kB |
 | `/polls` | 5.41 kB | 125 kB |
 | `/polls/analytics` | 7.47 kB | 127 kB |
-| `/settings` | 4.65 kB | 121 kB |
-| `/topics` | 5.69 kB | 122 kB |
+| `/settings` | 4.68 kB | 121 kB |
+| `/topics` | 5.7 kB | 122 kB |
 
-Shared first-load JavaScript is 103 kB. Final Lighthouse measured performance 72, accessibility 100, FCP 750.824 ms, LCP 4,220.236 ms, CLS 0.0002275643333300318, and TBT 548.5 ms. Because the reports are separate single runs and no true pre-feature baseline exists, the cautious conclusion is **no material feature-specific LCP regression observed**. The approved absolute LCP target below 2,500 ms was not met. Bundle sizes, exact comparisons, and runtime/status measurements are recorded in [WebGL Readiness Shield Verification](webgl-readiness-shield-verification.md).
+Shared first-load JavaScript is 103 kB. `src/components/readiness/ReadinessVisual.tsx` maps its dynamic import to `b536a0f1.4493c535fb7041a7.js`, `bd904a5c.c7927f4f7c08bb14.js`, and `4719.c0180fae8db1de12.js` (547,026 raw / 137,047 gzip bytes total); they are absent from every route manifest entry and were requested at runtime only on `/`.
+
+Across three fresh live mobile DevTools-throttled production runs, medians were performance 87, accessibility 100, FCP 1,557.913 ms, LCP 2,188.337 ms, TBT 451.398 ms, and CLS 0. Individual LCPs were 2,192.689, 2,159.242, and 2,188.337 ms; readiness requests started after LCP in every trace. The absolute LCP target passed by 311.663 ms. The production controlled Event Timing maximum remains 40 ms, which is a lab interaction-latency/INP proxy and not field INP. No true pre-feature baseline exists; controlled variants were diagnostics, not baselines. The page-local boundary also passed the delayed `/assessments` RSC proof: its Dashboard fallback never mounted during the 2-second non-Dashboard delay. Exact run, bundle, route-guard/snapshot, and runtime evidence is recorded in [WebGL Readiness Shield Verification](webgl-readiness-shield-verification.md).

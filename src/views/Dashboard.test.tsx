@@ -44,6 +44,17 @@ afterEach(() => {
 });
 
 describe('Dashboard', () => {
+    it('keeps the hydrated server snapshot stable for the lifetime of the route', () => {
+        useAssessmentQuery.mockReturnValue({data: [], isLoading: false, isError: false});
+
+        render(<Dashboard/>);
+
+        expect(useAssessmentQuery).toHaveBeenCalledWith({
+            staleTime: Infinity,
+            refetchOnWindowFocus: false,
+        });
+    });
+
     it('shows an accessible loading state', () => {
         useAssessmentQuery.mockReturnValue({data: undefined, isLoading: true, isError: false});
 

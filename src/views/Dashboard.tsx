@@ -10,7 +10,10 @@ import StatCard from '../components/StatCard';
 import {DomainRadar, ScoreTrend} from '../components/charts/lazy';
 
 export default function Dashboard() {
-    const {data: assessments = [], isLoading, isError, refetch} = useAssessmentQuery();
+    const {data: assessments = [], isLoading, isError, refetch} = useAssessmentQuery({
+        staleTime: Infinity,
+        refetchOnWindowFocus: false,
+    });
     const stats = useMemo(() => calculateStats(assessments), [assessments]);
     const recentAssessments = assessments.slice(0, 5);
 

@@ -57,6 +57,25 @@ describe('ClientShell navigation accessibility', () => {
         expect(destinationHeading).toHaveAttribute('tabindex', '-1');
     });
 
+    it('waits for the destination heading when a route loading boundary renders first', async () => {
+        const {rerender} = render(<ClientShell><h1>Dashboard</h1></ClientShell>);
+
+        navigation.pathname = '/assessments';
+        rerender(
+            <ClientShell>
+                <div data-route-loading><h1>Dashboard</h1></div>
+            </ClientShell>,
+        );
+
+        expect(screen.getByRole('heading', {level: 1, name: 'Dashboard'})).not.toHaveFocus();
+
+        rerender(<ClientShell><h1>Assessments</h1></ClientShell>);
+
+        await waitFor(() => expect(
+            screen.getByRole('heading', {level: 1, name: 'Assessments'}),
+        ).toHaveFocus());
+    });
+
     it('provides a skip link targeting the main content', () => {
         renderShell();
 

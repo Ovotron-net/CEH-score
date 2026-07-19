@@ -86,6 +86,13 @@ const parameters: ReadinessVisualParameters = {
 };
 
 let reducedMotion = false;
+let motionChangeListener: ((event: {matches: boolean}) => void) | null;
+let motionQuery: {
+    matches: boolean;
+    addEventListener: ReturnType<typeof vi.fn>;
+    removeEventListener: ReturnType<typeof vi.fn>;
+    trigger: (matches: boolean) => void;
+};
 let frameSequence = 0;
 let pendingFrames: Map<number, FrameRequestCallback>;
 let resizeObserver: {disconnect: ReturnType<typeof vi.fn>; trigger: () => void};
@@ -101,6 +108,7 @@ function runPendingFrame(time = 16) {
 
 beforeEach(() => {
     reducedMotion = false;
+    motionChangeListener = null;
     frameSequence = 0;
     pendingFrames = new Map();
     document.documentElement.style.setProperty('--primary', '160 84% 39%');
@@ -151,16 +159,31 @@ beforeEach(() => {
             observe: vi.fn(),
         };
     }));
-    vi.stubGlobal('matchMedia', vi.fn(() => ({
+    motionQuery = {
         matches: reducedMotion,
-        media: '(prefers-reduced-motion: reduce)',
-        onchange: null,
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
-        dispatchEvent: vi.fn(),
-    })));
+        addEventListener: vi.fn((eventName: string, listener: (event: {matches: boolean}) => void) => {
+            if (eventName === 'change') motionChangeListener = listener;
+        }),
+        removeEventListener: vi.fn((eventName: string, listener: (event: {matches: boolean}) => void) => {
+            if (eventName === 'change' && motionChangeListener === listener) motionChangeListener = null;
+        }),
+        trigger: matches => {
+            reducedMotion = matches;
+            motionQuery.matches = matches;
+            motionChangeListener?.({matches});
+        },
+    };
+    vi.stubGlobal('matchMedia', vi.fn(() => {
+        motionQuery.matches = reducedMotion;
+        return {
+            ...motionQuery,
+            media: '(prefers-reduced-motion: reduce)',
+            onchange: null,
+            addListener: vi.fn(),
+            removeListener: vi.fn(),
+            dispatchEvent: vi.fn(),
+        };
+    }));
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
         bottom: 320,
         height: 320,
@@ -285,6 +308,87 @@ describe('ReadinessShieldScene', () => {
         expect(three.renderer.render).toHaveBeenCalledOnce();
         expect(requestAnimationFrame).not.toHaveBeenCalled();
         expect(pendingFrames.size).toBe(0);
+    });
+
+    it('switches an active scene to one fully assembled static frame and clears pointer force', () => {
+        const {container} = render(<ReadinessShieldScene
+            parameters={parameters}
+            onReady={vi.fn()}
+            onUnavailable={vi.fn()}
+        />);
+        const canvas = container.querySelector('canvas')!;
+        const materialOptions = three.ShaderMaterial.mock.calls[0][0] as {
+            uniforms: Record<string, {value: number}>;
+        };
+        runPendingFrame(16);
+        fireEvent.pointerMove(canvas, {clientX: 320, clientY: 160, pointerType: 'mouse'});
+        runPendingFrame(66);
+        expect(materialOptions.uniforms.uPointerStrength.value).toBeGreaterThan(0);
+        expect(materialOptions.uniforms.uAssembly.value).toBeLessThan(1);
+        const rendersBeforeChange = three.renderer.render.mock.calls.length;
+
+        motionQuery.trigger(true);
+
+        expect(cancelAnimationFrame).toHaveBeenCalledOnce();
+        expect(materialOptions.uniforms.uAssembly.value).toBe(1);
+        expect(materialOptions.uniforms.uPointerStrength.value).toBe(0);
+        expect(three.uniformPointer.set).toHaveBeenLastCalledWith(0, 0);
+        expect(three.renderer.render).toHaveBeenCalledTimes(rendersBeforeChange + 1);
+        expect(pendingFrames.size).toBe(0);
+    });
+
+    it('resumes at most one frame without de-assembling after reduced motion is disabled', () => {
+        render(<ReadinessShieldScene
+            parameters={parameters}
+            onReady={vi.fn()}
+            onUnavailable={vi.fn()}
+        />);
+        const materialOptions = three.ShaderMaterial.mock.calls[0][0] as {
+            uniforms: Record<string, {value: number}>;
+        };
+
+        motionQuery.trigger(true);
+        motionQuery.trigger(false);
+        motionQuery.trigger(false);
+
+        expect(materialOptions.uniforms.uAssembly.value).toBe(1);
+        expect(pendingFrames.size).toBe(1);
+        runPendingFrame(32);
+        expect(materialOptions.uniforms.uAssembly.value).toBe(1);
+        expect(pendingFrames.size).toBe(1);
+    });
+
+    it('coalesces a runtime reduced-motion draw while offscreen and removes its listener on cleanup', () => {
+        const {rerender, unmount} = render(<ReadinessShieldScene
+            parameters={parameters}
+            onReady={vi.fn()}
+            onUnavailable={vi.fn()}
+        />);
+        const materialOptions = three.ShaderMaterial.mock.calls[0][0] as {
+            uniforms: Record<string, {value: number}>;
+        };
+        expect(motionQuery.addEventListener).toHaveBeenCalledWith('change', expect.any(Function));
+        intersectionObserver.trigger(false);
+        const rendersBeforeChange = three.renderer.render.mock.calls.length;
+
+        motionQuery.trigger(true);
+        rerender(<ReadinessShieldScene
+            parameters={{...parameters, cohesion: 0.62}}
+            onReady={vi.fn()}
+            onUnavailable={vi.fn()}
+        />);
+        themeObserver.trigger();
+
+        expect(materialOptions.uniforms.uAssembly.value).toBe(1);
+        expect(three.renderer.render).toHaveBeenCalledTimes(rendersBeforeChange);
+        intersectionObserver.trigger(true);
+        intersectionObserver.trigger(true);
+        expect(three.renderer.render).toHaveBeenCalledTimes(rendersBeforeChange + 1);
+        expect(pendingFrames.size).toBe(0);
+
+        unmount();
+        expect(motionQuery.removeEventListener).toHaveBeenCalledWith('change', expect.any(Function));
+        expect(motionChangeListener).toBeNull();
     });
 
     it('renders exactly one fresh reduced-motion frame when parameters change', () => {

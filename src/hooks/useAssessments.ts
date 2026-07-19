@@ -1,4 +1,10 @@
-import {useMutation, useQuery, useQueryClient, queryOptions} from '@tanstack/react-query';
+import {
+    queryOptions,
+    useMutation,
+    useQuery,
+    useQueryClient,
+    type UseQueryOptions,
+} from '@tanstack/react-query';
 import type {Assessment} from '@/types';
 import * as assessmentsApi from '@/api/assessments';
 import {assessmentQueryKey} from '@/data/queryKeys';
@@ -10,8 +16,13 @@ export function assessmentQueryOptions() {
     });
 }
 
-export function useAssessmentQuery() {
-    return useQuery(assessmentQueryOptions());
+type AssessmentQueryOptions = Pick<
+    UseQueryOptions<Assessment[], Error, Assessment[], typeof assessmentQueryKey>,
+    'staleTime' | 'refetchOnWindowFocus'
+>;
+
+export function useAssessmentQuery(options: AssessmentQueryOptions = {}) {
+    return useQuery({...assessmentQueryOptions(), ...options});
 }
 
 export function useAddAssessment() {

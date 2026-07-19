@@ -32,10 +32,26 @@ export default function ClientShell({children}: { children: React.ReactNode }) {
         if (previousPathnameRef.current === pathname) return;
         previousPathnameRef.current = pathname;
 
-        const heading = mainRef.current?.querySelector<HTMLElement>('h1');
-        if (!heading) return;
-        heading.tabIndex = -1;
-        heading.focus();
+        const main = mainRef.current;
+        if (!main) return;
+
+        const focusDestinationHeading = () => {
+            const heading = main.querySelector<HTMLElement>('h1');
+            if (!heading || heading.closest('[data-route-loading]')) return false;
+
+            heading.tabIndex = -1;
+            heading.focus();
+            return true;
+        };
+
+        if (focusDestinationHeading()) return;
+
+        const observer = new MutationObserver(() => {
+            if (focusDestinationHeading()) observer.disconnect();
+        });
+        observer.observe(main, {childList: true, subtree: true});
+
+        return () => observer.disconnect();
     }, [pathname]);
 
     useEffect(() => {
