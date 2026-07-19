@@ -47,7 +47,7 @@ app/api/**/route.ts (Zod validate + authenticate)  →  db (Drizzle)  →  Postg
 - **Auth** (`src/lib/auth.ts`): `authenticate()` returns `NextResponse | null`. Open mode when `API_SECRET` is unset; otherwise requires `Authorization: Bearer $API_SECRET`, compared timing-safely.
 - **Never trust client-derived fields.** Compute values like `percentage` and `passed` server-side in the route handler even if the client sends them (pass mark is `>= 70`).
 - **Rate limiting** (`src/lib/rate-limit.ts`): in-memory sliding window via `isAllowed(key, maxRequests, windowMs)`; key by IP + resource (see poll votes route).
-- **Hooks** use a module-level `QUERY_KEY` const and optimistic cache updates through `qc.setQueryData` rather than always refetching.
+- **Hooks** use shared query keys from `src/data/queryKeys.ts` and perform cache-first updates through `queryClient.setQueryData` rather than always refetching.
 - **SSR guard:** client `getAll()` returns `[]` when `typeof window === 'undefined'`.
 - **Tests** live beside the code they cover (`*.test.ts` next to source). Vitest uses jsdom, forces `NODE_ENV=test`, and loads `src/test/setup.ts` (jest-dom matchers). Playwright smoke tests stub `**/api/**` so they run without a database — keep e2e hermetic.
 - **Code style:** 4-space indent, single quotes, semicolons, no inner spaces in import braces (`import {db} from '@/db'`).
