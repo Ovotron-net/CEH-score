@@ -46,3 +46,6 @@ The secret must never be placed in a `NEXT_PUBLIC_*` variable or serialized into
 - Security response headers via `next.config.ts`, including HSTS, `nosniff`, frame deny, referrer policy, permissions policy, and CSP.
 - React auto-escaping, with no `dangerouslySetInnerHTML`, enforced by a `react/no-danger` lint rule.
 
+Tell them where to go, how often they can expect to get an update on a
+reported vulnerability, what to expect if the vulnerability is accepted or
+declined, etc.
