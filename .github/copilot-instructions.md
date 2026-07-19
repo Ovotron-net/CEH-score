@@ -44,7 +44,7 @@ app/api/**/route.ts (Zod validate + authenticate)  →  db (Drizzle)  →  Postg
 
 - **Path alias `@/*` → `src/*`** (tsconfig + vitest). Route handlers use `@/db`, `@/lib/...`; the `src/api/*` client modules use relative imports (`../types`). Match the surrounding file.
 - **Route handler contract:** call `authenticate(request)` first and return early if it yields a response; parse the body with a Zod `safeParse`; on failure return `400` with `{error, details: parsed.error.flatten()}`; return via `NextResponse.json(...)`. See `src/app/api/assessments/route.ts`.
-- **Auth** (`src/lib/auth.ts`): `authenticate()` returns `NextResponse | null`. Open mode when `API_SECRET` is unset; otherwise requires `Authorization: Bearer $API_SECRET`, compared timing-safely.
+- **Auth** (`src/lib/auth.ts`): `authenticate()` returns `NextResponse | null`. Open mode is used when `API_SECRET` is unset in development/test, or in production only when `ALLOW_OPEN_API=true`; otherwise production fails closed. When `API_SECRET` is set, requests require `Authorization: Bearer $API_SECRET`, compared timing-safely.
 - **Never trust client-derived fields.** Compute values like `percentage` and `passed` server-side in the route handler even if the client sends them (pass mark is `>= 70`).
 - **Rate limiting** (`src/lib/rate-limit.ts`): in-memory sliding window via `isAllowed(key, maxRequests, windowMs)`; key by IP + resource (see poll votes route).
 - **Hooks** use shared query keys from `src/data/queryKeys.ts` and perform cache-first updates through `queryClient.setQueryData` rather than always refetching.
