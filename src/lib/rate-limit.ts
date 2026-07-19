@@ -64,11 +64,28 @@ export function isAllowed(key: string, maxRequests: number, windowMs: number): b
 }
 
 /**
- * Extract the client IP from the X-Forwarded-For header (first hop), falling
- * back to 'unknown' when unavailable.
+ * Extract the client IP from a trusted source.
+ *
+ * Prefers the `x-real-ip` header, which a trusted reverse proxy (e.g. nginx)
+ * sets to the connecting client address and which callers cannot override.
+ *
+ * Falls back to the X-Forwarded-For chain using a configured proxy depth.
+ * `TRUSTED_PROXY_DEPTH` (default: 1) controls how many rightmost XFF entries
+ * were appended by trusted proxies; the entry immediately to the left of those
+ * is the client address. Set `TRUSTED_PROXY_DEPTH=0` to skip XFF entirely.
  */
 export function getClientIp(request: Request): string {
-    return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+    const realIp = request.headers.get('x-real-ip')?.trim();
+    if (realIp) return realIp;
+
+    const depth = Math.max(0, parseInt(process.env.TRUSTED_PROXY_DEPTH ?? '1', 10) || 0);
+    if (depth === 0) return 'unknown';
+
+    const xff = request.headers.get('x-forwarded-for');
+    if (!xff) return 'unknown';
+
+    const ips = xff.split(',').map(s => s.trim()).filter(Boolean);
+    return ips[Math.max(0, ips.length - depth)] ?? 'unknown';
 }
 
 /**
