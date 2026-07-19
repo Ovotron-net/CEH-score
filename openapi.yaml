@@ -246,7 +246,7 @@ components:
   schemas:
     AssessmentInput:
       type: object
-      required: [ id, date, type, score, maxScore, timeTaken, domain, createdAt ]
+      required: [ id, date, type, score, maxScore, timeTaken, domain ]
       properties:
         id:
           type: string
@@ -266,9 +266,6 @@ components:
           type: string
         notes:
           type: string
-        createdAt:
-          type: string
-          format: date-time
 
     Assessment:
       type: object

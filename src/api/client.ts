@@ -1,5 +1,3 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
-
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export interface RequestOptions {
@@ -24,7 +22,7 @@ export async function request<T>(
 ): Promise<T> {
     const {method = 'GET', body, headers = {}} = options;
 
-    const response = await fetch(`${API_BASE_URL}${path}`, {
+    const response = await fetch(path, {
         method,
         headers: {
             'Content-Type': 'application/json',

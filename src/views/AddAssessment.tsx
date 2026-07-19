@@ -2,7 +2,7 @@
 
 import React, {useState} from 'react';
 import {useRouter} from 'next/navigation';
-import type {Assessment} from '../types';
+import type {Assessment, AssessmentInput} from '../types';
 import {useAddAssessment} from '../hooks/useAssessments';
 import {CEH_DOMAINS, FULL_EXAM} from '../data/cehDomains';
 import {calculatePercentage, isPassed} from '../utils/calculations';
@@ -54,18 +54,15 @@ export default function AddAssessment() {
         e.preventDefault();
         if (!form.score || !form.maxScore || !form.timeTaken || scoreError || maxScoreError) return;
 
-        const assessment: Assessment = {
+        const assessment: AssessmentInput = {
             id: `assessment-${Date.now()}`,
             date: form.date,
             type: form.type,
             score: parseInt(form.score),
             maxScore: parseInt(form.maxScore),
-            percentage,
             timeTaken: parseInt(form.timeTaken),
             domain: form.domain,
             notes: form.notes,
-            passed,
-            createdAt: new Date().toISOString(),
         };
 
         setIsSubmitting(true);

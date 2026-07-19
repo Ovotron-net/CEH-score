@@ -12,6 +12,12 @@ export interface Assessment {
     createdAt: string;
 }
 
+/**
+ * Payload accepted by the create-assessment API. Server-derived fields
+ * (`percentage`, `passed`, `createdAt`) are computed by the route handler.
+ */
+export type AssessmentInput = Omit<Assessment, 'percentage' | 'passed' | 'createdAt'>;
+
 export interface CEHDomain {
     id: string;
     name: string;
