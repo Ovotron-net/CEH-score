@@ -1,6 +1,7 @@
 'use client';
 
 import {Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts';
+import ChartDataTable from './ChartDataTable';
 
 export interface DomainBarDatum {
     name: string;
@@ -12,9 +13,21 @@ interface DomainBarChartProps {
 }
 
 export default function DomainBarChart({data}: DomainBarChartProps) {
+    if (data.length === 0) {
+        return <p className="h-[220px] flex items-center justify-center text-sm text-muted-foreground">No domain performance data yet.</p>;
+    }
+
     return (
-        <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={data} layout="vertical" margin={{top: 5, right: 30, left: 20, bottom: 5}}>
+        <>
+            <ChartDataTable
+                summary={`Scores are plotted for ${data.length} domains.`}
+                caption="Domain performance data"
+                columns={['Domain', 'Score']}
+                rows={data.map(({name, score}) => [name, `${score}%`])}
+            />
+            <div aria-hidden="true">
+                <ResponsiveContainer width="100%" height={220}>
+                    <BarChart accessibilityLayer={false} data={data} layout="vertical" margin={{top: 5, right: 30, left: 20, bottom: 5}}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false}/>
                 <XAxis
                     type="number"
@@ -41,7 +54,9 @@ export default function DomainBarChart({data}: DomainBarChartProps) {
                     itemStyle={{color: 'hsl(var(--primary))'}}
                 />
                 <Bar dataKey="score" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} fillOpacity={0.8}/>
-            </BarChart>
-        </ResponsiveContainer>
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+        </>
     );
 }

@@ -1,7 +1,10 @@
 /**
- * Simple in-memory sliding-window rate limiter.
- * Limits requests per key within a time window.
+ * Simple in-memory fixed-window rate limiter.
+ * Limits requests per key within a time window that resets after windowMs.
  */
+
+import {NextResponse} from 'next/server';
+import {logSecurityEvent} from './security-log';
 
 interface RateLimitEntry {
     count: number;
@@ -58,4 +61,54 @@ export function isAllowed(key: string, maxRequests: number, windowMs: number): b
     }
 
     return false;
+}
+
+/**
+ * Extract the client IP from a trusted source.
+ *
+ * Prefers `x-real-ip` when present. Platforms such as Vercel/Railway (and
+ * reverse proxies that overwrite this header) set it to the connecting client;
+ * it is only trustworthy when the edge strips or overwrites client-supplied
+ * values.
+ *
+ * Falls back to the X-Forwarded-For chain using a configured proxy depth.
+ * `TRUSTED_PROXY_DEPTH` (default: 1) is how many rightmost XFF hops are treated
+ * as trusted proxies. The client address is the leftmost entry of that trusted
+ * suffix (`ips[length - depth]`). With the default depth of 1, that is the
+ * rightmost hop (the immediate client seen by the last trusted proxy).
+ * Set `TRUSTED_PROXY_DEPTH=0` to skip XFF entirely.
+ */
+export function getClientIp(request: Request): string {
+    const realIp = request.headers.get('x-real-ip')?.trim();
+    if (realIp) return realIp;
+
+    const depth = Math.max(0, parseInt(process.env.TRUSTED_PROXY_DEPTH ?? '1', 10) || 0);
+    if (depth === 0) return 'unknown';
+
+    const xff = request.headers.get('x-forwarded-for');
+    if (!xff) return 'unknown';
+
+    const ips = xff.split(',').map(s => s.trim()).filter(Boolean);
+    return ips[Math.max(0, ips.length - depth)] ?? 'unknown';
+}
+
+/**
+ * Enforce an IP-scoped rate limit for a request. Returns a 429 response (and
+ * logs the event) when the limit is exceeded, or null when the request is allowed.
+ */
+export function enforceRateLimit(
+    request: Request,
+    bucket: string,
+    maxRequests: number,
+    windowMs: number,
+): NextResponse | null {
+    const ip = getClientIp(request);
+    if (!isAllowed(`${bucket}:${ip}`, maxRequests, windowMs)) {
+        logSecurityEvent('rate_limit_exceeded', {ip, bucket});
+        return NextResponse.json(
+            {error: 'Too many requests. Please try again later.'},
+            {status: 429},
+        );
+    }
+    return null;
 }

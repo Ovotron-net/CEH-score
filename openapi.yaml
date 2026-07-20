@@ -2,11 +2,24 @@ openapi: 3.0.3
 info:
   title: CEH Score API
   version: 1.0.0
+  description: |
+    API for a single-user dashboard with shared assessments, settings, and polls.
+
+    The supported browser UI deployment sets `ALLOW_OPEN_API=true` and leaves
+    `API_SECRET` unset. In that mode all shared reads and writes are
+    unauthenticated. When `API_SECRET` is set, non-health API requests require a
+    bearer token; that API-only mode is incompatible with the browser UI until
+    session authentication protects both pages and API routes. The secret must
+    never be exposed in client code or serialized into hydration data.
 
 tags:
   - name: assessments
   - name: settings
   - name: polls
+
+security:
+  - BearerAuth: []
+  - {}
 
 paths:
   /api/assessments:
@@ -221,10 +234,19 @@ paths:
           description: Too many requests
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        Enabled only when `API_SECRET` is configured. Send
+        `Authorization: Bearer <API_SECRET>`. The alternative empty security
+        requirement represents intentional open mode (`ALLOW_OPEN_API=true`),
+        where every shared read and write is unauthenticated.
   schemas:
     AssessmentInput:
       type: object
-      required: [ id, date, type, score, maxScore, timeTaken, domain, createdAt ]
+      required: [ id, date, type, score, maxScore, timeTaken, domain ]
       properties:
         id:
           type: string
@@ -244,9 +266,6 @@ components:
           type: string
         notes:
           type: string
-        createdAt:
-          type: string
-          format: date-time
 
     Assessment:
       type: object

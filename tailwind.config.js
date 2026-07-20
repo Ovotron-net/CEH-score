@@ -15,10 +15,10 @@ export default {
                     'card-hover': 'hsl(var(--secondary))',
                     border: 'hsl(var(--border))',
                     green: 'hsl(var(--primary))',
-                    blue: '#00d4ff',
+                    blue: 'hsl(var(--info))',
                     purple: '#7c3aed',
                     red: 'hsl(var(--destructive))',
-                    yellow: '#ffd700',
+                    yellow: 'hsl(var(--warning))',
                     text: 'hsl(var(--foreground))',
                     muted: 'hsl(var(--muted-foreground))',
                 },
@@ -38,6 +38,18 @@ export default {
                 destructive: {
                     DEFAULT: 'hsl(var(--destructive))',
                     foreground: 'hsl(var(--destructive-foreground))',
+                },
+                success: {
+                    DEFAULT: 'hsl(var(--success))',
+                    foreground: 'hsl(var(--success-foreground))',
+                },
+                warning: {
+                    DEFAULT: 'hsl(var(--warning))',
+                    foreground: 'hsl(var(--warning-foreground))',
+                },
+                info: {
+                    DEFAULT: 'hsl(var(--info))',
+                    foreground: 'hsl(var(--info-foreground))',
                 },
                 muted: {
                     DEFAULT: 'hsl(var(--muted))',

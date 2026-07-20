@@ -1,20 +1,23 @@
-import type { Metadata } from 'next';
+import type {Metadata} from 'next';
+import {cookies} from 'next/headers';
 import Providers from '@/components/providers';
 import ClientShell from '@/components/ClientShell';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import ThemeApplier from '@/components/ThemeApplier';
+import './globals.css';
 
 export const metadata: Metadata = {
     title: 'CEH Tracker',
     description: 'CEH Exam Score Analytics Dashboard',
 };
 
-export default function RootLayout({children}: { children: React.ReactNode }) {
+export default async function RootLayout({children}: { children: React.ReactNode }) {
+    const savedTheme = (await cookies()).get('ceh-theme')?.value;
+    const theme = savedTheme === 'light' ? 'light' : 'dark';
+
     return (
-        <html lang="en" className="dark">
+        <html lang="en" className={theme} style={{colorScheme: theme}}>
         <body>
         <Providers>
-            <ThemeApplier/>
             <ErrorBoundary>
                 <ClientShell>{children}</ClientShell>
             </ErrorBoundary>

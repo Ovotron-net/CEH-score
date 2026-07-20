@@ -1,59 +1,57 @@
-import {useCallback} from 'react';
-import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import type {Assessment} from '../types';
-import {assessmentsApi} from '../api';
+import {
+    useMutation,
+    useQuery,
+    useQueryClient,
+    type UseQueryOptions,
+} from '@tanstack/react-query';
+import type {Assessment} from '@/types';
+import * as assessmentsApi from '@/api/assessments';
+import {assessmentQueryOptions} from '@/data/queryContracts';
+import {assessmentQueryKey} from '@/data/queryKeys';
 
-const QUERY_KEY = ['assessments'] as const;
+export {assessmentQueryOptions};
 
-export function useAssessments() {
-    const qc = useQueryClient();
+type AssessmentQueryOptions = Pick<
+    UseQueryOptions<Assessment[], Error, Assessment[], typeof assessmentQueryKey>,
+    'staleTime' | 'refetchOnWindowFocus'
+>;
 
-    const {data: assessments = [], isLoading, isError} = useQuery({
-        queryKey: QUERY_KEY,
-        queryFn: assessmentsApi.getAll,
-    });
-
-    const addMutation = useMutation({
-        mutationFn: assessmentsApi.create,
-        onSuccess: (created) => {
-            qc.setQueryData<Assessment[]>(QUERY_KEY, prev => [created, ...(prev ?? [])]);
-        },
-    });
-
-    const deleteMutation = useMutation({
-        mutationFn: assessmentsApi.remove,
-        onSuccess: (_, id) => {
-            qc.setQueryData<Assessment[]>(QUERY_KEY, prev => prev?.filter(a => a.id !== id) ?? []);
-        },
-    });
-
-    const clearMutation = useMutation({
-        mutationFn: assessmentsApi.clearAll,
-        onSuccess: () => {
-            qc.setQueryData<Assessment[]>(QUERY_KEY, []);
-        },
-    });
-
-    const addAssessment = useCallback(
-        (a: Assessment) => addMutation.mutateAsync(a),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [addMutation.mutateAsync],
-    );
-
-    const deleteAssessment = useCallback(
-        (id: string) => deleteMutation.mutateAsync(id),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [deleteMutation.mutateAsync],
-    );
-
-    const clearAll = useCallback(
-        () => clearMutation.mutateAsync(),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [clearMutation.mutateAsync],
-    );
-
-    return {assessments, isLoading, isError, addAssessment, deleteAssessment, clearAll};
+export function useAssessmentQuery(options: AssessmentQueryOptions = {}) {
+    return useQuery({...assessmentQueryOptions(), ...options});
 }
 
+export function useAddAssessment() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: assessmentsApi.create,
+        onSuccess: (created) => {
+            queryClient.setQueryData<Assessment[]>(assessmentQueryKey, (previous) => [
+                created,
+                ...(previous ?? []),
+            ]);
+        },
+    });
+}
 
+export function useDeleteAssessment() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: assessmentsApi.remove,
+        onSuccess: (_, id) => {
+            queryClient.setQueryData<Assessment[]>(
+                assessmentQueryKey,
+                (previous) => previous?.filter((assessment) => assessment.id !== id) ?? [],
+            );
+        },
+    });
+}
 
+export function useClearAssessments() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: assessmentsApi.clearAll,
+        onSuccess: () => {
+            queryClient.setQueryData<Assessment[]>(assessmentQueryKey, []);
+        },
+    });
+}

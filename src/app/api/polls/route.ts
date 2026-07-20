@@ -1,9 +1,8 @@
 import {NextResponse} from 'next/server';
 import {z} from 'zod';
-import {db} from '@/db';
-import {pollResults} from '@/db/schema';
-import {eq} from 'drizzle-orm';
-import {authenticate} from '@/lib/auth';
+import {createPollResult, getPollResults} from '@/data/pollRepository';
+import {toErrorResponse} from '@/lib/errors';
+import {guardRead, guardWrite} from '@/lib/routeGuard';
 
 const PollResultSchema = z.object({
     pollId: z.string().min(1).max(100),
@@ -12,10 +11,9 @@ const PollResultSchema = z.object({
     userId: z.string().max(100).optional().nullable(),
 });
 
-
 export async function GET(request: Request) {
-    const authError = authenticate(request);
-    if (authError) return authError;
+    const denied = guardRead(request);
+    if (denied) return denied;
 
     try {
         const {searchParams} = new URL(request.url);
@@ -25,24 +23,18 @@ export async function GET(request: Request) {
             if (pollId.length > 100) {
                 return NextResponse.json({error: 'Invalid pollId.'}, {status: 400});
             }
-            const rows = await db
-                .select()
-                .from(pollResults)
-                .where(eq(pollResults.pollId, pollId))
-                .orderBy(pollResults.createdAt);
-            return NextResponse.json(rows);
+            return NextResponse.json(await getPollResults(pollId));
         }
 
-        const rows = await db.select().from(pollResults).orderBy(pollResults.createdAt);
-        return NextResponse.json(rows);
+        return NextResponse.json(await getPollResults());
     } catch {
         return NextResponse.json({error: 'Failed to fetch poll results.'}, {status: 500});
     }
 }
 
 export async function POST(request: Request) {
-    const authError = authenticate(request);
-    if (authError) return authError;
+    const denied = guardWrite(request, 'polls:create', 20, 60_000);
+    if (denied) return denied;
 
     const body = await request.json().catch(() => null);
     const parsed = PollResultSchema.safeParse(body);
@@ -54,30 +46,11 @@ export async function POST(request: Request) {
         );
     }
 
-    const data = parsed.data;
-
     try {
-        const [created] = await db
-            .insert(pollResults)
-            .values({
-                pollId: data.pollId,
-                pollQuestion: data.pollQuestion,
-                optionText: data.optionText,
-                userId: data.userId || null,
-                voteCount: 1,
-            })
-            .returning();
+        const created = await createPollResult(parsed.data);
         return NextResponse.json(created, {status: 201});
-    } catch (err: unknown) {
-        const isUniqueViolation =
-            typeof err === 'object' && err !== null && 'code' in err && (err as { code: string }).code === '23505';
-        if (isUniqueViolation) {
-            return NextResponse.json(
-                {error: 'A poll option with this text already exists for this poll.'},
-                {status: 409},
-            );
-        }
-        return NextResponse.json({error: 'Failed to create poll result.'}, {status: 500});
+    } catch (err) {
+        const mapped = toErrorResponse(err, 'Failed to create poll result.');
+        return NextResponse.json(mapped.body, {status: mapped.status});
     }
 }
-

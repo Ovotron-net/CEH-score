@@ -1,138 +1,142 @@
-# CEH Score Tracker
+# CEH Tracker — Score Analytics
 
-A Next.js 15 dashboard for tracking **Certified Ethical Hacker (CEH)** exam preparation — log practice
-assessments, monitor progress against a target score, explore per-domain performance, and run community polls.
+A dashboard for tracking Certified Ethical Hacker (CEH v13) exam preparation. Record practice, mock, and official assessment scores, visualize progress across the CEH domains, compare results on a leaderboard, and participate in community polls.
 
 ## Features
 
-- **Assessment tracking** — record practice, mock, and official attempts with score, time taken, and CEH domain
-- **Analytics** — trend charts and stats powered by Recharts
-- **Topics / domains** — per-domain breakdown across the CEH knowledge areas
-- **Leaderboard** — compare assessment results
-- **Polls** — create polls and cast rate-limited votes with atomic vote counting
-- **Settings** — configurable display name, target score, exam date, and dark/light theme
+- **Dashboard** — key stats (average, best score, study streak), score trend, and domain radar.
+- **Assessments** — record and manage assessment results (practice / mock / official).
+- **Analytics** — performance trends and per-domain breakdowns.
+- **Leaderboard** — compare scores across attempts.
+- **Community Polls** — vote on polls and view aggregated poll analytics.
+- **CEH Topics** — reference for the CEH domains.
+- **Settings** — profile name, target score, exam date, and theme (dark / light).
 
 ## Tech Stack
 
-| Concern            | Technology                                               |
-| ------------------ | -------------------------------------------------------- |
-| Framework          | [Next.js 15](https://nextjs.org/) (App Router), React 19 |
-| Language           | TypeScript                                               |
-| Data fetching      | [TanStack Query](https://tanstack.com/query)             |
-| Database           | PostgreSQL via [Drizzle ORM](https://orm.drizzle.team/)  |
-| Validation         | [Zod](https://zod.dev/)                                  |
-| UI                 | Tailwind CSS + [shadcn/ui](https://ui.shadcn.com/)       |
-| API client codegen | [Orval](https://orval.dev/) (from `openapi.yaml`)        |
-| Testing            | Vitest + Testing Library, Playwright (e2e)               |
+- **Framework:** [Next.js 15](https://nextjs.org/) (App Router) + React 19
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS + Radix UI primitives
+- **Data fetching:** TanStack Query
+- **Charts:** Recharts
+- **Database:** PostgreSQL via [Drizzle ORM](https://orm.drizzle.team/)
+- **API client:** generated from `openapi.yaml` with [Orval](https://orval.dev/)
+- **Validation:** Zod
+- **Testing:** Vitest + Testing Library (unit) and Playwright (e2e)
+
+## Prerequisites
+
+- Node.js `>= 22.18.0` and npm `>= 10`
+- A PostgreSQL database
 
 ## Getting Started
 
-### Prerequisites
+1. **Install dependencies**
 
-- Node.js `>=22.18.0` and npm `>=10`
-- A PostgreSQL database
+   ```bash
+   npm ci
+   ```
 
-### Setup
+2. **Configure environment**
 
-```bash
-# 1. Install dependencies
-npm install
+   Create a `.env.local` file in the project root with your database connection:
 
-# 2. Configure environment (see below), then apply migrations
-npm run db:migrate
+   ```bash
+   DATABASE_URL=postgresql://user:password@localhost:5432/ceh_score
+   ```
 
-# 3. Start the dev server
-npm run dev
-```
+   The connection string is resolved in this order: `DATABASE_PUBLIC_URL` → `DATABASE_URL` → the individual `PGUSER` / `PGPASSWORD` / `PGHOST` / `PGPORT` / `PGDATABASE` variables.
 
-The app runs at [http://localhost:3000](http://localhost:3000).
+3. **Apply database migrations**
 
-### Environment variables
+   ```bash
+   npm run db:migrate
+   ```
 
-The database connection string is resolved in this order:
+4. **Run the dev server**
 
-1. `DATABASE_PUBLIC_URL`
-2. `DATABASE_URL`
-3. Individual `PG*` vars — `PGUSER`, `PGPASSWORD`, `PGHOST`, `PGPORT`, `PGDATABASE`
+   ```bash
+   npm run dev
+   ```
 
-Optional:
-
-- `NEXT_PUBLIC_API_BASE_URL` — redirect API calls away from the same-origin default
-- `API_SECRET` — when set, all route handlers require a matching auth header (no-op in development when unset)
+   The app runs at [http://localhost:3000](http://localhost:3000).
 
 ## Scripts
 
-```bash
-npm run dev          # Start dev server (http://localhost:3000)
-npm run build        # Production build (also validates TypeScript)
-npm run start        # Start the production server
-npm run lint         # ESLint
+| Script                  | Description                                           |
+| ----------------------- | ----------------------------------------------------- |
+| `npm run dev`           | Start the Next.js dev server                          |
+| `npm run build`         | Production build                                      |
+| `npm run start`         | Start the production server                           |
+| `npm run lint`          | Run ESLint                                            |
+| `npm run generate`      | Regenerate the API client from `openapi.yaml` (Orval) |
+| `npm run db:generate`   | Generate a new Drizzle migration from the schema      |
+| `npm run db:migrate`    | Apply pending migrations                              |
+| `npm run db:studio`     | Open Drizzle Studio                                   |
+| `npm test`              | Run unit tests, then e2e tests                        |
+| `npm run test:watch`    | Run Vitest in watch mode                              |
+| `npm run test:coverage` | Unit tests with coverage                              |
+| `npm run test:e2e`      | Run Playwright e2e tests                              |
+| `npm run test:e2e:ui`   | Run Playwright in UI mode                             |
 
-npm run generate     # Regenerate the Orval API client from openapi.yaml
-
-npm run db:generate  # Generate Drizzle migration files from schema changes
-npm run db:migrate   # Apply pending migrations
-npm run db:studio    # Open Drizzle Studio (DB browser UI)
-
-npm run test         # Run unit (Vitest) + e2e (Playwright)
-npm run test:watch   # Vitest in watch mode
-npm run test:coverage# Vitest with coverage
-npm run test:e2e     # Playwright e2e tests
-npm run test:e2e:ui  # Playwright in UI mode
-```
-
-## Architecture
-
-Request flow follows a clear layered path:
+## Project Structure
 
 ```
-Browser
-  └─ src/hooks/use*.ts        (TanStack Query — data fetching + cache)
-       └─ src/api/*.ts         (thin HTTP wrappers over request() in client.ts)
-            └─ src/app/api/**/route.ts   (Zod validation → Drizzle → JSON)
-                 └─ src/db/    (Drizzle ORM — schema + lazy singleton client)
+src/
+  api/          API client + Orval-generated hooks
+  app/          Next.js App Router pages and API routes
+  components/   UI components (incl. charts and shadcn-style primitives)
+  data/         CEH domain reference data
+  db/           Drizzle schema and connection
+  hooks/        Data hooks (assessments, polls, settings)
+  lib/          Auth, rate limiting, notifications
+  utils/        Score calculations and poll summaries
+  views/        Page-level views (Dashboard, Assessments, etc.)
+drizzle/        SQL migrations
+e2e/            Playwright smoke tests
+openapi.yaml    API contract (source for the generated client)
 ```
 
-| Layer            | Path                      | Responsibility                                  |
-| ---------------- | ------------------------- | ----------------------------------------------- |
-| Page routes      | `src/app/*/page.tsx`      | Render view components                          |
-| Views            | `src/views/*.tsx`         | Page-level client components                    |
-| API handlers     | `src/app/api/**/route.ts` | Zod validation → Drizzle operations → JSON      |
-| Query hooks      | `src/hooks/use*.ts`       | TanStack Query wrappers with optimistic updates |
-| API modules      | `src/api/*.ts`            | HTTP wrappers over `request()`                  |
-| Generated client | `src/api/generated/`      | Orval-generated hooks (gitignored)              |
-| DB schema        | `src/db/schema.ts`        | Drizzle table definitions                       |
-| Types            | `src/types/index.ts`      | Shared TypeScript interfaces                    |
-| UI components    | `src/components/ui/`      | shadcn/ui primitives                            |
+## API
 
-The `@/` path alias maps to `src/`.
+The HTTP API is defined in [openapi.yaml](openapi.yaml) (`CEH Score API`) and implemented as Next.js route handlers under `src/app/api/`:
 
-### Database schema
+- `assessments` — CRUD for assessment records
+- `settings` — user profile and preferences
+- `polls` — poll voting and results
+- `health` — health check at `/api/health`
 
-- `assessments` — logged attempts; `percentage` and `passed` are computed server-side in `POST /api/assessments`
-- `settings` — a single row (`id = 1`) managed via upsert
-- `poll_results` — poll options with atomic vote increments on the `(pollId, optionText)` unique index
+After changing `openapi.yaml`, regenerate the typed client with `npm run generate`.
 
-## Conventions
+The API has two deployment modes:
 
-- **Server-computed fields:** clients never send `percentage` or `passed` — the API derives them
-  (`passed` when `percentage >= 70`).
-- **Validation:** every route handler validates the request body with Zod before touching the DB; invalid input
-  returns `400` with flattened error details.
-- **Auth first:** route handlers call `authenticate(request)` as their first operation.
-- **Cache-first mutations:** hooks update the query cache with `setQueryData` rather than refetching.
-- **Orval client:** `openapi.yaml` is the source of truth — run `npm run generate` after any spec change; the
-  generated `src/api/generated/` output is gitignored.
+- **Public single-user UI (supported browser mode):** set `ALLOW_OPEN_API=true` and leave `API_SECRET` unset. **All reads and writes to the shared assessments, settings, and polls data are unauthenticated.** Anyone who can reach the deployment can view or change that data.
+- **Bearer-protected API only:** set `API_SECRET` and leave `ALLOW_OPEN_API` unset. Non-health API requests require `Authorization: Bearer <API_SECRET>`. This mode is incompatible with the browser UI: browser mutations do not send the bearer secret, and the pages do not have session authentication. Do not treat `API_SECRET` as UI access control.
 
-## Poll feature
+Never place `API_SECRET` in a `NEXT_PUBLIC_*` variable or serialize it into page props, HTML, JavaScript, React Query dehydration, or any other hydration payload. Private browser access requires page and API session authentication, which is not implemented.
 
-Before changing the poll API or components, see:
+## Testing
 
-- [docs/POLL_API_USAGE.md](docs/POLL_API_USAGE.md)
-- [docs/POLL_COMPONENTS.md](docs/POLL_COMPONENTS.md)
-- [docs/POLL_FORM_EXAMPLE.md](docs/POLL_FORM_EXAMPLE.md)
+- **Unit tests** (Vitest): `npm run test:watch`
+- **E2E tests** (Playwright): `npm run test:e2e`
+
+Playwright starts the dev server automatically. The smoke tests stub the `/api/**` routes so they run without a live database.
 
 ## Deployment
 
-Deployment configuration is included for **Railway** (`railway.toml`) and **Vercel** (`vercel.json`). Ensure the
-database environment variables are set in your hosting provider and that migrations are applied.
+The project is configured for [Railway](https://railway.app/) (see [railway.toml](railway.toml)) and [Vercel](https://vercel.com/) (see [vercel.json](vercel.json)):
+
+- **Build:** `npm ci && npm run build`
+- **Start:** `npm run start`
+- **Health check:** `/api/health`
+
+Set the database environment variables in your hosting provider and run migrations against the production database before or during deploy.
+
+For the supported public single-user UI deployment, configure:
+
+```dotenv
+ALLOW_OPEN_API=true
+# API_SECRET is intentionally unset
+```
+
+This is an explicit public-data decision: every shared assessment, setting, and poll read or write is unauthenticated. If that risk is unacceptable, do not expose the UI; session authentication must be implemented before a private UI deployment is supported.
