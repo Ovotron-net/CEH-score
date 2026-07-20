@@ -144,6 +144,22 @@ test.beforeEach(async ({page}, testInfo) => {
     });
 });
 
+// Guards against a second next.config.* shadowing next.config.ts and dropping headers.
+test('security response headers are served from next.config.ts', async ({request}) => {
+    const response = await request.get('/');
+    expect(response.ok()).toBe(true);
+
+    const headers = response.headers();
+    expect(headers['strict-transport-security']).toContain('max-age=63072000');
+    expect(headers['strict-transport-security']).toContain('includeSubDomains');
+    expect(headers['x-content-type-options']).toBe('nosniff');
+    expect(headers['x-frame-options']).toBe('DENY');
+    expect(headers['referrer-policy']).toBe('strict-origin-when-cross-origin');
+    expect(headers['permissions-policy']).toContain('camera=()');
+    expect(headers['content-security-policy']).toContain("default-src 'self'");
+    expect(headers['content-security-policy']).toContain("frame-ancestors 'none'");
+});
+
 for (const {path, heading, title} of pages) {
     test(`loads ${path}`, async ({page}) => {
         await page.goto(path);
