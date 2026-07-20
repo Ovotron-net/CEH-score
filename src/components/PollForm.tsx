@@ -74,7 +74,7 @@ export function PollForm({pollId, question, options, userId, onSuccess}: PollFor
                     >
                         <input
                             type="radio"
-                            name="poll-option"
+                            name={`poll-option-${pollId}`}
                             value={option}
                             checked={selected === option}
                             onChange={(e) => setSelected(e.target.value)}

@@ -30,13 +30,7 @@ async function DashboardContent() {
                 coveredDomains={domainCoverage.covered}
                 totalDomains={domainCoverage.total}
             />
-            <HydratedPage
-                queries={[{
-                    queryKey: assessmentQueryKey,
-                    queryFn: getAssessments,
-                    initialData: assessments,
-                }]}
-            >
+            <HydratedPage seeds={[{queryKey: assessmentQueryKey, data: assessments}]}>
                 <Dashboard/>
             </HydratedPage>
         </div>

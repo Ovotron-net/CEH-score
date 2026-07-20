@@ -1,6 +1,6 @@
 // @vitest-environment node
 import {afterEach, describe, expect, it, vi} from 'vitest';
-import type {PollStats} from '@/api/polls';
+import type {PollStats} from '@/types';
 
 const {getPollStats} = vi.hoisted(() => ({
     getPollStats: vi.fn(),

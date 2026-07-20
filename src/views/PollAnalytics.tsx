@@ -4,6 +4,7 @@ import {useMemo, useState} from 'react';
 import Link from 'next/link';
 import {ArrowLeft, Award, BarChart3, PieChart, RefreshCw, Trash2, Users} from 'lucide-react';
 import {useAllPollResults, useDeletePoll} from '@/hooks/usePolls';
+import {PollOptionBars} from '@/components/PollOptionBars';
 import StatCard from '@/components/StatCard';
 import {VotesByPollChart} from '@/components/charts/lazy';
 import {groupIntoSummaries} from '@/utils/pollSummaries';
@@ -251,27 +252,8 @@ export default function PollAnalytics() {
                                             <span>Last activity: {formatDate(poll.lastUpdated)}</span>
                                         </div>
 
-                                        <div className="space-y-2 mt-3">
-                                            {poll.options.map((opt) => (
-                                                <div key={opt.optionText} className="flex items-center gap-3">
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center justify-between text-sm mb-1">
-                                                            <span
-                                                                className="text-foreground truncate pr-2">{opt.optionText}</span>
-                                                            <span className="text-muted-foreground tabular-nums shrink-0">
-                                                                {opt.voteCount} ({opt.percentage}%)
-                                                            </span>
-                                                        </div>
-                                                        <div
-                                                            className="h-2 bg-secondary rounded-full overflow-hidden border border-border/60">
-                                                            <div
-                                                                className="h-full bg-gradient-to-r from-primary/70 to-primary transition-all"
-                                                                style={{width: `${opt.percentage}%`}}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
+                                        <div className="mt-3">
+                                            <PollOptionBars options={poll.options} compact/>
                                         </div>
                                     </div>
 

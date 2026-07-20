@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import type {PollResult} from '@/api/polls';
+import type {PollResult} from '@/types';
 import {groupIntoSummaries} from './pollSummaries';
 
 function makeResult(overrides: Partial<PollResult> = {}): PollResult {

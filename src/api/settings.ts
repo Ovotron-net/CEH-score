@@ -30,7 +30,7 @@ export function reconcileTheme(theme: UserSettings['theme']) {
 
 export async function get(): Promise<UserSettings> {
     if (typeof window === 'undefined') {
-        return {name: 'Author', targetScore: 85, examDate: '', theme: 'dark'};
+        throw new Error('settings.get is browser-only; use the settings repository on the server.');
     }
     return request<UserSettings>('/api/settings');
 }

@@ -1,6 +1,6 @@
 /**
- * Simple in-memory sliding-window rate limiter.
- * Limits requests per key within a time window.
+ * Simple in-memory fixed-window rate limiter.
+ * Limits requests per key within a time window that resets after windowMs.
  */
 
 import {NextResponse} from 'next/server';
@@ -66,13 +66,17 @@ export function isAllowed(key: string, maxRequests: number, windowMs: number): b
 /**
  * Extract the client IP from a trusted source.
  *
- * Prefers the `x-real-ip` header, which a trusted reverse proxy (e.g. nginx)
- * sets to the connecting client address and which callers cannot override.
+ * Prefers `x-real-ip` when present. Platforms such as Vercel/Railway (and
+ * reverse proxies that overwrite this header) set it to the connecting client;
+ * it is only trustworthy when the edge strips or overwrites client-supplied
+ * values.
  *
  * Falls back to the X-Forwarded-For chain using a configured proxy depth.
- * `TRUSTED_PROXY_DEPTH` (default: 1) controls how many rightmost XFF entries
- * were appended by trusted proxies; the entry immediately to the left of those
- * is the client address. Set `TRUSTED_PROXY_DEPTH=0` to skip XFF entirely.
+ * `TRUSTED_PROXY_DEPTH` (default: 1) is how many rightmost XFF hops are treated
+ * as trusted proxies. The client address is the leftmost entry of that trusted
+ * suffix (`ips[length - depth]`). With the default depth of 1, that is the
+ * rightmost hop (the immediate client seen by the last trusted proxy).
+ * Set `TRUSTED_PROXY_DEPTH=0` to skip XFF entirely.
  */
 export function getClientIp(request: Request): string {
     const realIp = request.headers.get('x-real-ip')?.trim();

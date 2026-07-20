@@ -3,15 +3,15 @@ import {describe, expect, it, vi} from 'vitest';
 import type {Assessment} from '@/types';
 import {
     createAssessmentRepository,
-    type AssessmentReadAdapter,
+    type AssessmentAdapter,
 } from './assessmentRepository';
 import {
     createSettingsRepository,
-    type SettingsReadAdapter,
+    type SettingsAdapter,
 } from './settingsRepository';
 import {
     createPollRepository,
-    type PollReadAdapter,
+    type PollAdapter,
 } from './pollRepository';
 import {pollDefinitions} from './polls';
 
@@ -33,6 +33,14 @@ function assessment(id: string, createdAt: string): Assessment {
     };
 }
 
+function unusedWriteMethods(): Pick<PollAdapter, 'insert' | 'voteUpsert' | 'deleteByPollId'> {
+    return {
+        insert: vi.fn(),
+        voteUpsert: vi.fn(),
+        deleteByPollId: vi.fn(),
+    };
+}
+
 describe('assessment repository', () => {
     it('returns assessments newest first without mutating adapter rows', async () => {
         const rows = [
@@ -40,8 +48,11 @@ describe('assessment repository', () => {
             assessment('newest', '2026-07-18T12:00:00.000Z'),
             assessment('middle', '2026-07-17T12:00:00.000Z'),
         ];
-        const adapter: AssessmentReadAdapter = {
+        const adapter: AssessmentAdapter = {
             selectAll: vi.fn().mockResolvedValue(rows),
+            insert: vi.fn(),
+            deleteById: vi.fn(),
+            deleteAll: vi.fn(),
         };
 
         const repository = createAssessmentRepository(adapter);
@@ -53,12 +64,36 @@ describe('assessment repository', () => {
         ]);
         expect(rows.map((row) => row.id)).toEqual(['oldest', 'newest', 'middle']);
     });
+
+    it('derives percentage and passed on create', async () => {
+        const adapter: AssessmentAdapter = {
+            selectAll: vi.fn(),
+            insert: vi.fn(async (row) => row),
+            deleteById: vi.fn(),
+            deleteAll: vi.fn(),
+        };
+
+        const created = await createAssessmentRepository(adapter).createAssessment({
+            id: 'a1',
+            date: '2026-07-18',
+            type: 'practice',
+            score: 100,
+            maxScore: 125,
+            timeTaken: 60,
+            domain: 'Network Security',
+            notes: '',
+        });
+
+        expect(created.percentage).toBe(80);
+        expect(created.passed).toBe(true);
+        expect(adapter.insert).toHaveBeenCalledOnce();
+    });
 });
 
 describe('settings repository', () => {
     it('initializes conflict-safely and then selects only the singleton row', async () => {
         const calls: string[] = [];
-        const adapter: SettingsReadAdapter = {
+        const adapter: SettingsAdapter = {
             insertDefaultOnConflictDoNothing: vi.fn(async (id) => {
                 calls.push(`insert-conflict-safe:${id}`);
             }),
@@ -72,6 +107,7 @@ describe('settings repository', () => {
                     theme: 'dark' as const,
                 };
             }),
+            upsert: vi.fn(),
         };
 
         const repository = createSettingsRepository(adapter);
@@ -89,7 +125,7 @@ describe('settings repository', () => {
 
 describe('poll repository', () => {
     it('projects result rows without user identifiers and serializes dates', async () => {
-        const adapter: PollReadAdapter = {
+        const adapter: PollAdapter = {
             selectResults: vi.fn().mockResolvedValue([
                 {
                     id: 7,
@@ -102,6 +138,7 @@ describe('poll repository', () => {
                     updatedAt: new Date('2026-07-18T10:11:12.000Z'),
                 },
             ]),
+            ...unusedWriteMethods(),
         };
 
         const repository = createPollRepository(adapter);
@@ -120,7 +157,7 @@ describe('poll repository', () => {
     });
 
     it('derives poll timestamps from all option rows as ISO strings', async () => {
-        const adapter: PollReadAdapter = {
+        const adapter: PollAdapter = {
             selectResults: vi.fn().mockResolvedValue([
                 {
                     id: 2,
@@ -143,6 +180,7 @@ describe('poll repository', () => {
                     updatedAt: new Date('2026-07-20T10:00:00.000Z'),
                 },
             ]),
+            ...unusedWriteMethods(),
         };
 
         const stats = await createPollRepository(adapter).getPollStats('custom-poll');
@@ -159,8 +197,9 @@ describe('poll repository', () => {
     });
 
     it('returns configured options with zero votes for an unvoted fixed poll', async () => {
-        const adapter: PollReadAdapter = {
+        const adapter: PollAdapter = {
             selectResults: vi.fn().mockResolvedValue([]),
+            ...unusedWriteMethods(),
         };
         const definition = pollDefinitions['study-method'];
 
@@ -182,8 +221,9 @@ describe('poll repository', () => {
     });
 
     it('returns null for an unknown poll without rows', async () => {
-        const adapter: PollReadAdapter = {
+        const adapter: PollAdapter = {
             selectResults: vi.fn().mockResolvedValue([]),
+            ...unusedWriteMethods(),
         };
 
         await expect(createPollRepository(adapter).getPollStats('unknown')).resolves.toBeNull();

@@ -7,6 +7,7 @@ import {useAssessmentQuery} from '../hooks/useAssessments';
 import {useSettingsQuery} from '../hooks/useSettings';
 import {format} from 'date-fns';
 import {parseLocalDate} from '../utils/dates';
+import {scoreToneClass} from '@/utils/scorePresentation';
 
 type Period = 'all' | 'month' | 'week';
 
@@ -20,11 +21,6 @@ function cutoffDate(period: Period): Date | null {
     if (period === 'month') d.setDate(d.getDate() - 30);
     return d;
 }
-
-const getRankLabel = (rank: number) => `#${rank}`;
-
-const scoreColor = (pct: number) =>
-    pct >= 90 ? 'text-success' : pct >= 80 ? 'text-info' : pct >= 70 ? 'text-warning' : 'text-destructive';
 
 export default function Leaderboard() {
     const assessmentsQuery = useAssessmentQuery();
@@ -96,9 +92,9 @@ export default function Leaderboard() {
                                         'border-orange-700/30'
                             }`}
                         >
-                            <div className="text-2xl font-bold text-foreground mb-2">{getRankLabel(entry.rank)}</div>
+                            <div className="text-2xl font-bold text-foreground mb-2">{`#${entry.rank}`}</div>
                             <p className="text-muted-foreground text-xs mb-1 truncate">{entry.domain}</p>
-                            <p className={`text-2xl font-bold ${scoreColor(entry.percentage)}`}>{entry.percentage}%</p>
+                            <p className={`text-2xl font-bold ${scoreToneClass(entry.percentage)}`}>{entry.percentage}%</p>
                             <p className="text-muted-foreground text-xs mt-1">{entry.score}/{entry.maxScore} correct</p>
                             <p className="text-muted-foreground text-xs mt-0.5">{format(parseLocalDate(entry.date), 'MMM d, yyyy')}</p>
                         </div>
@@ -134,10 +130,10 @@ export default function Leaderboard() {
                         <tbody>
                             {entries.map(entry => (
                                 <tr key={entry.id} className="render-row border-b border-border last:border-0 hover:bg-secondary transition-colors">
-                                    <td className="px-5 py-4 text-foreground font-medium">{getRankLabel(entry.rank)}</td>
+                                    <td className="px-5 py-4 text-foreground font-medium">{`#${entry.rank}`}</td>
                                     <th scope="row" className="px-5 py-4 text-left text-foreground font-medium">{entry.domain}</th>
                                     <td className="px-5 py-4 text-right text-muted-foreground">{entry.score}/{entry.maxScore}</td>
-                                    <td className={`px-5 py-4 text-right font-medium ${scoreColor(entry.percentage)}`}>{entry.percentage}%</td>
+                                    <td className={`px-5 py-4 text-right font-medium ${scoreToneClass(entry.percentage)}`}>{entry.percentage}%</td>
                                     <td className="px-5 py-4 text-right text-muted-foreground">{format(parseLocalDate(entry.date), 'MMM d, yy')}</td>
                                 </tr>
                             ))}

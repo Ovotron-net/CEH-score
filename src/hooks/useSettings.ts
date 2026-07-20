@@ -1,14 +1,10 @@
-import {queryOptions, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import type {UserSettings} from '@/types';
 import * as settingsApi from '@/api/settings';
+import {settingsQueryOptions} from '@/data/queryContracts';
 import {settingsQueryKey} from '@/data/queryKeys';
 
-export function settingsQueryOptions() {
-    return queryOptions({
-        queryKey: settingsQueryKey,
-        queryFn: settingsApi.get,
-    });
-}
+export {settingsQueryOptions};
 
 export function useSettingsQuery() {
     return useQuery(settingsQueryOptions());

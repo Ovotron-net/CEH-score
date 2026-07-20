@@ -6,18 +6,19 @@ import {settings} from '@/db/schema';
 import type {UserSettings} from '@/types';
 import {e2eSettingsAdapter, selectRepositoryAdapter} from './e2eFixtures';
 
-const SETTINGS_ID = 1;
+export const SETTINGS_ID = 1;
 
 interface SettingsRow extends UserSettings {
     id: number;
 }
 
-export interface SettingsReadAdapter {
+export interface SettingsAdapter {
     insertDefaultOnConflictDoNothing(id: number): Promise<void>;
     selectById(id: number): Promise<SettingsRow | undefined>;
+    upsert(id: number, data: UserSettings): Promise<SettingsRow>;
 }
 
-const databaseAdapter: SettingsReadAdapter = {
+const databaseAdapter: SettingsAdapter = {
     async insertDefaultOnConflictDoNothing(id) {
         await db.insert(settings).values({id}).onConflictDoNothing();
     },
@@ -35,9 +36,32 @@ const databaseAdapter: SettingsReadAdapter = {
             .limit(1);
         return row;
     },
+    async upsert(id, data) {
+        const [updated] = await db
+            .insert(settings)
+            .values({id, ...data})
+            .onConflictDoUpdate({target: settings.id, set: data})
+            .returning({
+                id: settings.id,
+                name: settings.name,
+                targetScore: settings.targetScore,
+                examDate: settings.examDate,
+                theme: settings.theme,
+            });
+        return updated;
+    },
 };
 
-export function createSettingsRepository(adapter: SettingsReadAdapter) {
+function projectSettings(row: SettingsRow): UserSettings {
+    return {
+        name: row.name,
+        targetScore: row.targetScore,
+        examDate: row.examDate,
+        theme: row.theme,
+    };
+}
+
+export function createSettingsRepository(adapter: SettingsAdapter) {
     return {
         async getSettings(): Promise<UserSettings> {
             await adapter.insertDefaultOnConflictDoNothing(SETTINGS_ID);
@@ -45,16 +69,21 @@ export function createSettingsRepository(adapter: SettingsReadAdapter) {
 
             if (!row) throw new Error('Settings row was not initialized.');
 
-            return {
-                name: row.name,
-                targetScore: row.targetScore,
-                examDate: row.examDate,
-                theme: row.theme,
-            };
+            return projectSettings(row);
+        },
+
+        async updateSettings(data: UserSettings): Promise<UserSettings> {
+            const row = await adapter.upsert(SETTINGS_ID, data);
+            return projectSettings(row);
         },
     };
 }
 
-export const {getSettings} = createSettingsRepository(
-    selectRepositoryAdapter(databaseAdapter, e2eSettingsAdapter),
-);
+function repository() {
+    return createSettingsRepository(
+        selectRepositoryAdapter(databaseAdapter, e2eSettingsAdapter),
+    );
+}
+
+export const getSettings = () => repository().getSettings();
+export const updateSettings = (data: UserSettings) => repository().updateSettings(data);

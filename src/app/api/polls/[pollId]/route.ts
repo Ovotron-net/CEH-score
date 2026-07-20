@@ -1,17 +1,13 @@
 import {NextResponse} from 'next/server';
-import {db} from '@/db';
-import {pollResults} from '@/db/schema';
-import {eq} from 'drizzle-orm';
-import {getPollStats} from '@/data/pollRepository';
-import {authenticate} from '@/lib/auth';
-import {enforceRateLimit} from '@/lib/rate-limit';
+import {deletePoll, getPollStats} from '@/data/pollRepository';
+import {guardRead, guardWrite} from '@/lib/routeGuard';
 
 export async function GET(
     request: Request,
     {params}: { params: Promise<{ pollId: string }> },
 ) {
-    const authError = authenticate(request);
-    if (authError) return authError;
+    const denied = guardRead(request);
+    if (denied) return denied;
 
     try {
         const {pollId} = await params;
@@ -35,11 +31,8 @@ export async function DELETE(
     request: Request,
     {params}: { params: Promise<{ pollId: string }> },
 ) {
-    const authError = authenticate(request);
-    if (authError) return authError;
-
-    const limited = enforceRateLimit(request, 'polls:delete', 20, 60_000);
-    if (limited) return limited;
+    const denied = guardWrite(request, 'polls:delete', 20, 60_000);
+    if (denied) return denied;
 
     try {
         const {pollId} = await params;
@@ -48,11 +41,9 @@ export async function DELETE(
             return NextResponse.json({error: 'Invalid pollId.'}, {status: 400});
         }
 
-        await db.delete(pollResults).where(eq(pollResults.pollId, pollId));
-
+        await deletePoll(pollId);
         return new Response(null, {status: 204});
     } catch {
         return NextResponse.json({error: 'Failed to delete poll.'}, {status: 500});
     }
 }
-

@@ -1,22 +1,13 @@
-import type {Metadata} from 'next';
-import HydratedPage from '@/components/HydratedPage';
-import {getAssessments} from '@/data/assessmentRepository';
-import {getSettings} from '@/data/settingsRepository';
-import {assessmentQueryKey, settingsQueryKey} from '@/data/queryKeys';
+import {createHydratedPage} from '@/app/hydratedRoute';
+import {serverQueries} from '@/data/serverQueries';
 import Leaderboard from '@/views/Leaderboard';
 
-export const dynamic = 'force-dynamic';
-export const metadata: Metadata = {
+const page = createHydratedPage({
     title: 'Leaderboard | CEH Tracker',
-};
+    queries: [serverQueries.assessments(), serverQueries.settings()],
+    View: Leaderboard,
+});
 
-export default function LeaderboardPage() {
-    return (
-        <HydratedPage queries={[
-            {queryKey: assessmentQueryKey, queryFn: getAssessments},
-            {queryKey: settingsQueryKey, queryFn: getSettings},
-        ]}>
-            <Leaderboard/>
-        </HydratedPage>
-    );
-}
+export const dynamic = page.dynamic;
+export const metadata = page.metadata;
+export default page.default;

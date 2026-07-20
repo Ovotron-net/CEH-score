@@ -5,26 +5,32 @@ import {assertRepositoryHydrationAllowed} from '@/lib/uiDeployment';
 export interface HydratedQuery {
     queryKey: QueryKey;
     queryFn: () => Promise<unknown>;
-    initialData?: unknown;
+}
+
+export interface HydratedSeed {
+    queryKey: QueryKey;
+    data: unknown;
 }
 
 interface HydratedPageProps {
-    queries: HydratedQuery[];
+    queries?: HydratedQuery[];
+    seeds?: HydratedSeed[];
     children: React.ReactNode;
 }
 
-export default async function HydratedPage({queries, children}: HydratedPageProps) {
+export default async function HydratedPage({
+    queries = [],
+    seeds = [],
+    children,
+}: HydratedPageProps) {
     assertRepositoryHydrationAllowed();
     const queryClient = makeQueryClient();
 
-    await Promise.all(queries.map((query) => {
-        if ('initialData' in query) {
-            queryClient.setQueryData(query.queryKey, query.initialData);
-            return Promise.resolve();
-        }
+    for (const seed of seeds) {
+        queryClient.setQueryData(seed.queryKey, seed.data);
+    }
 
-        return queryClient.fetchQuery(query);
-    }));
+    await Promise.all(queries.map((query) => queryClient.fetchQuery(query)));
 
     return <HydrationBoundary state={dehydrate(queryClient)}>{children}</HydrationBoundary>;
 }

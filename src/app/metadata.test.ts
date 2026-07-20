@@ -25,9 +25,12 @@ describe('route metadata', () => {
         );
 
         for (const {route, title, source} of entries) {
-            expect(source.replaceAll('\r\n', '\n'), route).toContain(
-                `export const metadata: Metadata = {\n    title: '${title}',`,
-            );
+            const normalized = source.replaceAll('\r\n', '\n');
+            // Support both explicit metadata objects and createHydratedPage({ title }).
+            expect(
+                normalized.includes(`title: '${title}'`) || normalized.includes(`title: "${title}"`),
+                route,
+            ).toBe(true);
         }
 
         expect(new Set(Object.values(routeTitles)).size).toBe(Object.keys(routeTitles).length);

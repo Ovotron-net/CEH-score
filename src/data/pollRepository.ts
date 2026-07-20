@@ -1,11 +1,14 @@
 import 'server-only';
 
-import {eq} from 'drizzle-orm';
+import {eq, sql} from 'drizzle-orm';
 import {db} from '@/db';
 import {pollResults} from '@/db/schema';
-import type {PollResult, PollStats} from '@/api/polls';
+import {ConflictError, isPgUniqueViolation, ValidationError} from '@/lib/errors';
+import type {PollCreateInput, PollResult, PollStats, PollVoteInput} from '@/types';
 import {e2ePollAdapter, selectRepositoryAdapter} from './e2eFixtures';
 import {getPollDefinition, type PollDefinition} from './polls';
+
+const MAX_OPTIONS_PER_POLL = 20;
 
 interface PollRow {
     id: number;
@@ -18,8 +21,22 @@ interface PollRow {
     updatedAt: Date | string;
 }
 
-export interface PollReadAdapter {
+export interface PollAdapter {
     selectResults(pollId?: string): Promise<PollRow[]>;
+    insert(row: {
+        pollId: string;
+        pollQuestion: string;
+        optionText: string;
+        userId: string | null;
+        voteCount: number;
+    }): Promise<PollRow>;
+    voteUpsert(input: {
+        pollId: string;
+        pollQuestion: string;
+        optionText: string;
+        userId: string | null;
+    }): Promise<PollRow>;
+    deleteByPollId(pollId: string): Promise<void>;
 }
 
 const projection = {
@@ -32,12 +49,39 @@ const projection = {
     updatedAt: pollResults.updatedAt,
 };
 
-const databaseAdapter: PollReadAdapter = {
+const databaseAdapter: PollAdapter = {
     selectResults(pollId) {
         const query = db.select(projection).from(pollResults);
         return pollId
             ? query.where(eq(pollResults.pollId, pollId)).orderBy(pollResults.createdAt)
             : query.orderBy(pollResults.createdAt);
+    },
+    async insert(row) {
+        const [created] = await db.insert(pollResults).values(row).returning(projection);
+        return created;
+    },
+    async voteUpsert(input) {
+        const [result] = await db
+            .insert(pollResults)
+            .values({
+                pollId: input.pollId,
+                pollQuestion: input.pollQuestion,
+                optionText: input.optionText,
+                userId: input.userId,
+                voteCount: 1,
+            })
+            .onConflictDoUpdate({
+                target: [pollResults.pollId, pollResults.optionText],
+                set: {
+                    voteCount: sql`${pollResults.voteCount} + 1`,
+                    updatedAt: new Date(),
+                },
+            })
+            .returning(projection);
+        return result;
+    },
+    async deleteByPollId(pollId) {
+        await db.delete(pollResults).where(eq(pollResults.pollId, pollId));
     },
 };
 
@@ -57,7 +101,7 @@ function projectRow(row: PollRow): PollResult {
     };
 }
 
-export function createPollRepository(adapter: PollReadAdapter) {
+export function createPollRepository(adapter: PollAdapter) {
     return {
         async getPollResults(pollId?: string): Promise<PollResult[]> {
             return (await adapter.selectResults(pollId)).map(projectRow);
@@ -113,13 +157,64 @@ export function createPollRepository(adapter: PollReadAdapter) {
                 updatedAt,
             };
         },
+
+        async createPollResult(input: PollCreateInput): Promise<PollResult> {
+            try {
+                return projectRow(await adapter.insert({
+                    pollId: input.pollId,
+                    pollQuestion: input.pollQuestion,
+                    optionText: input.optionText,
+                    userId: input.userId || null,
+                    voteCount: 1,
+                }));
+            } catch (err) {
+                if (isPgUniqueViolation(err) || err instanceof ConflictError) {
+                    throw new ConflictError(
+                        'A poll option with this text already exists for this poll.',
+                    );
+                }
+                throw err;
+            }
+        },
+
+        async vote(input: PollVoteInput): Promise<PollResult> {
+            const existingRows = await adapter.selectResults(input.pollId);
+            const resolvedPollQuestion = input.pollQuestion ?? existingRows[0]?.pollQuestion;
+
+            if (!resolvedPollQuestion) {
+                throw new ValidationError(
+                    'pollQuestion is required for a new pollId when no existing poll metadata is present.',
+                );
+            }
+
+            const isExistingOption = existingRows.some((row) => row.optionText === input.optionText);
+            if (!isExistingOption && existingRows.length >= MAX_OPTIONS_PER_POLL) {
+                throw new ValidationError('This poll has reached the maximum number of options.');
+            }
+
+            return projectRow(await adapter.voteUpsert({
+                pollId: input.pollId,
+                pollQuestion: resolvedPollQuestion,
+                optionText: input.optionText,
+                userId: input.userId || null,
+            }));
+        },
+
+        async deletePoll(pollId: string): Promise<void> {
+            await adapter.deleteByPollId(pollId);
+        },
     };
 }
 
-const repository = createPollRepository(selectRepositoryAdapter(databaseAdapter, e2ePollAdapter));
+function repository() {
+    return createPollRepository(selectRepositoryAdapter(databaseAdapter, e2ePollAdapter));
+}
 
-export const getPollResults = repository.getPollResults;
+export const getPollResults = (pollId?: string) => repository().getPollResults(pollId);
+export const createPollResult = (input: PollCreateInput) => repository().createPollResult(input);
+export const votePoll = (input: PollVoteInput) => repository().vote(input);
+export const deletePoll = (pollId: string) => repository().deletePoll(pollId);
 
 export function getPollStats(pollId: string, definition = getPollDefinition(pollId)) {
-    return repository.getPollStats(pollId, definition);
+    return repository().getPollStats(pollId, definition);
 }

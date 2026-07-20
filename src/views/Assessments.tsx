@@ -6,6 +6,7 @@ import {Calendar, ClipboardList, Clock, Filter, Plus, Search, Trash2} from 'luci
 import {useAssessmentQuery, useDeleteAssessment} from '../hooks/useAssessments';
 import {formatScore} from '../utils/calculations';
 import {formatLocalDateDisplay} from '../utils/dates';
+import {isPassingScore, passBadgeClass, scorePercentageClass} from '../utils/scorePresentation';
 import type {Assessment} from '../types';
 
 export default function Assessments() {
@@ -162,8 +163,8 @@ export default function Assessments() {
                       {assessment.type}
                     </span>
                                         <span
-                                            className={`px-3 py-1 rounded-full text-xs font-medium border ${assessment.percentage >= 70 ? 'bg-primary/10 text-primary border-primary/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>
-                      {assessment.percentage >= 70 ? 'Passed' : 'Failed'}
+                                            className={`px-3 py-1 rounded-full text-xs font-medium border ${passBadgeClass(assessment.percentage)}`}>
+                      {isPassingScore(assessment.percentage) ? 'Passed' : 'Failed'}
                     </span>
                                         <span className="text-sm text-muted-foreground">{assessment.domain}</span>
                                     </div>
@@ -176,7 +177,7 @@ export default function Assessments() {
                                         <div>
                                             <div className="text-muted-foreground mb-1">Percentage</div>
                                             <div
-                                                className={`font-semibold ${assessment.percentage >= 70 ? 'text-primary' : 'text-destructive'}`}>
+                                                className={`font-semibold ${scorePercentageClass(assessment.percentage)}`}>
                                                 {assessment.percentage}%
                                             </div>
                                         </div>

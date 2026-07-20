@@ -1,4 +1,4 @@
-import type {PollResult} from '@/api/polls';
+import type {PollResult} from '@/types';
 
 export interface PollSummary {
     pollId: string;

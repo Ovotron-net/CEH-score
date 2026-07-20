@@ -4,33 +4,13 @@ import {useMemo} from 'react';
 import {useAssessmentQuery} from '../hooks/useAssessments';
 import {PassFail, ScoreDistribution, ScoreTrend, DomainRadar, DomainBarChart} from '../components/charts/lazy';
 import {CEH_DOMAINS} from '../data/cehDomains';
+import {calculateStats} from '../utils/calculations';
 import {buildDomainStats} from '../utils/domainStats';
 
 export default function Analytics() {
     const {data: assessments = [], isLoading, isError, refetch} = useAssessmentQuery();
 
-    const stats = useMemo(() => {
-        let scoreTotal = 0;
-        let bestScore = 0;
-        let passed = 0;
-
-        for (const assessment of assessments) {
-            const percentage = assessment.percentage;
-            scoreTotal += percentage;
-            bestScore = Math.max(bestScore, percentage);
-            if (assessment.passed) passed += 1;
-        }
-
-        return {
-            averageScore: assessments.length === 0
-                ? 0
-                : Math.round((scoreTotal / assessments.length) * 10) / 10,
-            bestScore,
-            passRate: assessments.length === 0
-                ? 0
-                : Math.round((passed / assessments.length) * 100),
-        };
-    }, [assessments]);
+    const stats = useMemo(() => calculateStats(assessments), [assessments]);
 
     const domainBarData = useMemo(() => {
         const domainStats = buildDomainStats(assessments);

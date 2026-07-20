@@ -28,6 +28,21 @@ describe('PollForm', () => {
         expect(screen.getByLabelText('First').closest('label')).toHaveClass('min-h-11');
     });
 
+    it('scopes radio group names per poll so multiple forms do not share a group', () => {
+        const {container} = render(
+            <>
+                <PollForm pollId="poll-a" question="First question" options={['A1', 'A2']}/>
+                <PollForm pollId="poll-b" question="Second question" options={['B1', 'B2']}/>
+            </>,
+        );
+
+        const groupA = container.querySelectorAll('input[name="poll-option-poll-a"]');
+        const groupB = container.querySelectorAll('input[name="poll-option-poll-b"]');
+        expect(groupA).toHaveLength(2);
+        expect(groupB).toHaveLength(2);
+        expect(container.querySelectorAll('input[name="poll-option"]')).toHaveLength(0);
+    });
+
     it('announces submission progress and marks the form busy', () => {
         vote.isPending = true;
         render(<PollForm pollId="poll-1" question="Choose one" options={['First']}/>);

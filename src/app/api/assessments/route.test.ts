@@ -5,7 +5,13 @@ const insert = vi.hoisted(() => vi.fn(() => {
     throw new Error('database unavailable');
 }));
 
-vi.mock('@/db', () => ({db: {insert}}));
+vi.mock('@/db', () => ({
+    db: {
+        insert,
+        select: () => ({from: () => ({orderBy: async () => []})}),
+        delete: async () => undefined,
+    },
+}));
 vi.mock('server-only', () => ({}));
 
 import {POST} from './route';

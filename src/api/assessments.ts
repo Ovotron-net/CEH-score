@@ -2,7 +2,9 @@ import type {Assessment, AssessmentInput} from '../types';
 import {request} from './client';
 
 export async function getAll(): Promise<Assessment[]> {
-    if (typeof window === 'undefined') return [];
+    if (typeof window === 'undefined') {
+        throw new Error('assessments.getAll is browser-only; use the assessment repository on the server.');
+    }
     return request<Assessment[]>('/api/assessments');
 }
 

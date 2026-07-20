@@ -1,6 +1,7 @@
 'use client';
 
 import {usePollStats} from '@/hooks/usePolls';
+import {PollOptionBars} from './PollOptionBars';
 
 interface PollResultsProps {
     pollId: string;
@@ -62,35 +63,7 @@ export function PollResults({pollId, refreshInterval = 5000}: PollResultsProps) 
 
                     <p className="text-sm text-muted-foreground">Total votes: {poll.totalVotes}</p>
 
-                    <div className="space-y-3">
-                        {poll.options.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">No votes yet</p>
-                        ) : (
-                            poll.options.map((option) => (
-                                <div key={option.id} className="space-y-1">
-                                    <div className="flex items-center justify-between gap-3">
-                                        <span className="text-sm font-medium text-foreground">{option.optionText}</span>
-                                        <span className="text-xs text-muted-foreground">
-                                            {option.voteCount} vote{option.voteCount !== 1 ? 's' : ''} ({option.percentage}%)
-                                        </span>
-                                    </div>
-
-                                    <div className="h-6 w-full overflow-hidden rounded-full bg-secondary">
-                                        <div
-                                            className="flex h-full items-center justify-center bg-gradient-to-r from-primary/70 to-primary transition-all duration-300 ease-out"
-                                            style={{width: `${option.percentage}%`}}
-                                        >
-                                            {option.percentage > 10 ? (
-                                                <span className="text-xs font-semibold text-primary-foreground">
-                                                    {option.percentage}%
-                                                </span>
-                                            ) : null}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
+                    <PollOptionBars options={poll.options}/>
 
                     {isFetching ? (
                         <p role="status" aria-live="polite" className="text-xs text-muted-foreground">

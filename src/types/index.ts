@@ -33,5 +33,49 @@ export interface UserSettings {
     theme: 'dark' | 'light';
 }
 
+export interface PollResult {
+    id: number;
+    pollId: string;
+    pollQuestion: string;
+    optionText: string;
+    voteCount: number;
+    userId?: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
 
+export interface PollStats {
+    pollId: string;
+    pollQuestion: string;
+    totalVotes: number;
+    options: Array<{
+        id: number;
+        optionText: string;
+        voteCount: number;
+        percentage: number;
+    }>;
+    createdAt: string;
+    updatedAt: string;
+}
+
+/**
+ * Payload for creating an assessment before server-derived fields are applied.
+ */
+export type AssessmentCreateInput = Omit<Assessment, 'percentage' | 'passed' | 'createdAt'> & {
+    createdAt?: string;
+};
+
+export type PollCreateInput = {
+    pollId: string;
+    pollQuestion: string;
+    optionText: string;
+    userId?: string | null;
+};
+
+export type PollVoteInput = {
+    pollId: string;
+    optionText: string;
+    pollQuestion?: string;
+    userId?: string | null;
+};
 

@@ -42,13 +42,6 @@ export function getDaysToExam(examDate: string): number {
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
-export function getScoreColor(percentage: number): string {
-    if (percentage >= 85) return 'hsl(var(--primary))';
-    if (percentage >= 70) return 'hsl(var(--accent))';
-    if (percentage >= 60) return '#ffd700';
-    return '#ff4444';
-}
-
 export function getReadinessLevel(avgScore: number): string {
     if (avgScore >= 85) return 'Exam Ready';
     if (avgScore >= 75) return 'Almost Ready';
@@ -93,6 +86,7 @@ export function calculateStats(assessments: Assessment[]) {
     return {
         averageScore,
         bestScore,
+        passRate: getPassRate(assessments),
         totalAssessments,
         studyStreak,
     };

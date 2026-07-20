@@ -1,21 +1,13 @@
-import {queryOptions, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import * as pollsApi from '@/api/polls';
-import type {PollResult} from '@/api/polls';
+import type {PollResult} from '@/types';
+import {
+    pollResultsQueryOptions,
+    pollStatsQueryOptions,
+} from '@/data/queryContracts';
 import {allPollResultsKey, pollStatsKey} from '@/data/queryKeys';
 
-export function pollStatsQueryOptions(pollId: string) {
-    return queryOptions({
-        queryKey: pollStatsKey(pollId),
-        queryFn: () => pollsApi.getPollStats(pollId),
-    });
-}
-
-export function pollResultsQueryOptions(pollId?: string) {
-    return queryOptions({
-        queryKey: pollId ? [...allPollResultsKey, pollId] as const : allPollResultsKey,
-        queryFn: () => pollsApi.getAllResults(pollId),
-    });
-}
+export {pollResultsQueryOptions, pollStatsQueryOptions};
 
 export function usePollStats(pollId: string, refreshInterval = 5000) {
     const query = useQuery({

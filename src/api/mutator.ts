@@ -1,30 +1,35 @@
 /**
- * Custom fetch mutator for Orval-generated clients.
- *
- * Bridges Orval's expected interface to the base fetch logic so all generated
- * hooks use the same same-origin requests and ApiError handling as hand-written
- * API modules.
+ * Orval custom fetch — thin wrapper over the canonical `request` helper.
+ * Prefer hand-written `src/api/*` modules at runtime; regenerate only when
+ * actively adopting OpenAPI clients.
  */
 
-import {ApiError} from './client';
+import {request, type HttpMethod} from './client';
 
 export const customFetch = async <T>(
     url: string,
     options: RequestInit = {},
 ): Promise<T> => {
-    const response = await fetch(url, options);
-
-    if (!response.ok) {
-        const text = await response.text().catch(() => response.statusText);
-        throw new ApiError(response.status, text);
+    let body: unknown;
+    if (typeof options.body === 'string' && options.body.length > 0) {
+        try {
+            body = JSON.parse(options.body);
+        } catch {
+            body = options.body;
+        }
     }
 
-    if (response.status === 204) {
-        return undefined as T;
+    const headers: Record<string, string> = {};
+    if (options.headers) {
+        const raw = new Headers(options.headers);
+        raw.forEach((value, key) => {
+            headers[key] = value;
+        });
     }
 
-    return response.json() as Promise<T>;
+    return request<T>(url, {
+        method: (options.method as HttpMethod | undefined) ?? 'GET',
+        body,
+        headers,
+    });
 };
-
-
-

@@ -1,18 +1,13 @@
-import type {Metadata} from 'next';
-import HydratedPage from '@/components/HydratedPage';
-import {getAssessments} from '@/data/assessmentRepository';
-import {assessmentQueryKey} from '@/data/queryKeys';
+import {createHydratedPage} from '@/app/hydratedRoute';
+import {serverQueries} from '@/data/serverQueries';
 import Assessments from '@/views/Assessments';
 
-export const dynamic = 'force-dynamic';
-export const metadata: Metadata = {
+const page = createHydratedPage({
     title: 'Assessments | CEH Tracker',
-};
+    queries: [serverQueries.assessments()],
+    View: Assessments,
+});
 
-export default function AssessmentsPage() {
-    return (
-        <HydratedPage queries={[{queryKey: assessmentQueryKey, queryFn: getAssessments}]}>
-            <Assessments/>
-        </HydratedPage>
-    );
-}
+export const dynamic = page.dynamic;
+export const metadata = page.metadata;
+export default page.default;

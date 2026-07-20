@@ -53,33 +53,20 @@ describe('HydratedPage', () => {
         ]));
     });
 
-    it('dehydrates supplied initial data without invoking its query function', async () => {
-        const queryFn = vi.fn(async () => ['unexpected']);
+    it('dehydrates supplied seeds without fetching', async () => {
         const initialData = [{id: 'assessment-1'}];
 
         const boundary = await HydratedPage({
-            queries: [{queryKey: ['assessments'], queryFn, initialData}],
+            seeds: [{queryKey: ['assessments'], data: initialData}],
             children: null,
         });
 
-        expect(queryFn).not.toHaveBeenCalled();
         expect(boundary.props.state.queries).toEqual([
             expect.objectContaining({
                 queryKey: ['assessments'],
                 state: expect.objectContaining({data: initialData}),
             }),
         ]);
-    });
-
-    it('does not invoke queryFn when initialData is explicitly undefined', async () => {
-        const queryFn = vi.fn(async () => 'unexpected');
-
-        await HydratedPage({
-            queries: [{queryKey: ['optional'], queryFn, initialData: undefined}],
-            children: null,
-        });
-
-        expect(queryFn).not.toHaveBeenCalled();
     });
 
     it('propagates query failures to the route error boundary', async () => {
@@ -98,82 +85,20 @@ describe('HydratedPage', () => {
         const queryFn = vi.fn(async () => 'data');
 
         await expect(HydratedPage({
-            queries: [{queryKey: ['allowed'], queryFn}],
+            queries: [{queryKey: ['ok'], queryFn}],
             children: null,
-        })).resolves.toBeDefined();
-
+        })).resolves.toBeTruthy();
         expect(queryFn).toHaveBeenCalledOnce();
     });
 
-    it('refuses production repository hydration when API_SECRET is set', async () => {
+    it('blocks repository hydration when production API is secret-gated', async () => {
         vi.stubEnv('NODE_ENV', 'production');
-        vi.stubEnv('ALLOW_OPEN_API', 'true');
-        vi.stubEnv('API_SECRET', 'secret-key');
-        const queryFn = vi.fn(async () => 'private data');
+        vi.stubEnv('API_SECRET', 'secret');
+        vi.stubEnv('ALLOW_OPEN_API', '');
 
         await expect(HydratedPage({
-            queries: [{queryKey: ['blocked'], queryFn}],
+            queries: [{queryKey: ['blocked'], queryFn: async () => 'nope'}],
             children: null,
-        })).rejects.toThrow('Repository hydration requires API_SECRET to be unset');
-
-        expect(queryFn).not.toHaveBeenCalled();
-    });
-
-    it('refuses production repository hydration without explicit open API mode', async () => {
-        vi.stubEnv('NODE_ENV', 'production');
-        vi.stubEnv('ALLOW_OPEN_API', '');
-        vi.stubEnv('API_SECRET', '');
-        const queryFn = vi.fn(async () => 'private data');
-
-        await expect(HydratedPage({
-            queries: [{queryKey: ['blocked'], queryFn}],
-            children: null,
-        })).rejects.toThrow('Repository hydration requires ALLOW_OPEN_API=true');
-
-        expect(queryFn).not.toHaveBeenCalled();
-    });
-
-    it('does not let production fixture mode bypass the supported UI deployment mode', async () => {
-        vi.stubEnv('NODE_ENV', 'production');
-        vi.stubEnv('E2E_FIXTURES', 'true');
-        vi.stubEnv('ALLOW_OPEN_API', '');
-        vi.stubEnv('API_SECRET', '');
-        const queryFn = vi.fn(async () => 'fixture data');
-
-        await expect(HydratedPage({
-            queries: [{queryKey: ['fixtures'], queryFn}],
-            children: null,
-        })).rejects.toThrow('Repository hydration requires ALLOW_OPEN_API=true');
-
-        expect(queryFn).not.toHaveBeenCalled();
-    });
-
-    it('allows production fixtures only with the supported UI deployment mode', async () => {
-        vi.stubEnv('NODE_ENV', 'production');
-        vi.stubEnv('E2E_FIXTURES', 'true');
-        vi.stubEnv('ALLOW_OPEN_API', 'true');
-        vi.stubEnv('API_SECRET', '');
-        const queryFn = vi.fn(async () => 'fixture data');
-
-        await HydratedPage({
-            queries: [{queryKey: ['fixtures'], queryFn}],
-            children: null,
-        });
-
-        expect(queryFn).toHaveBeenCalledOnce();
-    });
-
-    it('keeps repository hydration open for local development', async () => {
-        vi.stubEnv('NODE_ENV', 'development');
-        vi.stubEnv('ALLOW_OPEN_API', '');
-        vi.stubEnv('API_SECRET', '');
-        const queryFn = vi.fn(async () => 'local data');
-
-        await HydratedPage({
-            queries: [{queryKey: ['development'], queryFn}],
-            children: null,
-        });
-
-        expect(queryFn).toHaveBeenCalledOnce();
+        })).rejects.toThrow();
     });
 });

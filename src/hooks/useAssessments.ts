@@ -1,5 +1,4 @@
 import {
-    queryOptions,
     useMutation,
     useQuery,
     useQueryClient,
@@ -7,14 +6,10 @@ import {
 } from '@tanstack/react-query';
 import type {Assessment} from '@/types';
 import * as assessmentsApi from '@/api/assessments';
+import {assessmentQueryOptions} from '@/data/queryContracts';
 import {assessmentQueryKey} from '@/data/queryKeys';
 
-export function assessmentQueryOptions() {
-    return queryOptions({
-        queryKey: assessmentQueryKey,
-        queryFn: assessmentsApi.getAll,
-    });
-}
+export {assessmentQueryOptions};
 
 type AssessmentQueryOptions = Pick<
     UseQueryOptions<Assessment[], Error, Assessment[], typeof assessmentQueryKey>,

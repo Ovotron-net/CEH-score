@@ -5,6 +5,8 @@ import {pollDefinitions} from '@/data/polls';
 import {allPollResultsKey, assessmentQueryKey, pollStatsKey, settingsQueryKey} from '@/data/queryKeys';
 import DashboardPage from './page';
 
+vi.mock('server-only', () => ({}));
+
 const {assessments, repositories} = vi.hoisted(() => {
     const assessments = [{
         id: 'assessment-1',
@@ -47,6 +49,7 @@ vi.mock('@/views/Topics', () => ({default: 'topics-view'}));
 vi.mock('@/views/Leaderboard', () => ({default: 'leaderboard-view'}));
 vi.mock('@/views/Settings', () => ({default: 'settings-view'}));
 vi.mock('@/views/PollAnalytics', () => ({default: 'poll-analytics-view'}));
+vi.mock('@/views/Polls', () => ({default: 'polls-view'}));
 vi.mock('@/views/AddAssessment', () => ({default: 'add-assessment-view'}));
 
 type DashboardContentElement = ReactElement<{
@@ -60,10 +63,13 @@ type DashboardContentElement = ReactElement<{
             totalDomains: number;
         }>,
         ReactElement<{
-            queries: Array<{
+            queries?: Array<{
                 queryKey: readonly unknown[];
                 queryFn: typeof repositories.getAssessments;
-                initialData: readonly unknown[];
+            }>;
+            seeds?: Array<{
+                queryKey: readonly unknown[];
+                data: readonly unknown[];
             }>;
             children: ReactElement;
         }>,
@@ -147,12 +153,11 @@ describe('route hydration', () => {
             totalDomains: 20,
         });
         expect(hydratedPage.type).toBe('hydrated-page');
-        expect(hydratedPage.props.queries).toEqual([{
+        expect(hydratedPage.props.seeds).toEqual([{
             queryKey: assessmentQueryKey,
-            queryFn: repositories.getAssessments,
-            initialData: assessments,
+            data: assessments,
         }]);
-        expect(hydratedPage.props.queries[0].initialData).toBe(assessments);
+        expect(hydratedPage.props.seeds?.[0]?.data).toBe(assessments);
         expect(hydratedPage.props.children.type).toBe('dashboard-view');
     });
 
@@ -169,7 +174,7 @@ describe('route hydration', () => {
             coveredDomains: 0,
             totalDomains: 20,
         });
-        expect(hydratedPage.props.queries[0].initialData).toEqual([]);
+        expect(hydratedPage.props.seeds?.[0]?.data).toEqual([]);
     });
 
     it('hydrates leaderboard and settings with assessments and settings', async () => {

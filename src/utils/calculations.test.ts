@@ -8,7 +8,6 @@ import {
     getBestScore,
     getPassRate,
     getReadinessLevel,
-    getScoreColor,
     isPassed,
 } from './calculations';
 
@@ -84,6 +83,7 @@ describe('calculateStats', () => {
         expect(stats).toEqual({
             averageScore: 75,
             bestScore: 90,
+            passRate: 100,
             totalAssessments: 4,
             studyStreak: 2,
         });
@@ -141,15 +141,6 @@ describe('formatScore', () => {
 
     it('formats fractional scores to one decimal', () => {
         expect(formatScore(76.7)).toBe('76.7');
-    });
-});
-
-describe('getScoreColor', () => {
-    it('maps score bands to theme colors', () => {
-        expect(getScoreColor(90)).toBe('hsl(var(--primary))');
-        expect(getScoreColor(75)).toBe('hsl(var(--accent))');
-        expect(getScoreColor(65)).toBe('#ffd700');
-        expect(getScoreColor(50)).toBe('#ff4444');
     });
 });
 

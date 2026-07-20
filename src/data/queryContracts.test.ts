@@ -1,11 +1,16 @@
 // @vitest-environment node
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 import {getAll as getAssessments} from '@/api/assessments';
 import {get as getSettings} from '@/api/settings';
 import {getPollStats} from '@/api/polls';
-import {assessmentQueryOptions} from '@/hooks/useAssessments';
-import {settingsQueryOptions} from '@/hooks/useSettings';
-import {pollResultsQueryOptions, pollStatsQueryOptions} from '@/hooks/usePolls';
+import {
+    assessmentQueryOptions,
+    pollResultsQueryOptions,
+    pollStatsQueryOptions,
+    settingsQueryOptions,
+} from '@/data/queryContracts';
+
+vi.mock('server-only', () => ({}));
 
 describe('query contracts', () => {
     it('exposes stable assessment options backed by the browser API', () => {
@@ -23,7 +28,7 @@ describe('query contracts', () => {
         });
     });
 
-    it('exposes stable poll options backed by browser APIs', async () => {
+    it('exposes stable poll options backed by browser APIs', () => {
         const statsOptions = pollStatsQueryOptions('study-method');
 
         expect(statsOptions.queryKey).toEqual(['poll-stats', 'study-method']);
