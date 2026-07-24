@@ -8,6 +8,6 @@ const page = createHydratedPage({
     View: Assessments,
 });
 
-export const dynamic = page.dynamic;
+export const dynamic = 'force-dynamic';
 export const metadata = page.metadata;
 export default page.default;

@@ -5,13 +5,16 @@ import type {ServerQueryDescriptor} from '@/data/serverQueries';
 
 /**
  * Factory for App Router pages that only need metadata + HydratedPage + a view.
+ *
+ * Callers must still export `export const dynamic = 'force-dynamic'` as a
+ * string literal in the page module — Next.js static analysis rejects
+ * `export const dynamic = page.dynamic` (MemberExpression).
  */
 export function createHydratedPage(options: {
     title: string;
     queries: ServerQueryDescriptor[] | (() => ServerQueryDescriptor[]);
     View: ComponentType;
 }): {
-    dynamic: 'force-dynamic';
     metadata: Metadata;
     default: () => ReactNode;
 } {
@@ -21,7 +24,6 @@ export function createHydratedPage(options: {
     };
 
     return {
-        dynamic: 'force-dynamic',
         metadata: {title: options.title},
         default: function HydratedRoutePage() {
             return (
