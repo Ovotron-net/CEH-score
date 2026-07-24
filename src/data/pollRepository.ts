@@ -61,24 +61,40 @@ const databaseAdapter: PollAdapter = {
         return created;
     },
     async voteUpsert(input) {
-        const [result] = await db
-            .insert(pollResults)
-            .values({
-                pollId: input.pollId,
-                pollQuestion: input.pollQuestion,
-                optionText: input.optionText,
-                userId: input.userId,
-                voteCount: 1,
-            })
-            .onConflictDoUpdate({
-                target: [pollResults.pollId, pollResults.optionText],
-                set: {
-                    voteCount: sql`${pollResults.voteCount} + 1`,
-                    updatedAt: new Date(),
-                },
-            })
-            .returning(projection);
-        return result;
+        // Transaction + row locks close the check-then-act race on option caps.
+        return db.transaction(async (tx) => {
+            const existingRows = await tx
+                .select(projection)
+                .from(pollResults)
+                .where(eq(pollResults.pollId, input.pollId))
+                .for('update');
+
+            const isExistingOption = existingRows.some(
+                (row) => row.optionText === input.optionText,
+            );
+            if (!isExistingOption && existingRows.length >= MAX_OPTIONS_PER_POLL) {
+                throw new ValidationError('This poll has reached the maximum number of options.');
+            }
+
+            const [result] = await tx
+                .insert(pollResults)
+                .values({
+                    pollId: input.pollId,
+                    pollQuestion: input.pollQuestion,
+                    optionText: input.optionText,
+                    userId: input.userId,
+                    voteCount: 1,
+                })
+                .onConflictDoUpdate({
+                    target: [pollResults.pollId, pollResults.optionText],
+                    set: {
+                        voteCount: sql`${pollResults.voteCount} + 1`,
+                        updatedAt: new Date(),
+                    },
+                })
+                .returning(projection);
+            return result;
+        });
     },
     async deleteByPollId(pollId) {
         await db.delete(pollResults).where(eq(pollResults.pollId, pollId));
@@ -99,6 +115,51 @@ function projectRow(row: PollRow): PollResult {
         createdAt: toIsoString(row.createdAt),
         updatedAt: toIsoString(row.updatedAt),
     };
+}
+
+/**
+ * Fixed polls only accept options listed in their definition. Free-form options
+ * remain allowed for unknown custom poll IDs.
+ */
+function assertOptionAllowedForPoll(pollId: string, optionText: string): void {
+    const definition = getPollDefinition(pollId);
+    if (!definition) return;
+    if (!definition.options.includes(optionText)) {
+        throw new ValidationError(
+            'optionText must match a defined option for this poll.',
+        );
+    }
+}
+
+/**
+ * When a definition exists, union its options with DB rows so zero-vote choices
+ * still appear after partial voting. Extra free-form rows (legacy/custom) are kept.
+ */
+function buildPollStatOptions(
+    rows: PollRow[],
+    definition: PollDefinition | undefined,
+    totalVotes: number,
+): PollStats['options'] {
+    const byText = new Map(rows.map((row) => [row.optionText, row]));
+    const optionTexts = definition
+        ? [
+            ...definition.options,
+            ...rows
+                .map((row) => row.optionText)
+                .filter((text) => !definition.options.includes(text)),
+        ]
+        : [...rows].sort((a, b) => a.optionText.localeCompare(b.optionText)).map((r) => r.optionText);
+
+    return optionTexts.map((optionText, index) => {
+        const row = byText.get(optionText);
+        const voteCount = row?.voteCount ?? 0;
+        return {
+            id: row?.id ?? -(index + 1),
+            optionText,
+            voteCount,
+            percentage: totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0,
+        };
+    });
 }
 
 export function createPollRepository(adapter: PollAdapter) {
@@ -133,7 +194,6 @@ export function createPollRepository(adapter: PollAdapter) {
             }
 
             const totalVotes = rows.reduce((sum, row) => sum + row.voteCount, 0);
-            const sortedRows = [...rows].sort((a, b) => a.optionText.localeCompare(b.optionText));
             const createdAt = rows.reduce((min, row) => {
                 const value = toIsoString(row.createdAt);
                 return value < min ? value : min;
@@ -143,22 +203,20 @@ export function createPollRepository(adapter: PollAdapter) {
                 return value > max ? value : max;
             }, toIsoString(rows[0].updatedAt));
 
+            const options = buildPollStatOptions(rows, definition, totalVotes);
+
             return {
                 pollId,
-                pollQuestion: rows[0].pollQuestion,
+                pollQuestion: definition?.question ?? rows[0].pollQuestion,
                 totalVotes,
-                options: sortedRows.map((row) => ({
-                    id: row.id,
-                    optionText: row.optionText,
-                    voteCount: row.voteCount,
-                    percentage: totalVotes > 0 ? Math.round((row.voteCount / totalVotes) * 100) : 0,
-                })),
+                options,
                 createdAt,
                 updatedAt,
             };
         },
 
         async createPollResult(input: PollCreateInput): Promise<PollResult> {
+            assertOptionAllowedForPoll(input.pollId, input.optionText);
             try {
                 return projectRow(await adapter.insert({
                     pollId: input.pollId,
@@ -178,8 +236,14 @@ export function createPollRepository(adapter: PollAdapter) {
         },
 
         async vote(input: PollVoteInput): Promise<PollResult> {
+            assertOptionAllowedForPoll(input.pollId, input.optionText);
+
             const existingRows = await adapter.selectResults(input.pollId);
-            const resolvedPollQuestion = input.pollQuestion ?? existingRows[0]?.pollQuestion;
+            const definition = getPollDefinition(input.pollId);
+            const resolvedPollQuestion =
+                input.pollQuestion
+                ?? definition?.question
+                ?? existingRows[0]?.pollQuestion;
 
             if (!resolvedPollQuestion) {
                 throw new ValidationError(
@@ -187,6 +251,7 @@ export function createPollRepository(adapter: PollAdapter) {
                 );
             }
 
+            // Cap is also enforced inside voteUpsert (transactional for DB) to close TOCTOU.
             const isExistingOption = existingRows.some((row) => row.optionText === input.optionText);
             if (!isExistingOption && existingRows.length >= MAX_OPTIONS_PER_POLL) {
                 throw new ValidationError('This poll has reached the maximum number of options.');

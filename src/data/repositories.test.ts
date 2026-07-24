@@ -228,4 +228,81 @@ describe('poll repository', () => {
 
         await expect(createPollRepository(adapter).getPollStats('unknown')).resolves.toBeNull();
     });
+
+    it('keeps zero-vote definition options after a partial vote', async () => {
+        const definition = pollDefinitions['study-method'];
+        const adapter: PollAdapter = {
+            selectResults: vi.fn().mockResolvedValue([
+                {
+                    id: 3,
+                    pollId: 'study-method',
+                    pollQuestion: definition.question,
+                    optionText: 'Practice Labs',
+                    voteCount: 2,
+                    userId: null,
+                    createdAt: new Date('2026-07-18T10:00:00.000Z'),
+                    updatedAt: new Date('2026-07-18T11:00:00.000Z'),
+                },
+            ]),
+            ...unusedWriteMethods(),
+        };
+
+        const stats = await createPollRepository(adapter).getPollStats('study-method', definition);
+
+        expect(stats?.totalVotes).toBe(2);
+        expect(stats?.options).toEqual([
+            {id: -1, optionText: 'Video Courses', voteCount: 0, percentage: 0},
+            {id: -2, optionText: 'Books', voteCount: 0, percentage: 0},
+            {id: 3, optionText: 'Practice Labs', voteCount: 2, percentage: 100},
+            {id: -4, optionText: 'Study Groups', voteCount: 0, percentage: 0},
+            {id: -5, optionText: 'Combination', voteCount: 0, percentage: 0},
+        ]);
+    });
+
+    it('rejects free-form options on fixed definition polls', async () => {
+        const adapter: PollAdapter = {
+            selectResults: vi.fn().mockResolvedValue([]),
+            insert: vi.fn(),
+            voteUpsert: vi.fn(),
+            deleteByPollId: vi.fn(),
+        };
+
+        await expect(
+            createPollRepository(adapter).vote({
+                pollId: 'study-method',
+                optionText: 'Spam option',
+                pollQuestion: pollDefinitions['study-method'].question,
+            }),
+        ).rejects.toMatchObject({
+            name: 'ValidationError',
+            message: expect.stringContaining('defined option'),
+        });
+        expect(adapter.voteUpsert).not.toHaveBeenCalled();
+    });
+
+    it('allows free-form options for custom poll IDs under the option cap', async () => {
+        const adapter: PollAdapter = {
+            selectResults: vi.fn().mockResolvedValue([]),
+            insert: vi.fn(),
+            voteUpsert: vi.fn(async (input) => ({
+                id: 1,
+                pollId: input.pollId,
+                pollQuestion: input.pollQuestion,
+                optionText: input.optionText,
+                voteCount: 1,
+                userId: null,
+                createdAt: new Date('2026-07-18T10:00:00.000Z'),
+                updatedAt: new Date('2026-07-18T10:00:00.000Z'),
+            })),
+            deleteByPollId: vi.fn(),
+        };
+
+        await expect(
+            createPollRepository(adapter).vote({
+                pollId: 'custom-poll',
+                optionText: 'Custom A',
+                pollQuestion: 'Anything?',
+            }),
+        ).resolves.toMatchObject({optionText: 'Custom A', voteCount: 1});
+    });
 });

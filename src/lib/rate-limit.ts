@@ -64,21 +64,42 @@ export function isAllowed(key: string, maxRequests: number, windowMs: number): b
 }
 
 /**
+ * Whether to trust hop-by-hop client IP headers (`x-real-ip`, `x-forwarded-for`).
+ *
+ * These headers are spoofable unless a trusted edge overwrites them. Trust is
+ * enabled when:
+ * - `TRUST_PROXY_HEADERS=true` is set explicitly, or
+ * - running on Vercel (`VERCEL=1`) / Railway (`RAILWAY_ENVIRONMENT` set), which
+ *   overwrite client IP headers at the platform edge.
+ *
+ * Set `TRUST_PROXY_HEADERS=false` to force a shared `unknown` bucket (e.g.
+ * direct Node exposure without a trusted reverse proxy).
+ */
+export function shouldTrustProxyHeaders(
+    env: Record<string, string | undefined> = process.env,
+): boolean {
+    if (env.TRUST_PROXY_HEADERS === 'false') return false;
+    if (env.TRUST_PROXY_HEADERS === 'true') return true;
+    return env.VERCEL === '1' || Boolean(env.RAILWAY_ENVIRONMENT);
+}
+
+/**
  * Extract the client IP from a trusted source.
  *
- * Prefers `x-real-ip` when present. Platforms such as Vercel/Railway (and
- * reverse proxies that overwrite this header) set it to the connecting client;
- * it is only trustworthy when the edge strips or overwrites client-supplied
- * values.
+ * When proxy headers are not trusted, returns `unknown` so all clients share
+ * one rate-limit bucket rather than allowing spoofed per-IP buckets.
  *
- * Falls back to the X-Forwarded-For chain using a configured proxy depth.
- * `TRUSTED_PROXY_DEPTH` (default: 1) is how many rightmost XFF hops are treated
- * as trusted proxies. The client address is the leftmost entry of that trusted
- * suffix (`ips[length - depth]`). With the default depth of 1, that is the
- * rightmost hop (the immediate client seen by the last trusted proxy).
- * Set `TRUSTED_PROXY_DEPTH=0` to skip XFF entirely.
+ * When trusted, prefers `x-real-ip`, then falls back to the X-Forwarded-For
+ * chain using `TRUSTED_PROXY_DEPTH` (default: 1) — how many rightmost XFF hops
+ * are treated as trusted proxies. The client address is the leftmost entry of
+ * that trusted suffix (`ips[length - depth]`). Set `TRUSTED_PROXY_DEPTH=0` to
+ * skip XFF entirely after `x-real-ip`.
  */
 export function getClientIp(request: Request): string {
+    if (!shouldTrustProxyHeaders()) {
+        return 'unknown';
+    }
+
     const realIp = request.headers.get('x-real-ip')?.trim();
     if (realIp) return realIp;
 

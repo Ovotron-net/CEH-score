@@ -1,5 +1,5 @@
 import type {Assessment, UserSettings} from '@/types';
-import {ConflictError} from '@/lib/errors';
+import {ConflictError, ValidationError} from '@/lib/errors';
 import {pollDefinitions} from './polls';
 
 type AssessmentFixtureRow = Omit<Assessment, 'createdAt'> & {createdAt: string};
@@ -187,6 +187,11 @@ export const e2ePollAdapter = {
                 voteCount: existing.voteCount + 1,
                 updatedAt: new Date().toISOString(),
             };
+        }
+        const optionCount = pollRows.filter((r) => r.pollId === input.pollId).length;
+        // Mirror repository MAX_OPTIONS_PER_POLL (20) for fixture parity.
+        if (optionCount >= 20) {
+            throw new ValidationError('This poll has reached the maximum number of options.');
         }
         return {
             id: 9000 + pollRows.length,

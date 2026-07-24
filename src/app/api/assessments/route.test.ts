@@ -48,4 +48,24 @@ describe('assessment route E2E fixtures', () => {
         });
         expect(insert).not.toHaveBeenCalled();
     });
+
+    it('rejects timeTaken above the 7-day maximum', async () => {
+        vi.stubEnv('E2E_FIXTURES', 'true');
+        const response = await POST(new Request('http://localhost/api/assessments', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                id: 'too-long',
+                date: '2026-07-18',
+                type: 'practice',
+                score: 10,
+                maxScore: 100,
+                timeTaken: 10_081,
+                domain: 'Full Exam',
+            }),
+        }));
+
+        expect(response.status).toBe(400);
+        expect(insert).not.toHaveBeenCalled();
+    });
 });

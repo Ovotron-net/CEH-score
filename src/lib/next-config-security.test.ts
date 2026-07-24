@@ -64,6 +64,27 @@ describe('next.config security headers', () => {
         expect(headersByKey['Content-Security-Policy']).toContain("object-src 'none'");
     });
 
+    it('allows only the intentional Vercel Speed Insights CSP hosts', async () => {
+        const rules = await nextConfig.headers!();
+        const csp = rules[0].headers.find(({key}) => key === 'Content-Security-Policy')?.value;
+        expect(csp).toBeTruthy();
+
+        // On Vercel production the package uses same-origin `/_vercel/speed-insights/*`
+        // (`'self'`). Debug scripts and DSN / off-Vercel modes need the public hosts below.
+        const scriptSrc = csp!.split('; ').find((d) => d.startsWith('script-src '));
+        const connectSrc = csp!.split('; ').find((d) => d.startsWith('connect-src '));
+
+        expect(scriptSrc).toContain("'self'");
+        expect(scriptSrc).toContain('https://va.vercel-scripts.com');
+        expect(connectSrc).toBe(
+            "connect-src 'self' https://va.vercel-scripts.com https://vitals.vercel-insights.com",
+        );
+
+        // Guard against accidental broad opens (e.g. https: or *).
+        expect(connectSrc).not.toMatch(/\s\*\s|\shttps:\s|\shttps:$/);
+        expect(scriptSrc).not.toMatch(/\s\*\s|\shttps:\s|\shttps:$/);
+    });
+
     it('keeps outputFileTracingRoot so server-only packages resolve without a second config file', () => {
         expect(nextConfig.outputFileTracingRoot).toBe(process.cwd());
     });

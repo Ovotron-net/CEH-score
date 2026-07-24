@@ -19,6 +19,7 @@ export const assessments = pgTable('assessments', {
     check('assessments_score_lte_max_score', sql`${table.score} <= ${table.maxScore}`),
     check('assessments_percentage_between_0_and_100', sql`${table.percentage} >= 0 AND ${table.percentage} <= 100`),
     check('assessments_time_taken_non_negative', sql`${table.timeTaken} >= 0`),
+    check('assessments_time_taken_max', sql`${table.timeTaken} <= 10080`),
 ]);
 
 export const settings = pgTable('settings', {

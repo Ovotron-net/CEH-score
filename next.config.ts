@@ -1,8 +1,18 @@
 import type {NextConfig} from 'next';
 
+// Vercel Speed Insights: on Vercel the script/vitals are same-origin
+// (`/_vercel/speed-insights/*`). Off-Vercel debug and DSN modes load/send via
+// va.vercel-scripts.com and vitals.vercel-insights.com — allow those hosts only.
+const vercelSpeedInsightsScript = 'https://va.vercel-scripts.com';
+const vercelSpeedInsightsConnect = [
+    'https://va.vercel-scripts.com',
+    'https://vitals.vercel-insights.com',
+].join(' ');
+
 const scriptSrc = [
     '\'self\'',
     '\'unsafe-inline\'',
+    vercelSpeedInsightsScript,
     ...(process.env.NODE_ENV !== 'production' ? ['\'unsafe-eval\''] : []),
 ];
 
@@ -13,7 +23,7 @@ const contentSecurityPolicy = [
     'frame-ancestors \'none\'',
     'img-src \'self\' data:',
     'font-src \'self\'',
-    'connect-src \'self\'',
+    `connect-src 'self' ${vercelSpeedInsightsConnect}`,
     'style-src \'self\' \'unsafe-inline\'',
     `script-src ${scriptSrc.join(' ')}`,
 ].join('; ');

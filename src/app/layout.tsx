@@ -1,5 +1,6 @@
 import type {Metadata} from 'next';
 import {cookies} from 'next/headers';
+import {SpeedInsights} from '@vercel/speed-insights/next';
 import Providers from '@/components/providers';
 import ClientShell from '@/components/ClientShell';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -22,6 +23,7 @@ export default async function RootLayout({children}: { children: React.ReactNode
                 <ClientShell>{children}</ClientShell>
             </ErrorBoundary>
         </Providers>
+        <SpeedInsights/>
         </body>
         </html>
     );

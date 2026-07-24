@@ -262,6 +262,9 @@ components:
           type: integer
         timeTaken:
           type: integer
+          minimum: 0
+          maximum: 10080
+          description: Duration in minutes (max 7 days).
         domain:
           type: string
         notes:
@@ -287,6 +290,9 @@ components:
           type: number
         timeTaken:
           type: integer
+          minimum: 0
+          maximum: 10080
+          description: Duration in minutes (max 7 days).
         domain:
           type: string
         notes:

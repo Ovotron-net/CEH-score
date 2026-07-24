@@ -14,7 +14,8 @@ const AssessmentSchema = z.object({
     type: z.enum(['practice', 'official', 'mock']),
     score: z.number().int().min(0).max(10000),
     maxScore: z.number().int().min(1).max(10000),
-    timeTaken: z.number().int().min(0),
+    // Minutes; cap at 7 days so clients cannot store unbounded integers.
+    timeTaken: z.number().int().min(0).max(10_080),
     domain: z.string().min(1).max(200),
     notes: z.string().max(2000).default(''),
     createdAt: z.string().min(1).max(50).optional(),

@@ -31,6 +31,7 @@ The secret must never be placed in a `NEXT_PUBLIC_*` variable or serialized into
 - [ ] Rotate `API_SECRET` and database credentials periodically, and immediately if exposure is suspected.
 - [ ] Enforce HTTPS/TLS at the platform edge.
 - [ ] Ensure `Strict-Transport-Security` is served. The app sets security headers in `next.config.ts`.
+- [ ] Rate limiting uses `x-real-ip` / `X-Forwarded-For` only when proxy headers are trusted (`TRUST_PROXY_HEADERS=true`, or auto-detected on Vercel/Railway). Do not expose the Node process directly to the internet without a trusted edge that overwrites those headers; otherwise set `TRUST_PROXY_HEADERS=false`.
 - [ ] Enable backups and point-in-time recovery for the PostgreSQL database.
 - [ ] Set up monitoring and alerting for authentication failures, elevated 4xx/5xx rates, and unusual assessment or poll write volume.
 - [ ] Forward logs to your platform's log drain. The app emits structured warnings for authentication failures and rate-limit hits.
@@ -43,7 +44,8 @@ The secret must never be placed in a `NEXT_PUBLIC_*` variable or serialized into
 - Server-managed timestamps.
 - Database `CHECK` constraints mirroring validation bounds.
 - In-memory IP-based rate limiting on write endpoints.
-- Security response headers via `next.config.ts`, including HSTS, `nosniff`, frame deny, referrer policy, permissions policy, and CSP.
+- Security response headers via `next.config.ts`, including HSTS, `nosniff`, frame deny, referrer policy, permissions policy, and CSP (connect-src/script-src allow Vercel Speed Insights endpoints intentionally).
+- Proxy-header trust gate for IP-based rate limiting (`TRUST_PROXY_HEADERS` / platform auto-detect).
 - React auto-escaping, with no `dangerouslySetInnerHTML`, enforced by a `react/no-danger` lint rule.
 
 Tell them where to go, how often they can expect to get an update on a
