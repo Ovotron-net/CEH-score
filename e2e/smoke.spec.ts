@@ -78,7 +78,7 @@ async function expectReadinessMetrics(page: Page) {
     await expect(readiness.getByText('75.2%')).toBeVisible();
     await expect(readiness.getByText('Almost Ready')).toBeVisible();
     await expect(readiness.getByText('1 day')).toBeVisible();
-    await expect(readiness.getByText('1 of 20')).toBeVisible();
+    await expect(readiness.getByText('3 of 20')).toBeVisible();
     await expect(readiness.getByRole('link', {name: 'View analytics'})).toBeVisible();
     return readiness;
 }
