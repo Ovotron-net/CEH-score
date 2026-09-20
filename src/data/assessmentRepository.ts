@@ -1,11 +1,13 @@
 import 'server-only';
 
+import {randomUUID} from 'node:crypto';
 import {desc, eq} from 'drizzle-orm';
 import {db} from '@/db';
 import {assessments} from '@/db/schema';
-import {ConflictError, isPgUniqueViolation} from '@/lib/errors';
+import {ConflictError, isPgUniqueViolation, ValidationError} from '@/lib/errors';
 import type {Assessment, AssessmentCreateInput} from '@/types';
 import {calculatePercentage, isPassed} from '@/utils/calculations';
+import {isAssessmentDomain} from './cehDomains';
 import {e2eAssessmentAdapter, selectRepositoryAdapter} from './e2eFixtures';
 
 type AssessmentRow = Omit<Assessment, 'createdAt'> & {createdAt: Date | string};
@@ -39,9 +41,18 @@ function projectAssessment(row: AssessmentRow): Assessment {
 }
 
 export function deriveAssessmentFields(input: AssessmentCreateInput): Assessment {
+    if (!isAssessmentDomain(input.domain)) {
+        throw new ValidationError('Invalid assessment domain.');
+    }
+
+    const id = input.id?.trim() || randomUUID();
+    if (id.length < 1 || id.length > 100) {
+        throw new ValidationError('Invalid assessment id.');
+    }
+
     const percentage = calculatePercentage(input.score, input.maxScore);
     return {
-        id: input.id,
+        id,
         date: input.date,
         type: input.type,
         score: input.score,

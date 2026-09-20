@@ -7,11 +7,10 @@ interface PollFormProps {
     pollId: string;
     question: string;
     options: string[];
-    userId?: string;
     onSuccess?: () => void;
 }
 
-export function PollForm({pollId, question, options, userId, onSuccess}: PollFormProps) {
+export function PollForm({pollId, question, options, onSuccess}: PollFormProps) {
     const [selected, setSelected] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
@@ -41,7 +40,6 @@ export function PollForm({pollId, question, options, userId, onSuccess}: PollFor
                 pollId,
                 optionText: selected,
                 pollQuestion: question,
-                userId,
             });
 
             setSuccess(true);

@@ -9,7 +9,6 @@ function makeResult(overrides: Partial<PollResult> = {}): PollResult {
         pollQuestion: 'Favorite module?',
         optionText: 'Module 1',
         voteCount: 3,
-        userId: null,
         createdAt: '2026-01-01T10:00:00.000Z',
         updatedAt: '2026-01-02T10:00:00.000Z',
         ...overrides,

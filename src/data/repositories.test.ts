@@ -26,7 +26,7 @@ function assessment(id: string, createdAt: string): Assessment {
         maxScore: 100,
         percentage: 80,
         timeTaken: 60,
-        domain: 'Network Security',
+        domain: 'Scanning Networks',
         notes: '',
         passed: true,
         createdAt,
@@ -65,7 +65,7 @@ describe('assessment repository', () => {
         expect(rows.map((row) => row.id)).toEqual(['oldest', 'newest', 'middle']);
     });
 
-    it('derives percentage and passed on create', async () => {
+    it('derives percentage and passed on create and generates an id when omitted', async () => {
         const adapter: AssessmentAdapter = {
             selectAll: vi.fn(),
             insert: vi.fn(async (row) => row),
@@ -74,19 +74,41 @@ describe('assessment repository', () => {
         };
 
         const created = await createAssessmentRepository(adapter).createAssessment({
-            id: 'a1',
             date: '2026-07-18',
             type: 'practice',
             score: 100,
             maxScore: 125,
             timeTaken: 60,
-            domain: 'Network Security',
+            domain: 'Scanning Networks',
             notes: '',
         });
 
         expect(created.percentage).toBe(80);
         expect(created.passed).toBe(true);
+        expect(created.id).toMatch(
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+        );
         expect(adapter.insert).toHaveBeenCalledOnce();
+    });
+
+    it('rejects unknown assessment domains', async () => {
+        const adapter: AssessmentAdapter = {
+            selectAll: vi.fn(),
+            insert: vi.fn(),
+            deleteById: vi.fn(),
+            deleteAll: vi.fn(),
+        };
+
+        await expect(createAssessmentRepository(adapter).createAssessment({
+            date: '2026-07-18',
+            type: 'practice',
+            score: 80,
+            maxScore: 100,
+            timeTaken: 60,
+            domain: 'Network Security',
+            notes: '',
+        })).rejects.toThrow('Invalid assessment domain.');
+        expect(adapter.insert).not.toHaveBeenCalled();
     });
 });
 
@@ -124,7 +146,7 @@ describe('settings repository', () => {
 });
 
 describe('poll repository', () => {
-    it('projects result rows without user identifiers and serializes dates', async () => {
+    it('projects result rows and serializes dates', async () => {
         const adapter: PollAdapter = {
             selectResults: vi.fn().mockResolvedValue([
                 {
@@ -133,7 +155,6 @@ describe('poll repository', () => {
                     pollQuestion: 'Favorite module?',
                     optionText: 'Module 1',
                     voteCount: 3,
-                    userId: 'private-user-id',
                     createdAt: new Date('2026-07-17T10:11:12.000Z'),
                     updatedAt: new Date('2026-07-18T10:11:12.000Z'),
                 },
@@ -153,7 +174,6 @@ describe('poll repository', () => {
             createdAt: '2026-07-17T10:11:12.000Z',
             updatedAt: '2026-07-18T10:11:12.000Z',
         });
-        expect(result).not.toHaveProperty('userId');
     });
 
     it('derives poll timestamps from all option rows as ISO strings', async () => {
@@ -165,7 +185,6 @@ describe('poll repository', () => {
                     pollQuestion: 'Question?',
                     optionText: 'B',
                     voteCount: 1,
-                    userId: null,
                     createdAt: new Date('2026-07-18T10:00:00.000Z'),
                     updatedAt: new Date('2026-07-19T10:00:00.000Z'),
                 },
@@ -175,7 +194,6 @@ describe('poll repository', () => {
                     pollQuestion: 'Question?',
                     optionText: 'A',
                     voteCount: 3,
-                    userId: null,
                     createdAt: new Date('2026-07-17T10:00:00.000Z'),
                     updatedAt: new Date('2026-07-20T10:00:00.000Z'),
                 },
@@ -227,5 +245,54 @@ describe('poll repository', () => {
         };
 
         await expect(createPollRepository(adapter).getPollStats('unknown')).resolves.toBeNull();
+    });
+
+    it('rejects votes for unknown polls or options', async () => {
+        const adapter: PollAdapter = {
+            selectResults: vi.fn().mockResolvedValue([]),
+            ...unusedWriteMethods(),
+        };
+        const repository = createPollRepository(adapter);
+
+        await expect(repository.vote({
+            pollId: 'unknown',
+            optionText: 'Anything',
+        })).rejects.toThrow('Unknown poll.');
+
+        await expect(repository.vote({
+            pollId: 'module-selection',
+            optionText: 'Not a real option',
+        })).rejects.toThrow('Invalid poll option.');
+
+        expect(adapter.voteUpsert).not.toHaveBeenCalled();
+    });
+
+    it('votes with the canonical poll question from the definition', async () => {
+        const voteUpsert = vi.fn(async (input) => ({
+            id: 1,
+            ...input,
+            voteCount: 1,
+            createdAt: new Date('2026-07-18T10:00:00.000Z'),
+            updatedAt: new Date('2026-07-18T10:00:00.000Z'),
+        }));
+        const adapter: PollAdapter = {
+            selectResults: vi.fn().mockResolvedValue([]),
+            insert: vi.fn(),
+            voteUpsert,
+            deleteByPollId: vi.fn(),
+        };
+        const definition = pollDefinitions['module-selection'];
+
+        await createPollRepository(adapter).vote({
+            pollId: 'module-selection',
+            optionText: definition.options[0],
+            pollQuestion: 'spoofed question',
+        });
+
+        expect(voteUpsert).toHaveBeenCalledWith({
+            pollId: 'module-selection',
+            pollQuestion: definition.question,
+            optionText: definition.options[0],
+        });
     });
 });

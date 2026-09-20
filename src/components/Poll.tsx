@@ -10,7 +10,6 @@ interface PollProps {
     pollId: string;
     question: string;
     options: string[];
-    userId?: string;
     layout?: 'vertical' | 'horizontal';
     refreshInterval?: number;
 }
@@ -22,7 +21,6 @@ export function Poll({
     pollId,
     question,
     options,
-    userId,
     layout = 'vertical',
     refreshInterval = 5000,
 }: PollProps) {
@@ -39,7 +37,6 @@ export function Poll({
                     pollId={pollId}
                     question={question}
                     options={options}
-                    userId={userId}
                 />
             </div>
 

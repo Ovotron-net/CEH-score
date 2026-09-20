@@ -55,7 +55,6 @@ export default function AddAssessment() {
         if (!form.score || !form.maxScore || !form.timeTaken || scoreError || maxScoreError) return;
 
         const assessment: AssessmentInput = {
-            id: `assessment-${Date.now()}`,
             date: form.date,
             type: form.type,
             score: parseInt(form.score),

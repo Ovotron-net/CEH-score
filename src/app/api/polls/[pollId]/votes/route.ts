@@ -7,7 +7,6 @@ import {guardWrite} from '@/lib/routeGuard';
 const VoteBodySchema = z.object({
     optionText: z.string().min(1).max(500),
     pollQuestion: z.string().min(1).max(500).optional(),
-    userId: z.string().max(100).optional().nullable(),
 });
 
 export async function POST(
@@ -39,7 +38,6 @@ export async function POST(
             pollId,
             optionText: parsed.data.optionText,
             pollQuestion: parsed.data.pollQuestion,
-            userId: parsed.data.userId,
         });
         return NextResponse.json(result, {status: 200});
     } catch (err) {

@@ -5,17 +5,20 @@ import {
     createAssessment,
     getAssessments,
 } from '@/data/assessmentRepository';
+import {isAssessmentDomain} from '@/data/cehDomains';
 import {toErrorResponse} from '@/lib/errors';
 import {guardRead, guardWrite} from '@/lib/routeGuard';
 
 const AssessmentSchema = z.object({
-    id: z.string().min(1).max(100),
+    id: z.string().min(1).max(100).optional(),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     type: z.enum(['practice', 'official', 'mock']),
     score: z.number().int().min(0).max(10000),
     maxScore: z.number().int().min(1).max(10000),
     timeTaken: z.number().int().min(0),
-    domain: z.string().min(1).max(200),
+    domain: z.string().min(1).max(200).refine(isAssessmentDomain, {
+        message: 'Invalid assessment domain.',
+    }),
     notes: z.string().max(2000).default(''),
     createdAt: z.string().min(1).max(50).optional(),
 }).refine((data) => data.score <= data.maxScore, {
