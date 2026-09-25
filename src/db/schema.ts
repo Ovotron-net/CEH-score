@@ -37,7 +37,6 @@ export const pollResults = pgTable('poll_results', {
     pollQuestion: text('poll_question').notNull(),
     optionText: text('option_text').notNull(),
     voteCount: integer('vote_count').notNull().default(0),
-    userId: text('user_id'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => ({

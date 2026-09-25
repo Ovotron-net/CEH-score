@@ -13,10 +13,10 @@ export interface Assessment {
 }
 
 /**
- * Payload accepted by the create-assessment API. Server-derived fields
- * (`percentage`, `passed`, `createdAt`) are computed by the route handler.
+ * Browser create payload. Server assigns `id` and derives `percentage`,
+ * `passed`, and `createdAt`.
  */
-export type AssessmentInput = Omit<Assessment, 'percentage' | 'passed' | 'createdAt'>;
+export type AssessmentInput = Omit<Assessment, 'id' | 'percentage' | 'passed' | 'createdAt'>;
 
 export interface CEHDomain {
     id: string;
@@ -39,7 +39,6 @@ export interface PollResult {
     pollQuestion: string;
     optionText: string;
     voteCount: number;
-    userId?: string | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -60,8 +59,10 @@ export interface PollStats {
 
 /**
  * Payload for creating an assessment before server-derived fields are applied.
+ * `id` is optional; the repository generates a UUID when omitted.
  */
-export type AssessmentCreateInput = Omit<Assessment, 'percentage' | 'passed' | 'createdAt'> & {
+export type AssessmentCreateInput = Omit<Assessment, 'id' | 'percentage' | 'passed' | 'createdAt'> & {
+    id?: string;
     createdAt?: string;
 };
 
@@ -69,13 +70,10 @@ export type PollCreateInput = {
     pollId: string;
     pollQuestion: string;
     optionText: string;
-    userId?: string | null;
 };
 
 export type PollVoteInput = {
     pollId: string;
     optionText: string;
     pollQuestion?: string;
-    userId?: string | null;
 };
-

@@ -10,14 +10,12 @@ export async function vote(data: {
     pollId: string;
     optionText: string;
     pollQuestion?: string;
-    userId?: string | null;
 }): Promise<PollResult> {
     return request<PollResult>(`/api/polls/${encodeURIComponent(data.pollId)}/votes`, {
         method: 'POST',
         body: {
             optionText: data.optionText,
             pollQuestion: data.pollQuestion,
-            userId: data.userId,
         },
     });
 }
@@ -39,6 +37,9 @@ export async function getAllResults(pollId?: string): Promise<PollResult[]> {
  * Get poll statistics and results for a specific poll
  */
 export async function getPollStats(pollId: string): Promise<PollStats> {
+    if (typeof window === 'undefined') {
+        throw new Error('polls.getPollStats is browser-only; use the poll repository on the server.');
+    }
     return request<PollStats>(`/api/polls/${encodeURIComponent(pollId)}`, {
         method: 'GET',
     });

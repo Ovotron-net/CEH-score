@@ -8,15 +8,12 @@ import type {PollCreateInput, PollResult, PollStats, PollVoteInput} from '@/type
 import {e2ePollAdapter, selectRepositoryAdapter} from './e2eFixtures';
 import {getPollDefinition, type PollDefinition} from './polls';
 
-const MAX_OPTIONS_PER_POLL = 20;
-
 interface PollRow {
     id: number;
     pollId: string;
     pollQuestion: string;
     optionText: string;
     voteCount: number;
-    userId?: string | null;
     createdAt: Date | string;
     updatedAt: Date | string;
 }
@@ -27,14 +24,12 @@ export interface PollAdapter {
         pollId: string;
         pollQuestion: string;
         optionText: string;
-        userId: string | null;
         voteCount: number;
     }): Promise<PollRow>;
     voteUpsert(input: {
         pollId: string;
         pollQuestion: string;
         optionText: string;
-        userId: string | null;
     }): Promise<PollRow>;
     deleteByPollId(pollId: string): Promise<void>;
 }
@@ -67,7 +62,6 @@ const databaseAdapter: PollAdapter = {
                 pollId: input.pollId,
                 pollQuestion: input.pollQuestion,
                 optionText: input.optionText,
-                userId: input.userId,
                 voteCount: 1,
             })
             .onConflictDoUpdate({
@@ -99,6 +93,17 @@ function projectRow(row: PollRow): PollResult {
         createdAt: toIsoString(row.createdAt),
         updatedAt: toIsoString(row.updatedAt),
     };
+}
+
+function assertDefinedPollOption(pollId: string, optionText: string): PollDefinition {
+    const definition = getPollDefinition(pollId);
+    if (!definition) {
+        throw new ValidationError('Unknown poll.');
+    }
+    if (!(definition.options as readonly string[]).includes(optionText)) {
+        throw new ValidationError('Invalid poll option.');
+    }
+    return definition;
 }
 
 export function createPollRepository(adapter: PollAdapter) {
@@ -145,7 +150,7 @@ export function createPollRepository(adapter: PollAdapter) {
 
             return {
                 pollId,
-                pollQuestion: rows[0].pollQuestion,
+                pollQuestion: definition?.question ?? rows[0].pollQuestion,
                 totalVotes,
                 options: sortedRows.map((row) => ({
                     id: row.id,
@@ -159,12 +164,12 @@ export function createPollRepository(adapter: PollAdapter) {
         },
 
         async createPollResult(input: PollCreateInput): Promise<PollResult> {
+            const definition = assertDefinedPollOption(input.pollId, input.optionText);
             try {
                 return projectRow(await adapter.insert({
                     pollId: input.pollId,
-                    pollQuestion: input.pollQuestion,
+                    pollQuestion: definition.question,
                     optionText: input.optionText,
-                    userId: input.userId || null,
                     voteCount: 1,
                 }));
             } catch (err) {
@@ -178,25 +183,12 @@ export function createPollRepository(adapter: PollAdapter) {
         },
 
         async vote(input: PollVoteInput): Promise<PollResult> {
-            const existingRows = await adapter.selectResults(input.pollId);
-            const resolvedPollQuestion = input.pollQuestion ?? existingRows[0]?.pollQuestion;
-
-            if (!resolvedPollQuestion) {
-                throw new ValidationError(
-                    'pollQuestion is required for a new pollId when no existing poll metadata is present.',
-                );
-            }
-
-            const isExistingOption = existingRows.some((row) => row.optionText === input.optionText);
-            if (!isExistingOption && existingRows.length >= MAX_OPTIONS_PER_POLL) {
-                throw new ValidationError('This poll has reached the maximum number of options.');
-            }
+            const definition = assertDefinedPollOption(input.pollId, input.optionText);
 
             return projectRow(await adapter.voteUpsert({
                 pollId: input.pollId,
-                pollQuestion: resolvedPollQuestion,
+                pollQuestion: definition.question,
                 optionText: input.optionText,
-                userId: input.userId || null,
             }));
         },
 

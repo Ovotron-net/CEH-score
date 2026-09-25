@@ -146,5 +146,12 @@ export const CEH_DOMAINS: CEHDomain[] = [
 export const DOMAIN_NAMES = CEH_DOMAINS.map(d => d.name);
 export const FULL_EXAM = 'Full Exam';
 
+/** Domains accepted by the create-assessment API and Add Assessment UI. */
+export const ASSESSMENT_DOMAINS = [FULL_EXAM, ...DOMAIN_NAMES] as const;
 
+export type AssessmentDomain = (typeof ASSESSMENT_DOMAINS)[number];
+
+export function isAssessmentDomain(value: string): value is AssessmentDomain {
+    return (ASSESSMENT_DOMAINS as readonly string[]).includes(value);
+}
 

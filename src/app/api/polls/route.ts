@@ -8,7 +8,6 @@ const PollResultSchema = z.object({
     pollId: z.string().min(1).max(100),
     pollQuestion: z.string().min(1).max(500),
     optionText: z.string().min(1).max(500),
-    userId: z.string().max(100).optional().nullable(),
 });
 
 export async function GET(request: Request) {

@@ -43,7 +43,8 @@ paths:
       summary: Create a new assessment
       description: >
         `percentage` and `passed` are computed server-side and must not be sent
-        by the client.
+        by the client. `id` is optional; when omitted the server assigns a UUID.
+        `domain` must be `Full Exam` or a known CEH v13 domain name.
       requestBody:
         required: true
         content:
@@ -246,10 +247,12 @@ components:
   schemas:
     AssessmentInput:
       type: object
-      required: [ id, date, type, score, maxScore, timeTaken, domain ]
+      required: [ date, type, score, maxScore, timeTaken, domain ]
       properties:
         id:
           type: string
+          description: >
+            Optional client-supplied id. When omitted the server assigns a UUID.
         date:
           type: string
           format: date
@@ -264,6 +267,7 @@ components:
           type: integer
         domain:
           type: string
+          description: Must be `Full Exam` or a known CEH v13 domain name.
         notes:
           type: string
 
@@ -325,9 +329,6 @@ components:
           type: string
         voteCount:
           type: integer
-        userId:
-          type: string
-          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -375,13 +376,12 @@ components:
       properties:
         pollId:
           type: string
+          description: Must match a configured community poll id.
         pollQuestion:
           type: string
         optionText:
           type: string
-        userId:
-          type: string
-          nullable: true
+          description: Must match an option on the configured poll.
 
     VoteRequest:
       type: object
@@ -389,8 +389,7 @@ components:
       properties:
         optionText:
           type: string
+          description: Must match an option on the configured poll.
         pollQuestion:
           type: string
-        userId:
-          type: string
-          nullable: true
+          description: Ignored for known polls; the server uses the configured question.

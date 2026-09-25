@@ -2,7 +2,16 @@
 
 ## Reporting a vulnerability
 
-Please report suspected security vulnerabilities privately to the maintainers. Do not open a public issue for security bugs. Include enough detail to reproduce the issue and assess impact.
+Please report suspected security vulnerabilities privately to the maintainers.
+Do not open a public issue for security bugs. Include enough detail to reproduce
+the issue and assess impact (affected deployment mode, request examples when safe,
+and approximate severity).
+
+You can expect an acknowledgement within a few days of a clear report. If the
+report is accepted, maintainers will work on a fix and coordinate disclosure once
+a patched release or mitigation is available. If the report is declined (for
+example because it only restates the documented open single-user trust model),
+you will receive a short explanation.
 
 ## Trust model
 
@@ -35,17 +44,15 @@ The secret must never be placed in a `NEXT_PUBLIC_*` variable or serialized into
 - [ ] Set up monitoring and alerting for authentication failures, elevated 4xx/5xx rates, and unusual assessment or poll write volume.
 - [ ] Forward logs to your platform's log drain. The app emits structured warnings for authentication failures and rate-limit hits.
 - [ ] Keep dependencies patched with Dependabot and review CodeQL alerts.
+- [ ] Confirm the edge overwrites `X-Real-IP` / `X-Forwarded-For`, and set `TRUSTED_PROXY_DEPTH` to match your proxy chain. The in-memory rate limiter is per process and is not shared across replicas.
 
 ## Application-layer controls already in place
 
 - Zod validation with bounds and enums on every API route.
-- Server-side computation of derived fields, including `percentage` and `passed`.
+- Assessment domains and poll options restricted to known CEH / community definitions.
+- Server-side computation of derived fields, including `percentage` and `passed`, plus server-assigned assessment ids.
 - Server-managed timestamps.
 - Database `CHECK` constraints mirroring validation bounds.
-- In-memory IP-based rate limiting on write endpoints.
+- In-memory IP-based rate limiting on write endpoints (process-local; see checklist).
 - Security response headers via `next.config.ts`, including HSTS, `nosniff`, frame deny, referrer policy, permissions policy, and CSP.
 - React auto-escaping, with no `dangerouslySetInnerHTML`, enforced by a `react/no-danger` lint rule.
-
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.

@@ -32,7 +32,7 @@ for (const theme of ['dark', 'light'] as const) {
                 await expect(readiness.getByText('75.2%')).toBeVisible();
                 await expect(readiness.getByText('Almost Ready')).toBeVisible();
                 await expect(readiness.getByText('1 day')).toBeVisible();
-                await expect(readiness.getByText('1 of 20')).toBeVisible();
+                await expect(readiness.getByText('3 of 20')).toBeVisible();
                 await page.waitForLoadState('networkidle');
 
                 const canvas = readiness.locator('[data-readiness-canvas]');

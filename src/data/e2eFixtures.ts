@@ -27,7 +27,7 @@ const assessmentRows: readonly AssessmentFixtureRow[] = [
         maxScore: 125,
         percentage: 86.4,
         timeTaken: 210,
-        domain: 'Network Security',
+        domain: 'Scanning Networks',
         notes: 'Deterministic E2E fixture',
         passed: true,
         createdAt: '2026-07-18T12:00:00.000Z',
@@ -40,7 +40,7 @@ const assessmentRows: readonly AssessmentFixtureRow[] = [
         maxScore: 125,
         percentage: 76.8,
         timeTaken: 225,
-        domain: 'Web Application Security',
+        domain: 'Hacking Web Applications',
         notes: 'Deterministic E2E fixture',
         passed: true,
         createdAt: '2026-07-11T12:00:00.000Z',
@@ -153,7 +153,6 @@ export const e2ePollAdapter = {
         pollId: string;
         pollQuestion: string;
         optionText: string;
-        userId: string | null;
         voteCount: number;
     }) {
         if (pollRows.some((r) => r.pollId === row.pollId && r.optionText === row.optionText)) {
@@ -167,7 +166,6 @@ export const e2ePollAdapter = {
             pollQuestion: row.pollQuestion,
             optionText: row.optionText,
             voteCount: row.voteCount,
-            userId: row.userId,
             createdAt,
             updatedAt,
         };
@@ -176,7 +174,6 @@ export const e2ePollAdapter = {
         pollId: string;
         pollQuestion: string;
         optionText: string;
-        userId: string | null;
     }) {
         const existing = pollRows.find(
             (r) => r.pollId === input.pollId && r.optionText === input.optionText,
@@ -194,7 +191,6 @@ export const e2ePollAdapter = {
             pollQuestion: input.pollQuestion,
             optionText: input.optionText,
             voteCount: 1,
-            userId: input.userId,
             createdAt,
             updatedAt: new Date().toISOString(),
         };

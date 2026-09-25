@@ -88,7 +88,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run build` | Production build |
 | `npm run start` | Production server |
 | `npm run lint` | ESLint |
-| `npm run generate` | Regenerate API client from `openapi.yaml` (Orval) |
+| `npm run generate` | Optional: regenerate Orval client under `src/api/generated/` (gitignored; runtime uses `src/api/*`) |
 | `npm run db:generate` | Generate Drizzle migration from schema |
 | `npm run db:migrate` | Apply pending migrations |
 | `npm run db:studio` | Open Drizzle Studio |
@@ -133,13 +133,15 @@ Contract: [openapi.yaml](openapi.yaml). Implementation: `src/app/api/`.
 | `/api/polls/{pollId}/votes` | Cast a vote |
 | `/api/health` | Health check (no auth) |
 
-Derived fields such as `percentage` and `passed` are computed on the server; clients must not send them on create.
+Derived fields such as `percentage` and `passed` are computed on the server; clients must not send them on create. Assessment `id` is optional — the server assigns a UUID when omitted.
 
 After changing `openapi.yaml`:
 
 ```bash
 npm run generate
 ```
+
+`npm run generate` writes an optional Orval client under `src/api/generated/` (gitignored). The app runtime uses the hand-written clients in `src/api/`; regenerate only when you want typed React Query helpers from the OpenAPI contract.
 
 ### Auth modes
 
@@ -165,9 +167,9 @@ npm run test:coverage    # unit coverage only
 Documented in detail in [SECURITY.md](SECURITY.md). High level:
 
 - Explicit public vs API-only deployment modes
-- Zod validation on every mutating API route
-- Server-side derived fields and DB `CHECK` constraints
-- In-memory IP-based rate limiting on writes
+- Zod validation on every mutating API route (known assessment domains and poll options)
+- Server-side derived fields, server-assigned assessment ids, and DB `CHECK` constraints
+- In-memory IP-based rate limiting on writes (process-local)
 - Response headers from `next.config.ts`: HSTS, CSP, `X-Frame-Options: DENY`, `nosniff`, referrer policy, permissions policy
 - No `dangerouslySetInnerHTML` (lint-enforced)
 
